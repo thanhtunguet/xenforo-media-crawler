@@ -1,0 +1,10 @@
+services:
+  app:
+    image: thanhtunguet/xenforo-media-crawler:latest
+    ports:
+      - '3000:3000'
+    env_file: .env
+    volumes:
+      - ./downloads:/app/downloads
+      - ./cookies.json:/app/cookies.json
+    restart: unless-stopped

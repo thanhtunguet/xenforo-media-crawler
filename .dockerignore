@@ -1,0 +1,10 @@
+.git/
+.github/
+node_modules/
+dist/
+downloads/
+output/
+test/
+generate.sh
+.env
+INSTRUCTIONS.md
