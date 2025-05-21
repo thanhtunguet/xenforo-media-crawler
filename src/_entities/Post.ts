@@ -25,7 +25,7 @@ export class Post {
   @Column('bigint', { name: 'userId', nullable: true })
   userId: string | null;
 
-  @Column('varchar', { name: 'content', nullable: true, length: 4000 })
+  @Column('mediumtext', { name: 'content', nullable: true, })
   content: string | null;
 
   @Column('bigint', { name: 'parentId', nullable: true })

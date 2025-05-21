@@ -44,6 +44,7 @@ export class ThreadController {
     summary: 'Get all threads',
     description:
       'Retrieves a paginated list of threads sorted by last updated date',
+    operationId: 'getAllThreads'
   })
   @ApiQuery({
     name: 'page',
@@ -96,6 +97,7 @@ export class ThreadController {
   @ApiOperation({
     summary: 'Get thread count',
     description: 'Returns the total number of threads in the system',
+    operationId: 'getThreadCount'
   })
   @ApiResponse({
     status: 200,
@@ -111,6 +113,7 @@ export class ThreadController {
   @ApiOperation({
     summary: 'Get thread by ID',
     description: 'Retrieves detailed information about a specific thread',
+    operationId: 'getThreadById'
   })
   @ApiParam({
     name: 'id',
@@ -134,6 +137,7 @@ export class ThreadController {
   @ApiOperation({
     summary: 'Create thread',
     description: 'Creates a new thread with the provided details',
+    operationId: 'createThread'
   })
   @ApiResponse({
     status: 201,
@@ -148,6 +152,7 @@ export class ThreadController {
   @ApiOperation({
     summary: 'Update thread',
     description: 'Updates an existing thread with the provided details',
+    operationId: 'updateThread'
   })
   @ApiParam({
     name: 'id',
@@ -174,6 +179,7 @@ export class ThreadController {
   @ApiOperation({
     summary: 'Delete thread',
     description: 'Soft deletes a thread and its associated posts',
+    operationId: 'deleteThread'
   })
   @ApiParam({
     name: 'id',
@@ -197,6 +203,7 @@ export class ThreadController {
   @ApiOperation({
     summary: 'Get thread posts',
     description: 'Retrieves a paginated list of posts for a specific thread',
+    operationId: 'getThreadPosts'
   })
   @ApiParam({
     name: 'id',

@@ -1,5 +1,5 @@
 import { Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { XenforoCrawlerService } from 'src/xenforo_crawler/xenforo_crawler.service';
 import { ForumResponseDto } from './dto/forum-response.dto';
 import { SiteService } from './site.service';
@@ -13,6 +13,11 @@ export class SiteSyncController {
   ) {}
 
   @Post(':id/sync')
+  @ApiOperation({
+    summary: 'Sync site forums',
+    description: 'Synchronizes forums from a Xenforo site',
+    operationId: 'syncSiteForums'
+  })
   @ApiParam({
     name: 'id',
     description: 'Site ID',
@@ -26,6 +31,11 @@ export class SiteSyncController {
   }
 
   @Post(':id/sync/threads')
+  @ApiOperation({
+    summary: 'Sync all forums and threads',
+    description: 'Synchronizes all forums and their threads from a Xenforo site',
+    operationId: 'syncAllForumsAndThreads'
+  })
   @ApiParam({
     name: 'id',
     description: 'Site ID',
@@ -38,6 +48,11 @@ export class SiteSyncController {
   }
 
   @Post(':id/forums/:forumId/sync')
+  @ApiOperation({
+    summary: 'Sync forum threads',
+    description: 'Synchronizes all threads from a specific forum',
+    operationId: 'syncForumThreads'
+  })
   @ApiParam({
     name: 'id',
     description: 'Site ID',

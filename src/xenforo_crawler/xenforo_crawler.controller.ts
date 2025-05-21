@@ -7,7 +7,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiResponse, ApiTags, ApiOperation } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import * as Entities from 'src/_entities';
 import { ForumResponseDto } from 'src/site/dto/forum-response.dto';
@@ -26,6 +26,11 @@ export class XenforoCrawlerController {
   constructor(private readonly xenforoCrawlerService: XenforoCrawlerService) {}
 
   @HttpPost('/login')
+  @ApiOperation({
+    summary: 'Login to Xenforo site',
+    description: 'Authenticates with a Xenforo site using provided credentials',
+    operationId: 'xenforoLogin'
+  })
   @ApiBody({
     type: XenforoLoginDto,
   })
@@ -33,17 +38,16 @@ export class XenforoCrawlerController {
     type: String,
   })
   public async login(
-    @Req() req: Request,
     @Res() res: Response,
     @Body('username') username: string,
     @Body('password') password: string,
-    @Body('siteUrl') siteUrl: string,
+    @Body('siteId') siteId: number,
   ): Promise<void> {
     try {
       const response = await this.xenforoCrawlerService.login(
         username,
         password,
-        siteUrl,
+        siteId,
         res,
       );
       res.header('content-type', response.headers['content-type']);
@@ -55,6 +59,11 @@ export class XenforoCrawlerController {
   }
 
   @Get('/list-forums')
+  @ApiOperation({
+    summary: 'List forums',
+    description: 'Retrieves list of forums from a Xenforo site',
+    operationId: 'xenforoListForums'
+  })
   @ApiQuery({
     type: XenforoBasePayloadDto,
   })
@@ -79,6 +88,11 @@ export class XenforoCrawlerController {
   @ApiQuery({
     type: ListThreadPayloadDto,
   })
+  @ApiOperation({
+    summary: 'List threads',
+    description: 'Retrieves list of threads from a forum',
+    operationId: 'xenforoListThreads'
+  })
   @ApiResponse({
     type: [Entities.Thread],
   })
@@ -93,6 +107,11 @@ export class XenforoCrawlerController {
 
   @ApiQuery({
     type: ThreadPayloadDto,
+  })
+  @ApiOperation({
+    summary: 'Count threads',
+    description: 'Counts total number of threads in a forum',
+    operationId: 'xenforoCountThreads'
   })
   @ApiResponse({
     type: Number,
@@ -115,6 +134,11 @@ export class XenforoCrawlerController {
     type: Number,
     required: true,
   })
+  @ApiOperation({
+    summary: 'Count post pages',
+    description: 'Counts total number of post pages in a thread',
+    operationId: 'xenforoCountPostPages'
+  })
   @ApiResponse({
     type: Number,
   })
@@ -135,6 +159,11 @@ export class XenforoCrawlerController {
     name: 'threadId',
     type: Number,
     required: true,
+  })
+  @ApiOperation({
+    summary: 'Get thread details',
+    description: 'Retrieves detailed information about a specific thread',
+    operationId: 'xenforoGetThread'
   })
   @ApiResponse({
     type: Entities.Thread,
@@ -163,6 +192,11 @@ export class XenforoCrawlerController {
     required: false,
     description: 'Page number, defaults to 1',
   })
+  @ApiOperation({
+    summary: 'Get thread posts',
+    description: 'Retrieves posts from a specific thread page',
+    operationId: 'xenforoGetThreadPosts'
+  })
   @ApiResponse({
     type: [Entities.Post],
   })
@@ -190,6 +224,11 @@ export class XenforoCrawlerController {
     name: 'threadId',
     type: Number,
     required: true,
+  })
+  @ApiOperation({
+    summary: 'Sync thread posts',
+    description: 'Synchronizes all posts from a thread',
+    operationId: 'xenforoSyncThreadPosts'
   })
   @ApiResponse({
     type: String,
@@ -231,6 +270,11 @@ export class XenforoCrawlerController {
     description:
       'Media type to download (0=all, 1=image, 2=video, 3=link), defaults to 0',
     enum: MediaTypeEnum,
+  })
+  @ApiOperation({
+    summary: 'Download thread media',
+    description: 'Downloads media files from a thread',
+    operationId: 'xenforoDownloadThreadMedia'
   })
   @ApiResponse({
     type: String,

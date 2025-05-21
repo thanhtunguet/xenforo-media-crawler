@@ -45,6 +45,7 @@ export class SiteController {
   @ApiOperation({
     summary: 'Create site',
     description: 'Creates a new site with the provided configuration details',
+    operationId: 'createSite'
   })
   @ApiResponse({
     status: 201,
@@ -60,6 +61,7 @@ export class SiteController {
   @ApiOperation({
     summary: 'Get all sites',
     description: 'Retrieves a paginated list of sites sorted by creation date',
+    operationId: 'getAllSites'
   })
   @ApiQuery({
     name: 'page',
@@ -112,6 +114,7 @@ export class SiteController {
   @ApiOperation({
     summary: 'Get site count',
     description: 'Returns the total number of sites in the system',
+    operationId: 'getSiteCount'
   })
   @ApiResponse({
     status: 200,
@@ -133,6 +136,7 @@ export class SiteController {
   @ApiOperation({
     summary: 'Get site by ID',
     description: 'Retrieves detailed information about a specific site',
+    operationId: 'getSiteById'
   })
   @ApiParam({
     name: 'id',
@@ -157,6 +161,7 @@ export class SiteController {
     summary: 'Update site',
     description:
       'Updates an existing site with the provided configuration details',
+    operationId: 'updateSite'
   })
   @ApiParam({
     name: 'id',
@@ -183,6 +188,7 @@ export class SiteController {
   @ApiOperation({
     summary: 'Delete site',
     description: 'Soft deletes a site and all its associated data',
+    operationId: 'deleteSite'
   })
   @ApiParam({
     name: 'id',
@@ -207,6 +213,7 @@ export class SiteController {
     summary: 'Get site forums',
     description:
       'Retrieves a paginated list of forums belonging to a specific site',
+    operationId: 'getSiteForums'
   })
   @ApiParam({
     name: 'id',

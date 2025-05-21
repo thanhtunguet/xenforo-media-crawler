@@ -25,7 +25,7 @@ import { ThreadModule } from './thread/thread.module';
         if (!config.DB_USER) {
           throw new Error('DB_USER is not defined');
         }
-        if (!config.DB_PASSWORD) {
+        if (typeof config.DB_PASSWORD !== 'string') {
           throw new Error('DB_PASSWORD is not defined');
         }
         if (!config.DB_NAME) {
@@ -45,7 +45,7 @@ import { ThreadModule } from './thread/thread.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: Object.values(entities),
-      synchronize: false,
+      synchronize: process.env.DB_SYNCHRONIZE === 'true',
       logging: process.env.DB_LOGGING === 'true',
     }),
     DatabaseModule,

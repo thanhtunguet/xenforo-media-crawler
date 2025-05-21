@@ -28,9 +28,13 @@ export class XenforoCrawlerService {
   public async login(
     username: string,
     password: string,
-    siteUrl: string,
+    siteId: number,
     res?: Response,
   ) {
+    const site = await this.siteRepository.findOne({
+      where: { id: siteId },
+    });
+    const siteUrl = site?.url;
     return this.xenforoClientService.login(username, password, res, siteUrl);
   }
 
@@ -312,8 +316,9 @@ export class XenforoCrawlerService {
 
       // Pass cookies from request object if provided
       if (req && req.headers.cookie) {
+        console.log('req.headers.cookie', req.headers.cookie);
         config.headers = {
-          Cookie: req.headers.cookie,
+          cookie: req.headers.cookie,
         };
       }
 

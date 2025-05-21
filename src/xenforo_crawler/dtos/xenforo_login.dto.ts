@@ -12,13 +12,13 @@ export class XenforoLoginDto {
   password: string;
 
   @ApiProperty({
-    type: String,
+    type: Number,
   })
-  siteUrl: string;
+  siteId: number;
 
-  constructor(username: string, password: string, siteUrl: string) {
+  constructor(username: string, password: string, siteId: number) {
     this.username = username;
     this.password = password;
-    this.siteUrl = siteUrl;
+    this.siteId = siteId;
   }
 }
