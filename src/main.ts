@@ -14,8 +14,6 @@ async function bootstrap() {
     .setTitle(name)
     .setDescription(description)
     .setVersion(version)
-    .addServer('http://localhost:3000')
-    .addServer('http://dichvutindung24h.com:3000')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
