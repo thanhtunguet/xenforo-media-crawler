@@ -16,7 +16,7 @@ export class SiteSyncController {
   @ApiOperation({
     summary: 'Sync site forums',
     description: 'Synchronizes forums from a Xenforo site',
-    operationId: 'syncSiteForums'
+    operationId: 'syncSiteForums',
   })
   @ApiParam({
     name: 'id',
@@ -33,8 +33,9 @@ export class SiteSyncController {
   @Post(':id/sync/threads')
   @ApiOperation({
     summary: 'Sync all forums and threads',
-    description: 'Synchronizes all forums and their threads from a Xenforo site',
-    operationId: 'syncAllForumsAndThreads'
+    description:
+      'Synchronizes all forums and their threads from a Xenforo site',
+    operationId: 'syncAllForumsAndThreads',
   })
   @ApiParam({
     name: 'id',
@@ -51,7 +52,7 @@ export class SiteSyncController {
   @ApiOperation({
     summary: 'Sync forum threads',
     description: 'Synchronizes all threads from a specific forum',
-    operationId: 'syncForumThreads'
+    operationId: 'syncForumThreads',
   })
   @ApiParam({
     name: 'id',

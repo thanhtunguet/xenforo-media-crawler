@@ -11,7 +11,7 @@ import { Site } from './Site';
 import { Thread } from './Thread';
 
 @Index('Forum_pk_2', ['siteId', 'originalId'], { unique: true })
-@Entity('Forum', {  })
+@Entity('Forum', {})
 export class Forum {
   @PrimaryGeneratedColumn({
     type: 'bigint',

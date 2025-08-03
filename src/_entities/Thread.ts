@@ -11,7 +11,7 @@ import { Post } from './Post';
 import { Forum } from './Forum';
 
 @Index('Thread_pk_2', ['forumId', 'originalId'], { unique: true })
-@Entity('Thread', {  })
+@Entity('Thread', {})
 export class Thread {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
   id: number;

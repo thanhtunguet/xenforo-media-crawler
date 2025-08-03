@@ -2,7 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { Site } from './Site';
 
 @Index('User_pk_2', ['siteId', 'username', 'email'], { unique: true })
-@Entity('User', {  })
+@Entity('User', {})
 export class User {
   @Column('bigint', { primary: true, name: 'id' })
   id: number;

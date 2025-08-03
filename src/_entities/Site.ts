@@ -9,7 +9,7 @@ import { Forum } from './Forum';
 import { User } from './User';
 
 @Index('Site_pk_2', ['url'], { unique: true })
-@Entity('Site', {  })
+@Entity('Site', {})
 export class Site {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
   id: number;

@@ -38,6 +38,14 @@ export class XenforoCrawlerService {
     return this.xenforoClientService.login(username, password, res, siteUrl);
   }
 
+  public async loginWithCookie(siteId: number, res?: Response) {
+    const site = await this.siteRepository.findOne({
+      where: { id: siteId },
+    });
+    const siteUrl = site?.url;
+    return this.xenforoClientService.loginWithCookie(res, siteUrl);
+  }
+
   public async listForums(siteId: number): Promise<ForumResponseDto[]> {
     try {
       const site = await this.siteRepository.findOne({
@@ -489,11 +497,18 @@ export class XenforoCrawlerService {
             const isImageLink = /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url);
             const isVideoLink = /\.(mp4|webm|ogg|avi|mov)(\?.*)?$/i.test(url);
 
-            if (!isImageLink && !isVideoLink) {
+            if (isImageLink || isVideoLink) {
+              let mediaTypeId = 3; // Default to link
+              if (isImageLink) {
+                mediaTypeId = 1;
+              } else if (isVideoLink) {
+                mediaTypeId = 2;
+              }
+
               mediaItems.push({
                 id: 0,
                 postId: 0,
-                mediaTypeId: 3,
+                mediaTypeId,
                 originalId: null,
                 caption,
                 url,
@@ -688,7 +703,7 @@ export class XenforoCrawlerService {
 
       const mediaItems = await mediaQuery.getMany();
 
-      console.log(`Found ${mediaItems.length} media items to download`);
+      console.log(`Found ${mediaItems.length} media items to process`);
 
       // Download stats
       const stats = {
@@ -709,6 +724,16 @@ export class XenforoCrawlerService {
           `Skipping ${mediaItems.length - filteredMedia.length} external links`,
         );
       }
+
+      // Get unique media URLs to avoid duplicate downloads
+      const uniqueMediaUrls = [
+        ...new Set(filteredMedia.map((media) => media.url)),
+      ];
+      console.log(
+        `Found ${uniqueMediaUrls.length} unique media items to download`,
+      );
+
+      stats.total = uniqueMediaUrls.length;
 
       // Get site URL for config
       const site = await this.siteRepository.findOne({
@@ -735,8 +760,11 @@ export class XenforoCrawlerService {
         console.log('Using authentication cookies from request');
       }
 
-      // Download each media file
-      for (const media of filteredMedia) {
+      // Download each unique media file
+      for (const mediaUrl of uniqueMediaUrls) {
+        const media = filteredMedia.find((m) => m.url === mediaUrl);
+        if (!media) continue;
+
         try {
           if (media.isDownloaded && media.localPath) {
             console.log(
@@ -755,15 +783,16 @@ export class XenforoCrawlerService {
           const filePath = path.join(downloadDir, filename);
 
           // Use the full URL for download
-          // For media URLs that aren't absolute, prepend the site URL
-          const mediaUrl = media.url.startsWith('http')
+          const fullMediaUrl = media.url.startsWith('http')
             ? media.url
             : new URL(media.url, siteUrl).href;
 
-          console.log(`Downloading media ${mediaUrl} with site URL ${siteUrl}`);
+          console.log(
+            `Downloading media ${fullMediaUrl} with site URL ${siteUrl}`,
+          );
 
           // Download the media file using the xenforoClientService
-          const response = await this.xenforoClientService.get(mediaUrl, {
+          const response = await this.xenforoClientService.get(fullMediaUrl, {
             ...config,
             validateStatus: (status) => status === 200,
           });
@@ -826,15 +855,19 @@ export class XenforoCrawlerService {
             }
           }
 
-          // Update media record in database
-          await this.entityManager.update(Entities.Media, media.id, {
-            isDownloaded: true,
-            localPath: filePath,
-            mimeType: contentType,
-            updatedAt: new Date(),
-          });
+          // Update all media records with this URL in the database
+          await this.entityManager.update(
+            Entities.Media,
+            { url: media.url },
+            {
+              isDownloaded: true,
+              localPath: filePath,
+              mimeType: contentType,
+              updatedAt: new Date(),
+            },
+          );
 
-          console.log(`Downloaded media ${media.id} to ${filePath}`);
+          console.log(`Downloaded media with URL ${media.url} to ${filePath}`);
           stats.downloaded++;
 
           // Add a delay to avoid rate limiting (429 errors)
@@ -844,7 +877,10 @@ export class XenforoCrawlerService {
             setTimeout(() => resolve(), delayTime),
           );
         } catch (error) {
-          console.error(`Failed to download media ${media.id}:`, error.message);
+          console.error(
+            `Failed to download media with URL ${media.url}:`,
+            error.message,
+          );
 
           // If we hit a rate limit, wait longer before continuing
           if (error.response && error.response.status === 429) {

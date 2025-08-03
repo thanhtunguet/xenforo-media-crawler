@@ -1,7 +1,7 @@
 import { Column, Entity, Index } from 'typeorm';
 
 @Index('MediaType_pk_2', ['code'], { unique: true })
-@Entity('MediaType', {  })
+@Entity('MediaType', {})
 export class MediaType {
   @Column('bigint', { primary: true, name: 'id' })
   id: number;

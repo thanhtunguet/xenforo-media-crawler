@@ -11,7 +11,7 @@ import { Media } from './Media';
 import { Thread } from './Thread';
 
 @Index('Post_pk_2', ['threadId', 'originalId'], { unique: true })
-@Entity('Post', {  })
+@Entity('Post', {})
 export class Post {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
   id: number;
@@ -25,7 +25,7 @@ export class Post {
   @Column('bigint', { name: 'userId', nullable: true })
   userId: string | null;
 
-  @Column('mediumtext', { name: 'content', nullable: true, })
+  @Column('mediumtext', { name: 'content', nullable: true })
   content: string | null;
 
   @Column('bigint', { name: 'parentId', nullable: true })

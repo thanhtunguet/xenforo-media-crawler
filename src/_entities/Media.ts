@@ -10,7 +10,7 @@ import { Post } from './Post';
 import type { MediaTypeEnum } from 'src/types/media_type';
 
 @Index('Media_pk_2', ['postId', 'originalId'], { unique: true })
-@Entity('Media', {  })
+@Entity('Media', {})
 export class Media {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
   id: number;

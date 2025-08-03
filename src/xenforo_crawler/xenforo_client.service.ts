@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { AxiosResponse } from 'axios';
 import type { Response } from 'express';
 import { HttpClientService } from 'src/_services/http_client_service';
@@ -79,6 +81,27 @@ export class XenforoClientService extends HttpClientService {
       },
       maxRedirects: 0,
       validateStatus: (status) => status === 303,
+    });
+    this.setCookiesFromResponse(res, response);
+    return response;
+  }
+
+  public async loginWithCookie(
+    res?: Response,
+    siteUrl?: string,
+  ): Promise<AxiosResponse> {
+    const cookiePath = path.resolve('./cookies.json');
+    if (!fs.existsSync(cookiePath)) {
+      throw new Error('cookies.json not found');
+    }
+
+    const cookies = JSON.parse(fs.readFileSync(cookiePath, 'utf-8'));
+    this.axiosInstance.defaults.headers.cookie = cookies
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join('; ');
+
+    const response = await this.axiosInstance.get('/', {
+      baseURL: siteUrl,
     });
     this.setCookiesFromResponse(res, response);
     return response;
