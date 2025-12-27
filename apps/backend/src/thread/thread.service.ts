@@ -61,6 +61,17 @@ export class ThreadService {
     return this.mapToThreadDto(thread);
   }
 
+  // Find thread by originalId
+  async findByOriginalId(originalId: string): Promise<ThreadDto> {
+    const thread = await this.threadRepository.findOne({
+      where: { originalId, deletedAt: null },
+    });
+    if (!thread) {
+      throw new NotFoundException(`Thread with original ID ${originalId} not found`);
+    }
+    return this.mapToThreadDto(thread);
+  }
+
   // Create a new thread
   async create(createThreadDto: CreateThreadDto): Promise<ThreadDto> {
     const thread = this.threadRepository.create({
@@ -138,6 +149,7 @@ export class ThreadService {
     threadDto.content = thread.description || '';
     threadDto.createdAt = thread.createdAt;
     threadDto.updatedAt = thread.updatedAt;
+    threadDto.originalId = thread.originalId;
     return threadDto;
   }
 

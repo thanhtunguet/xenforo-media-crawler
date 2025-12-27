@@ -20,10 +20,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Layout } from '@/components/layout';
-import { sitesApi, siteSyncApi, Site, Forum } from '@/lib/api';
+import { sitesApi, siteSyncApi, Site, Forum, threadsApi } from '@/lib/api';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 export default function SitesPage() {
+  const router = useRouter();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -36,6 +38,9 @@ export default function SitesPage() {
   const [forums, setForums] = useState<Forum[]>([]);
   const [forumsDialogOpen, setForumsDialogOpen] = useState(false);
   const [syncing, setSyncing] = useState<number | null>(null);
+  const [searchOriginalId, setSearchOriginalId] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   useEffect(() => {
     loadSites();
@@ -119,6 +124,26 @@ export default function SitesPage() {
     setDeleteDialogOpen(true);
   };
 
+  const handleSearchThread = async () => {
+    if (!searchOriginalId.trim()) {
+      setSearchError('Please enter an original thread ID');
+      return;
+    }
+
+    setSearching(true);
+    setSearchError('');
+
+    try {
+      const thread = await threadsApi.searchByOriginalId(searchOriginalId.trim());
+      // Navigate to the thread page
+      router.push(`/threads/${thread.id}`);
+    } catch (err: any) {
+      setSearchError(err.message || 'Thread not found');
+    } finally {
+      setSearching(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -126,6 +151,41 @@ export default function SitesPage() {
           <h2 className="text-3xl font-bold">Sites Management</h2>
           <Button onClick={() => setCreateDialogOpen(true)}>Create Site</Button>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Search Thread by Original ID</CardTitle>
+            <CardDescription>
+              Search for a thread using its original ID from the XenForo site
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Enter original thread ID (e.g., 12345)"
+                value={searchOriginalId}
+                onChange={(e) => {
+                  setSearchOriginalId(e.target.value);
+                  setSearchError('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchThread();
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button onClick={handleSearchThread} disabled={searching}>
+                {searching ? 'Searching...' : 'Search'}
+              </Button>
+            </div>
+            {searchError && (
+              <div className="mt-2 p-3 text-sm text-red-600 bg-red-50 rounded-md">
+                {searchError}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

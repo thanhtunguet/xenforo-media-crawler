@@ -109,6 +109,31 @@ export class ThreadController {
     return { count };
   }
 
+  @Get('search/original-id')
+  @ApiOperation({
+    summary: 'Search thread by original ID',
+    description: 'Searches for a thread by its original ID from the XenForo site',
+    operationId: 'searchThreadByOriginalId',
+  })
+  @ApiQuery({
+    name: 'originalId',
+    required: true,
+    description: 'The original ID of the thread to search for',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Thread found successfully',
+    type: ThreadDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Thread not found',
+  })
+  async findByOriginalId(@Query('originalId') originalId: string): Promise<ThreadDto> {
+    return this.threadService.findByOriginalId(originalId);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get thread by ID',

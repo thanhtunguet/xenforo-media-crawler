@@ -26,6 +26,7 @@ export interface Thread {
   content: string;
   createdAt: string;
   updatedAt: string;
+  originalId?: string | null;
 }
 
 export interface Post {
@@ -199,6 +200,11 @@ export const threadsApi = {
   },
   getById: async (id: number): Promise<Thread> => {
     return apiRequest<Thread>(`/api/threads/${id}`);
+  },
+  searchByOriginalId: async (originalId: string): Promise<Thread> => {
+    return apiRequest<Thread>(
+      `/api/threads/search/original-id?originalId=${encodeURIComponent(originalId)}`
+    );
   },
   getPosts: async (
     threadId: number,
