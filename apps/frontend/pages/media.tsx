@@ -24,6 +24,12 @@ import {
   Download,
   X,
   ExternalLink,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  FlipHorizontal,
+  FlipVertical,
+  RotateCcw,
 } from 'lucide-react';
 
 const mediaTypeFilters = [
@@ -44,6 +50,10 @@ export default function MediaPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<MediaWithThread | null>(null);
+  const [imageZoom, setImageZoom] = useState(1);
+  const [imageRotation, setImageRotation] = useState(0);
+  const [imageFlipH, setImageFlipH] = useState(1);
+  const [imageFlipV, setImageFlipV] = useState(1);
 
   // Initialize filters from settings
   const getInitialFilters = (): MediaFilters => {
@@ -477,7 +487,14 @@ export default function MediaPage() {
         {selectedMedia && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-fade-in"
-            onClick={() => setSelectedMedia(null)}
+            onClick={() => {
+              setSelectedMedia(null);
+              // Reset image transforms when closing
+              setImageZoom(1);
+              setImageRotation(0);
+              setImageFlipH(1);
+              setImageFlipV(1);
+            }}
           >
             <div className="max-w-6xl max-h-full w-full">
               <div className="relative">
@@ -488,6 +505,11 @@ export default function MediaPage() {
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedMedia(null);
+                    // Reset image transforms when closing
+                    setImageZoom(1);
+                    setImageRotation(0);
+                    setImageFlipH(1);
+                    setImageFlipV(1);
                   }}
                 >
                   <X className="w-5 h-5" />
@@ -508,12 +530,102 @@ export default function MediaPage() {
                   </a>
                 )}
 
-                <div className="flex items-center justify-center min-h-[200px]">
+                {/* Image Controls - Only show for images */}
+                {isImage(selectedMedia) && (
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageZoom((prev) => Math.min(prev + 0.25, 5));
+                      }}
+                      className="gap-2"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageZoom((prev) => Math.max(prev - 0.25, 0.25));
+                      }}
+                      className="gap-2"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageRotation((prev) => (prev + 90) % 360);
+                      }}
+                      className="gap-2"
+                    >
+                      <RotateCw className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageRotation((prev) => (prev - 90) % 360);
+                      }}
+                      className="gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageFlipH((prev) => prev * -1);
+                      }}
+                      className="gap-2"
+                    >
+                      <FlipHorizontal className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageFlipV((prev) => prev * -1);
+                      }}
+                      className="gap-2"
+                    >
+                      <FlipVertical className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageZoom(1);
+                        setImageRotation(0);
+                        setImageFlipH(1);
+                        setImageFlipV(1);
+                      }}
+                      className="gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-center min-h-[200px] overflow-hidden">
                   {isImage(selectedMedia) ? (
                     <img
                       src={getMediaUrl(selectedMedia)}
                       alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
-                      className="max-w-full max-h-[85vh] mx-auto object-contain rounded-lg shadow-glow-lg"
+                      className="max-w-full max-h-[85vh] mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200"
+                      style={{
+                        transform: `scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,
+                        transformOrigin: 'center center',
+                      }}
                       loading="eager"
                       onClick={(e) => e.stopPropagation()}
                     />
