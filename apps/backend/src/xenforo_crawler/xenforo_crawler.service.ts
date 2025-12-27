@@ -666,12 +666,26 @@ export class XenforoCrawlerService {
   }
 
   public async syncAllThreadPosts(
-    siteId: number,
     threadId: number,
     req?: Request,
   ): Promise<void> {
     try {
-      const thread = await this.getThread(siteId, threadId);
+      // Get thread with forum relation to access siteId
+      const thread = await this.threadRepository.findOne({
+        where: { id: Number(threadId) },
+        relations: ['forum'],
+      });
+
+      if (!thread) {
+        throw new Error(`Thread with ID ${threadId} not found`);
+      }
+
+      if (!thread.forum) {
+        throw new Error(`Thread with ID ${threadId} has no associated forum`);
+      }
+
+      const siteId = thread.forum.siteId;
+
       if (!thread.originalId) {
         throw new Error(`Thread with ID ${threadId} has no originalId`);
       }
@@ -697,7 +711,6 @@ export class XenforoCrawlerService {
   }
 
   public async downloadThreadMedia(
-    siteId: number,
     threadId: number,
     mediaTypeId: MediaTypeEnum = MediaTypeEnum.all,
     req?: Request,
@@ -708,8 +721,22 @@ export class XenforoCrawlerService {
     skipped: number;
   }> {
     try {
-      // Get thread info
-      const thread = await this.getThread(siteId, threadId);
+      // Get thread with forum relation to access siteId
+      const thread = await this.threadRepository.findOne({
+        where: { id: Number(threadId) },
+        relations: ['forum'],
+      });
+
+      if (!thread) {
+        throw new Error(`Thread with ID ${threadId} not found`);
+      }
+
+      if (!thread.forum) {
+        throw new Error(`Thread with ID ${threadId} has no associated forum`);
+      }
+
+      const siteId = thread.forum.siteId;
+
       console.log(
         `Starting media download for thread: ${thread.name} (ID: ${thread.id})`,
       );

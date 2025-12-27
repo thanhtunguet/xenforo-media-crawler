@@ -13,7 +13,6 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout';
 import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
-import { sitesApi, Site } from '@/lib/api';
 import Link from 'next/link';
 import {
   RefreshCw,
@@ -32,8 +31,6 @@ export default function ThreadPage() {
 
   const [thread, setThread] = useState<Thread | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [sites, setSites] = useState<Site[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState<number | ''>('');
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -48,19 +45,9 @@ export default function ThreadPage() {
     if (threadId) {
       loadThread();
       loadPosts();
-      loadSites();
       loadMediaCount();
     }
   }, [threadId, page]);
-
-  const loadSites = async () => {
-    try {
-      const response = await sitesApi.getAll(1, 100);
-      setSites(response.items);
-    } catch (err) {
-      console.error('Failed to load sites:', err);
-    }
-  };
 
   const loadThread = async () => {
     if (!threadId) return;
@@ -101,13 +88,13 @@ export default function ThreadPage() {
   };
 
   const handleSyncPosts = async () => {
-    if (!threadId || !selectedSiteId) {
-      alert('Please select a site');
+    if (!threadId) {
+      alert('Thread ID is required');
       return;
     }
     try {
       setSyncing(true);
-      await crawlerApi.syncThreadPosts(Number(selectedSiteId), threadId);
+      await crawlerApi.syncThreadPosts(threadId);
       alert('Post sync started. This may take a while.');
       setTimeout(() => {
         loadPosts();
@@ -122,14 +109,13 @@ export default function ThreadPage() {
   };
 
   const handleDownloadMedia = async () => {
-    if (!threadId || !selectedSiteId) {
-      alert('Please select a site');
+    if (!threadId) {
+      alert('Thread ID is required');
       return;
     }
     try {
       setDownloading(true);
       await crawlerApi.downloadThreadMedia(
-        Number(selectedSiteId),
         threadId,
         Number(mediaType)
       );
@@ -238,32 +224,11 @@ export default function ThreadPage() {
             </GlassCardDescription>
           </GlassCardHeader>
           <GlassCardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="site-select" className="text-white/80">
-                Select Site
-              </Label>
-              <Select
-                id="site-select"
-                value={selectedSiteId}
-                onChange={(e) =>
-                  setSelectedSiteId(e.target.value ? Number(e.target.value) : '')
-                }
-                className="glass-input"
-              >
-                <option value="">Select a site</option>
-                {sites.map((site) => (
-                  <option key={site.id} value={site.id}>
-                    {site.name || site.url}
-                  </option>
-                ))}
-              </Select>
-            </div>
-
             <div className="flex flex-wrap gap-3">
               <Button
                 variant="glass-primary"
                 onClick={handleSyncPosts}
-                disabled={syncing || !selectedSiteId}
+                disabled={syncing}
                 className="gap-2"
               >
                 <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
@@ -297,7 +262,7 @@ export default function ThreadPage() {
                 <Button
                   variant="glass"
                   onClick={handleDownloadMedia}
-                  disabled={downloading || !selectedSiteId}
+                  disabled={downloading}
                   className="gap-2"
                 >
                   <Download className={`h-4 w-4 ${downloading ? 'animate-spin' : ''}`} />

@@ -275,18 +275,16 @@ export const threadsApi = {
 // Xenforo Crawler APIs
 export const crawlerApi = {
   syncThreadPosts: async (
-    siteId: number,
     threadId: number
   ): Promise<{ message: string }> => {
     return apiRequest<{ message: string }>(
-      `/api/xenforo-crawler/sync-thread-posts?siteId=${siteId}&threadId=${threadId}`,
+      `/api/xenforo-crawler/sync-thread-posts?threadId=${threadId}`,
       {
         method: 'POST',
       }
     );
   },
   downloadThreadMedia: async (
-    siteId: number,
     threadId: number,
     mediaTypeId: number = 0
   ): Promise<{ message: string; mediaType: string; authenticated: boolean }> => {
@@ -295,7 +293,7 @@ export const crawlerApi = {
       mediaType: string;
       authenticated: boolean;
     }>(
-      `/api/xenforo-crawler/download-thread-media?siteId=${siteId}&threadId=${threadId}&mediaTypeId=${mediaTypeId}`,
+      `/api/xenforo-crawler/download-thread-media?threadId=${threadId}&mediaTypeId=${mediaTypeId}`,
       {
         method: 'POST',
       }

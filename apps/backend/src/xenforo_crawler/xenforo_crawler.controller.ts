@@ -277,18 +277,13 @@ export class XenforoCrawlerController {
   }
 
   @ApiQuery({
-    name: 'siteId',
-    type: Number,
-    required: true,
-  })
-  @ApiQuery({
     name: 'threadId',
     type: Number,
     required: true,
   })
   @ApiOperation({
     summary: 'Sync thread posts',
-    description: 'Synchronizes all posts from a thread',
+    description: 'Synchronizes all posts from a thread. Site is automatically determined from the thread.',
     operationId: 'xenforoSyncThreadPosts',
   })
   @ApiResponse({
@@ -297,14 +292,12 @@ export class XenforoCrawlerController {
   })
   @HttpPost('/sync-thread-posts')
   public async syncThreadPosts(
-    @Query('siteId') siteId: number,
     @Query('threadId') threadId: number,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
       await this.xenforoCrawlerService.syncAllThreadPosts(
-        siteId,
         threadId,
         req,
       );
@@ -314,11 +307,6 @@ export class XenforoCrawlerController {
     }
   }
 
-  @ApiQuery({
-    name: 'siteId',
-    type: Number,
-    required: true,
-  })
   @ApiQuery({
     name: 'threadId',
     type: Number,
@@ -334,7 +322,7 @@ export class XenforoCrawlerController {
   })
   @ApiOperation({
     summary: 'Download thread media',
-    description: 'Downloads media files from a thread',
+    description: 'Downloads media files from a thread. Site is automatically determined from the thread.',
     operationId: 'xenforoDownloadThreadMedia',
   })
   @ApiResponse({
@@ -343,7 +331,6 @@ export class XenforoCrawlerController {
   })
   @HttpPost('/download-thread-media')
   public downloadThreadMedia(
-    @Query('siteId') siteId: number,
     @Query('threadId') threadId: number,
     @Query('mediaTypeId') mediaTypeId: MediaTypeEnum = MediaTypeEnum.all,
     @Req() req: Request,
@@ -353,7 +340,7 @@ export class XenforoCrawlerController {
       // Start the download process without awaiting its completion
       // Pass the request object to have access to cookies
       this.xenforoCrawlerService
-        .downloadThreadMedia(siteId, threadId, mediaTypeId, req)
+        .downloadThreadMedia(threadId, mediaTypeId, req)
         .then((stats) => {
           console.log(
             `Download completed for thread ${threadId}. Results:`,
