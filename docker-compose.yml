@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  database:
+    image: mysql:8.0
+    container_name: xenforo-crawler-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-xenforo_crawler}
+      MYSQL_USER: ${DB_USER:-xenforo_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-xenforo_password}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./apps/backend/src/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - xenforo-network
+
+  # Backend Service (NestJS)
+  backend:
+    image: ${DOCKER_USERNAME:-thanhtunguet}/xenforo-media-crawler-backend:${IMAGE_TAG:-latest}
+    container_name: xenforo-crawler-backend
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile.ci
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    environment:
+      # Database Configuration
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-xenforo_user}
+      DB_PASSWORD: ${DB_PASSWORD:-xenforo_password}
+      DB_NAME: ${DB_NAME:-xenforo_crawler}
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
+      DB_LOGGING: ${DB_LOGGING:-false}
+      # Application Configuration
+      PORT: 3000
+      NODE_ENV: production
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
+      # XenForo Configuration (optional)
+      XENFORO_URL: ${XENFORO_URL:-}
+      XENFORO_USERNAME: ${XENFORO_USERNAME:-}
+      XENFORO_PASSWORD: ${XENFORO_PASSWORD:-}
+    volumes:
+      - ./downloads:/app/downloads
+      - ./cookies.json:/app/cookies.json:ro
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - xenforo-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+  # Frontend Service (Next.js)
+  frontend:
+    image: ${DOCKER_USERNAME:-thanhtunguet}/xenforo-media-crawler-frontend:${IMAGE_TAG:-latest}
+    container_name: xenforo-crawler-frontend
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile.ci
+    ports:
+      - "${FRONTEND_PORT:-3001}:3000"
+    environment:
+      NODE_ENV: production
+      # NEXT_PUBLIC_API_URL is used by the browser (client-side)
+      # Should point to the backend's external URL (accessible from host)
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - xenforo-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  xenforo-network:
+    driver: bridge
+
