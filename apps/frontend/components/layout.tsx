@@ -22,13 +22,13 @@ export function Layout({ children, title }: LayoutProps) {
         }`}
       >
         {/* Top Bar */}
-        <div className="pt-4 pr-4">
+        <div className="p-4">
           <TopBar title={title} />
         </div>
 
         {/* Page Content */}
-        <main className="px-8 pb-8 pr-4 pt-6 animate-fade-in">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        <main className="p-4 animate-fade-in">
+          <div className="px-0">{children}</div>
         </main>
       </div>
     </div>
