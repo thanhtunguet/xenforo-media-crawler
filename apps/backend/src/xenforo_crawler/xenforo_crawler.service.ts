@@ -92,7 +92,8 @@ export class XenforoCrawlerService {
 
   public async listThreads(
     siteId: number,
-    forumId: number,
+    forumSystemId: number,
+    forumOriginalId: number,
     pageId = 1,
   ): Promise<Entities.Thread[]> {
     try {
@@ -100,8 +101,10 @@ export class XenforoCrawlerService {
         where: { id: Number(siteId) },
       });
       const siteUrl = site?.url;
+      
+      // Use originalId for API calls
       const response = await this.xenforoClientService.get(
-        `/forums/${forumId}/page-${pageId}/`,
+        `/forums/${forumOriginalId}/page-${pageId}/`,
         {
           baseURL: siteUrl,
         },
@@ -129,7 +132,7 @@ export class XenforoCrawlerService {
                 description: '',
                 originalId: originalId,
                 name: threadName,
-                forumId: String(forumId),
+                forumId: String(forumSystemId), // Use system id for foreign key
                 originalUrl: threadUrl,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -149,15 +152,16 @@ export class XenforoCrawlerService {
 
   public async countThreadPages(
     siteId: number,
-    forumId: number,
+    forumOriginalId: number,
   ): Promise<number> {
     try {
       const site = await this.siteRepository.findOne({
         where: { id: Number(siteId) },
       });
       const siteUrl = site?.url;
+      // Use originalId for API calls
       const response = await this.xenforoClientService.get(
-        `/forums/${forumId}/`,
+        `/forums/${forumOriginalId}/`,
         {
           baseURL: siteUrl,
         },
@@ -194,9 +198,25 @@ export class XenforoCrawlerService {
     if (!site) {
       throw new Error(`Site with ID ${siteId} not found`);
     }
-    const count = await this.countThreadPages(siteId, forumId);
+    
+    // Find forum by system id to get originalId for API calls
+    const forum = await this.forumRepository.findOne({
+      where: { id: Number(forumId), siteId: Number(siteId) },
+    });
+    
+    if (!forum) {
+      throw new Error(`Forum with ID ${forumId} not found`);
+    }
+    
+    if (!forum.originalId) {
+      throw new Error(`Forum with ID ${forumId} has no originalId`);
+    }
+    
+    // Use originalId for API calls, system id for database
+    const forumOriginalId = Number(forum.originalId);
+    const count = await this.countThreadPages(siteId, forumOriginalId);
     for (let i = 1; i <= count; i++) {
-      await this.listThreads(siteId, forumId, i);
+      await this.listThreads(siteId, Number(forumId), forumOriginalId, i);
     }
   }
 
@@ -214,10 +234,16 @@ export class XenforoCrawlerService {
     console.log(`Found ${forums.length} forums to sync`);
 
     for (const forum of forums) {
+      if (!forum.id) {
+        console.log(
+          `Skipping forum ${forum.name} - not saved to database yet`,
+        );
+        continue;
+      }
       console.log(
-        `Syncing threads for forum: ${forum.name} (ID: ${forum.originalId})`,
+        `Syncing threads for forum: ${forum.name} (System ID: ${forum.id}, Original ID: ${forum.originalId})`,
       );
-      await this.syncAllThreads(siteId, Number(forum.originalId));
+      await this.syncAllThreads(siteId, Number(forum.id));
     }
 
     console.log(`Completed sync for site ID: ${siteId}`);

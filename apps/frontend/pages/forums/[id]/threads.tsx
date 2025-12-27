@@ -31,7 +31,7 @@ export default function ForumThreadsPage() {
     if (!forumId) return;
     try {
       setLoading(true);
-      const response = await threadsApi.getAll(page, 10);
+      const response = await threadsApi.getAll(page, 10, forumId);
       setThreads(response.items);
       setTotalPages(response.meta.totalPages);
     } catch (err) {

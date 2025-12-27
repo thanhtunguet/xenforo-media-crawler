@@ -58,6 +58,12 @@ export class ThreadController {
     description: 'Number of items per page',
     type: Number,
   })
+  @ApiQuery({
+    name: 'forumId',
+    required: false,
+    description: 'Filter by forum ID (system id)',
+    type: Number,
+  })
   @ApiResponse({
     status: 200,
     description: 'List of threads retrieved successfully',
@@ -86,11 +92,13 @@ export class ThreadController {
   async findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('forumId') forumId?: number,
   ): Promise<PaginatedResponseDto<ThreadDto>> {
     const pagination = new PaginationDto();
     if (page) pagination.page = +page;
     if (limit) pagination.limit = +limit;
-    return this.threadService.findAll(pagination);
+    const forumIdNum = forumId ? Number(forumId) : undefined;
+    return this.threadService.findAll(pagination, forumIdNum);
   }
 
   @Get('count')

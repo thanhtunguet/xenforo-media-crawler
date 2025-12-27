@@ -135,12 +135,26 @@ export class XenforoCrawlerController {
     type: [Entities.Thread],
   })
   @Get('/list-threads')
-  public listThreads(
+  public async listThreads(
     @Query('siteId') siteId: number,
     @Query('forumId') forumId: number,
     @Query('page') page: number,
   ) {
-    return this.xenforoCrawlerService.listThreads(siteId, forumId, page);
+    // Find forum to get both system id and originalId
+    const forum = await this.xenforoCrawlerService['forumRepository'].findOne({
+      where: { id: Number(forumId) },
+    });
+    
+    if (!forum || !forum.originalId) {
+      throw new Error(`Forum with ID ${forumId} not found or has no originalId`);
+    }
+    
+    return this.xenforoCrawlerService.listThreads(
+      siteId,
+      Number(forumId),
+      Number(forum.originalId),
+      page,
+    );
   }
 
   @ApiQuery({
@@ -155,11 +169,20 @@ export class XenforoCrawlerController {
     type: Number,
   })
   @Get('/count-threads')
-  public countThreads(
+  public async countThreads(
     @Query('siteId') siteId: number,
     @Query('forumId') forumId: number,
   ) {
-    return this.xenforoCrawlerService.countThreadPages(siteId, forumId);
+    // Find forum to get originalId for API call
+    const forum = await this.xenforoCrawlerService['forumRepository'].findOne({
+      where: { id: Number(forumId) },
+    });
+    
+    if (!forum || !forum.originalId) {
+      throw new Error(`Forum with ID ${forumId} not found or has no originalId`);
+    }
+    
+    return this.xenforoCrawlerService.countThreadPages(siteId, Number(forum.originalId));
   }
 
   @ApiQuery({

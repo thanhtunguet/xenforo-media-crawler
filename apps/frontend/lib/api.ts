@@ -241,9 +241,16 @@ export const siteSyncApi = {
 
 // Threads APIs
 export const threadsApi = {
-  getAll: async (page = 1, limit = 10): Promise<PaginatedResponse<Thread>> => {
+  getAll: async (page = 1, limit = 10, forumId?: number): Promise<PaginatedResponse<Thread>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (forumId !== undefined) {
+      params.append('forumId', forumId.toString());
+    }
     return apiRequest<PaginatedResponse<Thread>>(
-      `/api/threads?page=${page}&limit=${limit}`
+      `/api/threads?${params.toString()}`
     );
   },
   getById: async (id: number): Promise<Thread> => {

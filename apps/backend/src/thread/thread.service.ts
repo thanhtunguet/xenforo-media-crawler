@@ -22,9 +22,15 @@ export class ThreadService {
   // Get all threads with pagination
   async findAll(
     pagination: PaginationDto = new PaginationDto(),
+    forumId?: number,
   ): Promise<PaginatedResponseDto<ThreadDto>> {
+    const whereCondition: any = { deletedAt: null };
+    if (forumId !== undefined) {
+      whereCondition.forumId = String(forumId);
+    }
+    
     const [threads, totalItems] = await this.threadRepository.findAndCount({
-      where: { deletedAt: null },
+      where: whereCondition,
       skip: pagination.skip,
       take: pagination.limit,
       order: { updatedAt: 'DESC' },
