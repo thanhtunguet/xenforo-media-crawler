@@ -66,3 +66,7 @@ sample-*.html
 .nx/installation
 .nx/cache
 .nx/workspace-data
+
+# Next.js
+.next
+out

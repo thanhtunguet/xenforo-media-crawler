@@ -20,6 +20,9 @@
     "paths": {
       "@backend/*": [
         "apps/backend/src/*"
+      ],
+      "@/*": [
+        "apps/frontend/*"
       ]
     }
   },
