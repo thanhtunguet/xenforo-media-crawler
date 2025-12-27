@@ -762,16 +762,38 @@ export class XenforoCrawlerService {
 
       // Download each unique media file
       for (const mediaUrl of uniqueMediaUrls) {
-        const media = filteredMedia.find((m) => m.url === mediaUrl);
-        if (!media) continue;
+        // Find all media items with this URL to update them all
+        const mediaItemsWithUrl = filteredMedia.filter((m) => m.url === mediaUrl);
+        if (mediaItemsWithUrl.length === 0) continue;
+
+        // Use the first media item for the download process
+        const media = mediaItemsWithUrl[0];
 
         try {
+          // Check if media is already downloaded and file exists on disk
           if (media.isDownloaded && media.localPath) {
-            console.log(
-              `Media ${media.id} already downloaded to ${media.localPath}, skipping`,
-            );
-            stats.skipped++;
-            continue;
+            const fileExists = fs.existsSync(media.localPath);
+            if (fileExists) {
+              console.log(
+                `Media ${media.id} already downloaded to ${media.localPath}, skipping`,
+              );
+              stats.skipped++;
+              continue;
+            } else {
+              // File was deleted but database still says downloaded - reset status
+              console.log(
+                `Media ${media.id} marked as downloaded but file missing at ${media.localPath}, will re-download`,
+              );
+              await this.entityManager.update(
+                Entities.Media,
+                { id: media.id },
+                {
+                  isDownloaded: false,
+                  localPath: null,
+                  updatedAt: new Date(),
+                },
+              );
+            }
           }
 
           // Get filename from URL if not present
@@ -809,6 +831,16 @@ export class XenforoCrawlerService {
             console.log(
               `Skipping ${media.url} - not a valid media file (${contentType})`,
             );
+            // Update all media records with this URL to mark as invalid/not downloadable
+            await this.entityManager.update(
+              Entities.Media,
+              { url: media.url },
+              {
+                isDownloaded: false,
+                localPath: null,
+                updatedAt: new Date(),
+              },
+            );
             stats.failed++;
             continue;
           }
@@ -821,6 +853,18 @@ export class XenforoCrawlerService {
             writer.on('finish', () => resolve());
             writer.on('error', (err) => reject(err));
           });
+
+          // Verify file was written successfully
+          if (!fs.existsSync(filePath)) {
+            throw new Error('File was not created after download');
+          }
+
+          // Verify file has content (not empty)
+          const fileStats = fs.statSync(filePath);
+          if (fileStats.size === 0) {
+            fs.unlinkSync(filePath); // Remove empty file
+            throw new Error('Downloaded file is empty');
+          }
 
           // If there's a thumbnail, download it too
           if (media.thumbnailUrl && media.thumbnailUrl !== media.url) {
@@ -852,10 +896,12 @@ export class XenforoCrawlerService {
                 `Failed to download thumbnail for media ${media.id}:`,
                 thumbnailError.message,
               );
+              // Thumbnail failure doesn't affect main download status
             }
           }
 
           // Update all media records with this URL in the database
+          // This ensures all instances of the same media URL are marked as downloaded
           await this.entityManager.update(
             Entities.Media,
             { url: media.url },
@@ -867,7 +913,9 @@ export class XenforoCrawlerService {
             },
           );
 
-          console.log(`Downloaded media with URL ${media.url} to ${filePath}`);
+          console.log(
+            `Downloaded media with URL ${media.url} to ${filePath} (updated ${mediaItemsWithUrl.length} records)`,
+          );
           stats.downloaded++;
 
           // Add a delay to avoid rate limiting (429 errors)
@@ -880,6 +928,18 @@ export class XenforoCrawlerService {
           console.error(
             `Failed to download media with URL ${media.url}:`,
             error.message,
+          );
+
+          // Update all media records with this URL to mark download as failed
+          // Keep isDownloaded as false/null but update timestamp to track attempt
+          await this.entityManager.update(
+            Entities.Media,
+            { url: media.url },
+            {
+              isDownloaded: false,
+              localPath: null,
+              updatedAt: new Date(),
+            },
           );
 
           // If we hit a rate limit, wait longer before continuing
