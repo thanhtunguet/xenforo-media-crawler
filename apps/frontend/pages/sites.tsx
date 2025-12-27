@@ -254,6 +254,7 @@ export default function SitesPage() {
                       <GlassTableHead>ID</GlassTableHead>
                       <GlassTableHead>Name</GlassTableHead>
                       <GlassTableHead>URL</GlassTableHead>
+                      <GlassTableHead>Login Adapter</GlassTableHead>
                       <GlassTableHead>Forums</GlassTableHead>
                       <GlassTableHead>Created</GlassTableHead>
                       <GlassTableHead className="text-right">Actions</GlassTableHead>
@@ -278,6 +279,11 @@ export default function SitesPage() {
                             {site.url}
                             <ExternalLink className="w-3 h-3" />
                           </a>
+                        </GlassTableCell>
+                        <GlassTableCell>
+                          <Badge variant={site.loginAdapter ? "success" : "default"}>
+                            {site.loginAdapter || 'xamvn-clone'}
+                          </Badge>
                         </GlassTableCell>
                         <GlassTableCell>
                           <Badge variant="info">
