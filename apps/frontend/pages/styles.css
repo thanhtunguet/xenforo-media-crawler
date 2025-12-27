@@ -10,42 +10,42 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 188 94% 43%;
+    --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 261 51% 51%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --ring: 239 84% 67%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222.2 47.4% 11.2%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 224 71% 4%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 188 94% 43%;
+    --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 261 51% 51%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 239 84% 67%;
   }
 }
 
@@ -55,6 +55,70 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+}
+
+/* Glassmorphism Utilities */
+@layer components {
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg shadow-glass;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    transition: all 0.3s ease;
+  }
+
+  .glass-card:hover {
+    @apply border-white/30 shadow-glass-lg;
+    transform: translateY(-2px);
+  }
+
+  .glass-border {
+    position: relative;
+    border-radius: 0.75rem;
+  }
+
+  .glass-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(6, 182, 212, 0.8));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .gradient-bg {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #6366F1 0%, #06B6D4 50%, #8B5CF6 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .glass-input {
+    @apply bg-white/5 backdrop-blur-md border border-white/20 rounded-lg px-4 py-2 text-white placeholder:text-white/50 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all;
+  }
+
+  .glass-button {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-6 py-3 text-white font-medium hover:bg-white/20 hover:border-white/30 transition-all shadow-glow hover:shadow-glow-lg;
+  }
+
+  .glass-button-primary {
+    @apply bg-gradient-to-r from-indigo-600 to-blue-600 backdrop-blur-md border border-indigo-500/50 rounded-lg px-6 py-3 text-white font-medium hover:from-indigo-500 hover:to-blue-500 transition-all shadow-glow hover:shadow-glow-lg;
   }
 }
 
