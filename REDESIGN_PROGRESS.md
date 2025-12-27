@@ -146,15 +146,32 @@ Error: Rose (#EF4444)
 - ✅ Link support with icon display
 - ✅ Empty states with helpful messages
 
+### Phase 9: Global Threads Page
+**Files Created:**
+- ✅ `apps/frontend/pages/threads.tsx` - Global threads listing page
+
+**Implemented Features:**
+- ✅ Displays all threads across all forums
+- ✅ Ordered by time (newest first) - automatically handled by backend API
+- ✅ Glassmorphism design consistent with other pages
+- ✅ Search functionality (client-side filtering by title)
+- ✅ Pagination with glass styling
+- ✅ Thread count display in header
+- ✅ Links to thread detail and album views
+- ✅ Timestamps showing both date and time
+- ✅ Empty states with helpful messages
+- ✅ Loading states with spinners
+- ✅ Responsive design
+
 ---
 
 ## 🚧 Optional Advanced Features (Not Implemented)
 
-### Phase 8-10: Advanced Features (OPTIONAL)
+### Phase 10-12: Advanced Features (OPTIONAL)
 These were planned but can be done later:
-- **Phase 8**: Real-time sync status with polling
-- **Phase 9**: Bulk operations (select multiple, batch actions)
-- **Phase 10**: Advanced filters (date range, status filters)
+- **Phase 10**: Real-time sync status with polling
+- **Phase 11**: Bulk operations (select multiple, batch actions)
+- **Phase 12**: Advanced filters (date range, status filters)
 
 ---
 
@@ -179,7 +196,8 @@ apps/frontend/pages/
 ├── index.tsx                # ✅ Dashboard with statistics
 ├── sites.tsx                # ✅ Sites management (NEW)
 ├── sites/[id]/forums.tsx    # ✅ Forums list
-├── forums/[id]/threads.tsx  # ✅ Threads list
+├── forums/[id]/threads.tsx  # ✅ Threads list (for specific forum)
+├── threads.tsx              # ✅ Global threads list (NEW)
 ├── threads/[id].tsx         # ✅ Thread detail
 └── threads/[id]/album.tsx   # ✅ Album gallery
 ```
@@ -286,9 +304,9 @@ npm run test
 
 ## ✨ Summary
 
-**Completion**: 🎉 100% (All 8 core phases complete!)
+**Completion**: 🎉 100% (All 9 core phases complete!)
 **Status**: Ready for use
-**Total Pages Redesigned**: 6 pages (Dashboard, Sites, Forums, Threads List, Thread Detail, Album)
+**Total Pages Redesigned**: 7 pages (Dashboard, Sites, Forums, Threads List, Global Threads, Thread Detail, Album)
 
 ### What's Been Completed
 ✅ Beautiful glassmorphism design throughout
