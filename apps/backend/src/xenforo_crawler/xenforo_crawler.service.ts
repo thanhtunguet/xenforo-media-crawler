@@ -23,7 +23,7 @@ export class XenforoCrawlerService {
     private readonly threadRepository: Repository<Entities.Thread>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
-  ) { }
+  ) {}
 
   public async login(
     username: string,
@@ -250,9 +250,7 @@ export class XenforoCrawlerService {
 
     for (const forum of forums) {
       if (!forum.id) {
-        console.log(
-          `Skipping forum ${forum.name} - not saved to database yet`,
-        );
+        console.log(`Skipping forum ${forum.name} - not saved to database yet`);
         continue;
       }
       console.log(
@@ -704,7 +702,9 @@ export class XenforoCrawlerService {
       if (!thread.originalId) {
         throw new Error(`Thread with ID ${threadId} has no originalId`);
       }
-      console.log(`Starting sync for thread: ${thread.name} (originalId: ${thread.originalId})`);
+      console.log(
+        `Starting sync for thread: ${thread.name} (originalId: ${thread.originalId})`,
+      );
 
       // Use originalId for all API operations
       const pageCount = await this.countPostPages(siteId, threadId);
@@ -847,7 +847,9 @@ export class XenforoCrawlerService {
       // Download each unique media file
       for (const mediaUrl of uniqueMediaUrls) {
         // Find all media items with this URL to update them all
-        const mediaItemsWithUrl = filteredMedia.filter((m) => m.url === mediaUrl);
+        const mediaItemsWithUrl = filteredMedia.filter(
+          (m) => m.url === mediaUrl,
+        );
         if (mediaItemsWithUrl.length === 0) continue;
 
         // Use the first media item for the download process
@@ -950,10 +952,28 @@ export class XenforoCrawlerService {
             throw new Error('Downloaded file is empty');
           }
 
+          // Validate and fix filename to ensure it has proper extension
+          const contentDisposition = response.headers['content-disposition'];
+          const validatedFilename = this.validateAndFixFilename(
+            filename,
+            contentDisposition,
+            contentType,
+          );
+
+          // If validated filename is different, rename the file
+          let finalFilePath = filePath;
+          if (validatedFilename !== filename) {
+            finalFilePath = path.join(downloadDir, validatedFilename);
+            fs.renameSync(filePath, finalFilePath);
+            console.log(
+              `Renamed file from "${filename}" to "${validatedFilename}"`,
+            );
+          }
+
           // If there's a thumbnail, download it too
           if (media.thumbnailUrl && media.thumbnailUrl !== media.url) {
             try {
-              const thumbnailFilename = `thumb_${filename}`;
+              const thumbnailFilename = `thumb_${validatedFilename}`;
               const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
               // Use the full thumbnail URL
@@ -991,14 +1011,14 @@ export class XenforoCrawlerService {
             { url: media.url },
             {
               isDownloaded: true,
-              localPath: filePath,
+              localPath: finalFilePath,
               mimeType: contentType,
               updatedAt: new Date(),
             },
           );
 
           console.log(
-            `Downloaded media with URL ${media.url} to ${filePath} (updated ${mediaItemsWithUrl.length} records)`,
+            `Downloaded media with URL ${media.url} to ${finalFilePath} (updated ${mediaItemsWithUrl.length} records)`,
           );
           stats.downloaded++;
 
@@ -1050,5 +1070,213 @@ export class XenforoCrawlerService {
       console.error(`Error downloading media for thread ${threadId}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Validates and fixes filename to ensure it has a proper extension.
+   * Priority order:
+   * 1. Original filename if it has a valid extension
+   * 2. Filename from content-disposition header if it has a valid extension
+   * 3. Extension from mime-type (content-type header)
+   * 4. Default to .jpg
+   *
+   * @param originalFilename - The original filename (from URL or database)
+   * @param contentDisposition - Content-Disposition header from response
+   * @param mimeType - Content-Type header from response
+   * @returns Validated filename with proper extension
+   */
+  private validateAndFixFilename(
+    originalFilename: string,
+    contentDisposition?: string,
+    mimeType?: string,
+  ): string {
+    // Check if original filename has a valid extension
+    if (this.hasValidExtension(originalFilename)) {
+      return originalFilename;
+    }
+
+    // Try to extract filename from content-disposition header
+    if (contentDisposition) {
+      const dispositionFilename =
+        this.extractFilenameFromContentDisposition(contentDisposition);
+      if (dispositionFilename && this.hasValidExtension(dispositionFilename)) {
+        return dispositionFilename;
+      }
+    }
+
+    // Get extension from mime-type
+    const extension = this.getExtensionFromMimeType(mimeType);
+
+    // Get base filename without extension
+    const baseFilename = this.getBaseFilename(originalFilename);
+
+    return `${baseFilename}.${extension}`;
+  }
+
+  /**
+   * Checks if a filename has a valid file extension.
+   * @param filename - The filename to check
+   * @returns True if filename has a valid extension
+   */
+  private hasValidExtension(filename: string): boolean {
+    if (!filename) return false;
+
+    // Common media file extensions
+    const validExtensions = [
+      // Images
+      'jpg',
+      'jpeg',
+      'png',
+      'gif',
+      'webp',
+      'bmp',
+      'svg',
+      'ico',
+      'tiff',
+      'tif',
+      'heic',
+      'heif',
+      'avif',
+      // Videos
+      'mp4',
+      'webm',
+      'ogg',
+      'ogv',
+      'avi',
+      'mov',
+      'wmv',
+      'flv',
+      'mkv',
+      'm4v',
+      'mpg',
+      'mpeg',
+      '3gp',
+      // Audio
+      'mp3',
+      'wav',
+      'ogg',
+      'oga',
+      'm4a',
+      'aac',
+      'flac',
+      'wma',
+    ];
+
+    // Extract extension from filename
+    const match = filename.match(/\.([^.]+)$/);
+    if (!match) return false;
+
+    const extension = match[1].toLowerCase();
+    return validExtensions.includes(extension);
+  }
+
+  /**
+   * Extracts filename from Content-Disposition header.
+   * Supports both filename and filename* (RFC 5987) formats.
+   * @param contentDisposition - The Content-Disposition header value
+   * @returns Extracted filename or null
+   */
+  private extractFilenameFromContentDisposition(
+    contentDisposition: string,
+  ): string | null {
+    if (!contentDisposition) return null;
+
+    // Try to match filename*=UTF-8''encoded-filename (RFC 5987)
+    let match = contentDisposition.match(/filename\*=UTF-8''(.+?)(?:;|$)/i);
+    if (match) {
+      try {
+        return decodeURIComponent(match[1].trim().replace(/['"]/g, ''));
+      } catch {
+        // Fall through to try other patterns
+      }
+    }
+
+    // Try to match filename="quoted-filename"
+    match = contentDisposition.match(/filename="(.+?)"/i);
+    if (match) {
+      return match[1].trim();
+    }
+
+    // Try to match filename=unquoted-filename
+    match = contentDisposition.match(/filename=([^;]+)/i);
+    if (match) {
+      return match[1].trim().replace(/['"]/g, '');
+    }
+
+    return null;
+  }
+
+  /**
+   * Maps MIME type to appropriate file extension.
+   * @param mimeType - The MIME type from Content-Type header
+   * @returns File extension (without dot)
+   */
+  private getExtensionFromMimeType(mimeType?: string): string {
+    if (!mimeType) return 'jpg'; // Default fallback
+
+    // Clean up mime type (remove charset and other parameters)
+    const cleanMimeType = mimeType.split(';')[0].trim().toLowerCase();
+
+    // MIME type to extension mapping
+    const mimeToExtension: Record<string, string> = {
+      // Images
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/gif': 'gif',
+      'image/webp': 'webp',
+      'image/bmp': 'bmp',
+      'image/svg+xml': 'svg',
+      'image/x-icon': 'ico',
+      'image/vnd.microsoft.icon': 'ico',
+      'image/tiff': 'tiff',
+      'image/heic': 'heic',
+      'image/heif': 'heif',
+      'image/avif': 'avif',
+      // Videos
+      'video/mp4': 'mp4',
+      'video/webm': 'webm',
+      'video/ogg': 'ogv',
+      'video/x-msvideo': 'avi',
+      'video/quicktime': 'mov',
+      'video/x-ms-wmv': 'wmv',
+      'video/x-flv': 'flv',
+      'video/x-matroska': 'mkv',
+      'video/mpeg': 'mpg',
+      'video/3gpp': '3gp',
+      // Audio
+      'audio/mpeg': 'mp3',
+      'audio/mp3': 'mp3',
+      'audio/wav': 'wav',
+      'audio/wave': 'wav',
+      'audio/x-wav': 'wav',
+      'audio/ogg': 'oga',
+      'audio/mp4': 'm4a',
+      'audio/aac': 'aac',
+      'audio/flac': 'flac',
+      'audio/x-ms-wma': 'wma',
+    };
+
+    return mimeToExtension[cleanMimeType] || 'jpg'; // Default to jpg if unknown
+  }
+
+  /**
+   * Extracts the base filename without extension.
+   * @param filename - The original filename
+   * @returns Base filename without extension
+   */
+  private getBaseFilename(filename: string): string {
+    if (!filename) return `media_${Date.now()}`;
+
+    // Remove query parameters if present
+    const cleanFilename = filename.split('?')[0];
+
+    // Remove extension if present
+    const lastDotIndex = cleanFilename.lastIndexOf('.');
+    if (lastDotIndex > 0) {
+      return cleanFilename.substring(0, lastDotIndex);
+    }
+
+    return cleanFilename || `media_${Date.now()}`;
   }
 }
