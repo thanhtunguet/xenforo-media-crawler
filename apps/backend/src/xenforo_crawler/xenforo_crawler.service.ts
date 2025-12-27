@@ -431,7 +431,7 @@ export class XenforoCrawlerService {
 
         // Extract normal inline images
         contentElement.find('img.bbImage').each((_, imgElement) => {
-          const url = $(imgElement).attr('src') || '';
+          const url = ($(imgElement).attr('src') || '').trim();
           const alt = $(imgElement).attr('alt') || null;
 
           if (url) {
@@ -457,7 +457,7 @@ export class XenforoCrawlerService {
 
         // Extract videos
         contentElement.find('video source').each((_, videoElement) => {
-          const url = $(videoElement).attr('src') || '';
+          const url = ($(videoElement).attr('src') || '').trim();
           const mimeType = $(videoElement).attr('type') || null;
 
           if (url) {
@@ -486,7 +486,7 @@ export class XenforoCrawlerService {
           .find('.attachmentList .file--linked')
           .each((_, attachmentElement) => {
             const attachmentLink = $(attachmentElement).find('a.file-preview');
-            const fullSizeUrl = attachmentLink.attr('href') || '';
+            const fullSizeUrl = (attachmentLink.attr('href') || '').trim();
 
             // Get the full URL (handle both absolute and relative URLs)
             let imageUrl = fullSizeUrl;
@@ -496,7 +496,7 @@ export class XenforoCrawlerService {
 
             // Get the thumbnail for reference
             const thumbnailImg = $(attachmentElement).find('img');
-            const thumbnailSrc = thumbnailImg.attr('src') || '';
+            const thumbnailSrc = (thumbnailImg.attr('src') || '').trim();
             let thumbnailUrl = thumbnailSrc;
             if (thumbnailSrc && thumbnailSrc.startsWith('/')) {
               thumbnailUrl = new URL(thumbnailSrc, siteUrl).href;
@@ -536,7 +536,7 @@ export class XenforoCrawlerService {
 
         // Extract links
         contentElement.find('a').each((_, linkElement) => {
-          const url = $(linkElement).attr('href') || '';
+          const url = ($(linkElement).attr('href') || '').trim();
           const caption = $(linkElement).text().trim();
 
           if (
