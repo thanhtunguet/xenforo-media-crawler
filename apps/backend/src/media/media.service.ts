@@ -194,6 +194,13 @@ export class MediaService {
     return await queryBuilder.getCount();
   }
 
+  async findById(id: number): Promise<Media | null> {
+    return await this.mediaRepository.findOne({
+      where: { id, deletedAt: null },
+      relations: ['post', 'post.thread'],
+    });
+  }
+
   private mapToDto(media: Media): MediaResponseDto {
     return {
       id: media.id,

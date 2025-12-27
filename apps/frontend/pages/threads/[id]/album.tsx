@@ -21,8 +21,6 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
 const mediaTypeFilters = [
   { id: '', label: 'All Media', icon: Grid3x3 },
   { id: '1', label: 'Images', icon: ImageIcon },
@@ -76,29 +74,18 @@ export default function ThreadAlbumPage() {
   };
 
   const getMediaUrl = (mediaItem: Media): string => {
-    // If downloaded, use local path via backend
+    // If downloaded, use backend API endpoint to serve downloaded media
     if (mediaItem.isDownloaded && mediaItem.localPath) {
-      // Extract filename from localPath (format: downloads/thread-{originalId}/{filename})
-      const pathParts = mediaItem.localPath.split('/');
-      const filename = pathParts[pathParts.length - 1] || mediaItem.filename;
-      const originalId = thread?.originalId || threadId;
-      if (originalId) {
-        return `${API_BASE_URL}/thread-${originalId}/${filename}`;
-      }
+      return `/api/media/${mediaItem.id}/file`;
     }
     // Otherwise use original URL
     return mediaItem.url || '';
   };
 
   const getThumbnailUrl = (mediaItem: Media): string => {
-    // If downloaded, use thumbnail path
+    // If downloaded, use backend API endpoint to serve thumbnails
     if (mediaItem.isDownloaded && mediaItem.localPath) {
-      const pathParts = mediaItem.localPath.split('/');
-      const filename = pathParts[pathParts.length - 1] || mediaItem.filename;
-      const originalId = thread?.originalId || threadId;
-      if (originalId) {
-        return `${API_BASE_URL}/thread-${originalId}/thumbnails/${filename}?size=200`;
-      }
+      return `/api/media/${mediaItem.id}/thumbnail?size=200`;
     }
     // Otherwise use thumbnail URL or fallback to URL
     return mediaItem.thumbnailUrl || mediaItem.url || '';
@@ -247,38 +234,33 @@ export default function ThreadAlbumPage() {
                   onClick={() => setSelectedMedia(mediaItem)}
                 >
                   {hasValidUrl && isImage(mediaItem) ? (
-                    <img
-                      src={thumbnailUrl || mediaUrl}
-                      alt={mediaItem.caption || mediaItem.filename || 'Image'}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        // Fallback to original URL if thumbnail fails
-                        const target = e.target as HTMLImageElement;
-                        if (mediaUrl && target.src !== mediaUrl) {
-                          target.src = mediaUrl;
-                        }
-                      }}
-                    />
+                    thumbnailUrl ? (
+                      <img
+                        src={thumbnailUrl}
+                        alt={mediaItem.caption || mediaItem.filename || 'Image'}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-white/5">
+                        <ImageIcon className="w-12 h-12 text-white/40" />
+                      </div>
+                    )
                   ) : hasValidUrl && isVideo(mediaItem) ? (
                     <video
-                      src={thumbnailUrl || mediaUrl}
+                      src={thumbnailUrl || ''}
                       className="w-full h-full object-cover"
                       muted
                       playsInline
                       preload="metadata"
-                      onError={(e) => {
-                        // Fallback to original URL if thumbnail fails
-                        const target = e.target as HTMLVideoElement;
-                        if (mediaUrl && target.src !== mediaUrl) {
-                          target.src = mediaUrl;
-                        }
-                      }}
+                      poster={thumbnailUrl || undefined}
                     >
-                      <source
-                        src={thumbnailUrl || mediaUrl}
-                        type={mediaItem.mimeType || 'video/mp4'}
-                      />
+                      {thumbnailUrl && (
+                        <source
+                          src={thumbnailUrl}
+                          type={mediaItem.mimeType || 'video/mp4'}
+                        />
+                      )}
                       Your browser does not support the video tag.
                     </video>
                   ) : (
