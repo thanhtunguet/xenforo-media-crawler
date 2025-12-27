@@ -222,6 +222,7 @@ export default function SitesPage() {
                       <GlassTableHead>ID</GlassTableHead>
                       <GlassTableHead>Name</GlassTableHead>
                       <GlassTableHead>URL</GlassTableHead>
+                      <GlassTableHead>Forums</GlassTableHead>
                       <GlassTableHead>Created</GlassTableHead>
                       <GlassTableHead className="text-right">Actions</GlassTableHead>
                     </GlassTableRow>
@@ -245,6 +246,11 @@ export default function SitesPage() {
                             {site.url}
                             <ExternalLink className="w-3 h-3" />
                           </a>
+                        </GlassTableCell>
+                        <GlassTableCell>
+                          <Badge variant="info">
+                            {site.forumCount !== undefined ? site.forumCount : '-'}
+                          </Badge>
                         </GlassTableCell>
                         <GlassTableCell>
                           {site.createdAt

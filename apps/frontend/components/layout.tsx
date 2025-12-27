@@ -28,10 +28,9 @@ export function Layout({ children, title }: LayoutProps) {
 
         {/* Page Content */}
         <main className="p-4 animate-fade-in">
-          <div className="px-0">{children}</div>
+          {children}
         </main>
       </div>
     </div>
   );
 }
-

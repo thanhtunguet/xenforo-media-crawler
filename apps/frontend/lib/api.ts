@@ -11,6 +11,7 @@ export interface Site {
   id: number;
   name: string | null;
   url: string;
+  forumCount?: number;
   createdAt: string | null;
   updatedAt: string | null;
 }

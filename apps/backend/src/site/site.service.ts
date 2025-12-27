@@ -24,7 +24,9 @@ export class SiteService {
   async create(createSiteDto: CreateSiteDto): Promise<SiteResponseDto> {
     const site = this.siteRepository.create(createSiteDto);
     const savedSite = await this.siteRepository.save(site);
-    return new SiteResponseDto(savedSite);
+    const siteDto = new SiteResponseDto(savedSite);
+    siteDto.forumCount = 0; // New site has no forums
+    return siteDto;
   }
 
   async findAll(
@@ -40,8 +42,29 @@ export class SiteService {
 
     const totalPages = Math.ceil(totalItems / pagination.limit);
 
+    // Get forum counts for all sites in a single query
+    const siteIds = sites.map((site) => site.id);
+    const forumCounts = await this.forumRepository
+      .createQueryBuilder('forum')
+      .select('forum.siteId', 'siteId')
+      .addSelect('COUNT(forum.id)', 'count')
+      .where('forum.siteId IN (:...siteIds)', { siteIds })
+      .andWhere('forum.deletedAt IS NULL')
+      .groupBy('forum.siteId')
+      .getRawMany();
+
+    // Create a map of siteId -> forumCount
+    const forumCountMap = new Map<number, number>();
+    forumCounts.forEach((item) => {
+      forumCountMap.set(item.siteId, parseInt(item.count, 10));
+    });
+
     return {
-      items: sites.map((site) => new SiteResponseDto(site)),
+      items: sites.map((site) => {
+        const siteDto = new SiteResponseDto(site);
+        siteDto.forumCount = forumCountMap.get(site.id) || 0;
+        return siteDto;
+      }),
       meta: {
         totalItems,
         itemsPerPage: pagination.limit,
@@ -61,7 +84,15 @@ export class SiteService {
     if (!site) {
       throw new NotFoundException(`Site with ID ${id} not found`);
     }
-    return new SiteResponseDto(site);
+    const forumCount = await this.forumRepository.count({
+      where: {
+        siteId: id,
+        deletedAt: null,
+      },
+    });
+    const siteDto = new SiteResponseDto(site);
+    siteDto.forumCount = forumCount;
+    return siteDto;
   }
 
   async update(
@@ -74,7 +105,16 @@ export class SiteService {
       ...updateSiteDto,
       updatedAt: new Date(),
     });
-    return new SiteResponseDto(updatedSite);
+    // Get forum count for updated site
+    const forumCount = await this.forumRepository.count({
+      where: {
+        siteId: id,
+        deletedAt: null,
+      },
+    });
+    const siteDto = new SiteResponseDto(updatedSite);
+    siteDto.forumCount = forumCount;
+    return siteDto;
   }
 
   async remove(id: number): Promise<void> {
