@@ -194,52 +194,6 @@ export default function MediaPage() {
   return (
     <Layout>
       <div className="space-y-6 animate-fade-in">
-        {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold gradient-text mb-2">Media Gallery</h1>
-          <p className="text-white/60">Browse and manage all media from your threads</p>
-        </div>
-
-        {/* Stats Dashboard */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Total Media"
-            value={stats?.totalMedia || 0}
-            icon={Grid3x3}
-            loading={statsLoading}
-          />
-          <StatCard
-            title="Images"
-            value={stats?.totalImages || 0}
-            icon={ImageIcon}
-            loading={statsLoading}
-          />
-          <StatCard
-            title="Videos"
-            value={stats?.totalVideos || 0}
-            icon={Video}
-            loading={statsLoading}
-          />
-          <GlassCard
-            variant="hover-glow"
-            className={statsLoading ? 'animate-pulse' : ''}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white/60">Download Progress</p>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-white">
-                    {statsLoading ? '...' : `${stats?.downloadRate || 0}%`}
-                  </p>
-                </div>
-              </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 shadow-glow">
-                <Download className="h-7 w-7 text-white" />
-              </div>
-            </div>
-          </GlassCard>
-        </div>
-
         {/* Filters & Search */}
         <GlassCard>
           <GlassCardContent className="p-4">

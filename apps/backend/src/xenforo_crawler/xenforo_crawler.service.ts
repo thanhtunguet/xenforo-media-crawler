@@ -233,13 +233,14 @@ export class XenforoCrawlerService {
       });
       const siteUrl = site?.url;
 
-      let cleanThreadId = String(threadId);
-      if (cleanThreadId.startsWith('thread-')) {
-        cleanThreadId = cleanThreadId.replace('thread-', '');
+      // Get thread to use originalId for API call
+      const thread = await this.getThread(siteId, threadId);
+      if (!thread.originalId) {
+        throw new Error(`Thread with ID ${threadId} has no originalId`);
       }
 
       const response = await this.xenforoClientService.get(
-        `/threads/${cleanThreadId}/`,
+        `/threads/${thread.originalId}/`,
         {
           baseURL: siteUrl,
         },
@@ -287,14 +288,22 @@ export class XenforoCrawlerService {
       throw new Error(`Site with ID ${siteId} not found`);
     }
 
-    let cleanThreadId = String(threadId);
-    if (cleanThreadId.startsWith('thread-')) {
-      cleanThreadId = cleanThreadId.replace('thread-', '');
-    }
-
-    const thread = await this.threadRepository.findOne({
-      where: { originalId: cleanThreadId },
+    // First try to find by database ID
+    let thread = await this.threadRepository.findOne({
+      where: { id: Number(threadId) },
     });
+
+    // If not found by database ID, try to find by originalId
+    if (!thread) {
+      let cleanThreadId = String(threadId);
+      if (cleanThreadId.startsWith('thread-')) {
+        cleanThreadId = cleanThreadId.replace('thread-', '');
+      }
+
+      thread = await this.threadRepository.findOne({
+        where: { originalId: cleanThreadId },
+      });
+    }
 
     if (!thread) {
       throw new Error(`Thread with ID ${threadId} not found`);
@@ -316,6 +325,9 @@ export class XenforoCrawlerService {
       const siteUrl = site?.url;
 
       const thread = await this.getThread(siteId, threadId);
+      if (!thread.originalId) {
+        throw new Error(`Thread with ID ${threadId} has no originalId`);
+      }
 
       // Set request config with cookies if available
       const config: any = {
@@ -332,8 +344,8 @@ export class XenforoCrawlerService {
 
       const url =
         pageId > 1
-          ? `/threads/${threadId}/page-${pageId}`
-          : `/threads/${threadId}/`;
+          ? `/threads/${thread.originalId}/page-${pageId}`
+          : `/threads/${thread.originalId}/`;
 
       const response = await this.xenforoClientService.get(url, config);
 
@@ -634,8 +646,12 @@ export class XenforoCrawlerService {
   ): Promise<void> {
     try {
       const thread = await this.getThread(siteId, threadId);
-      console.log(`Starting sync for thread: ${thread.name} (ID: ${threadId})`);
+      if (!thread.originalId) {
+        throw new Error(`Thread with ID ${threadId} has no originalId`);
+      }
+      console.log(`Starting sync for thread: ${thread.name} (originalId: ${thread.originalId})`);
 
+      // Use originalId for all API operations
       const pageCount = await this.countPostPages(siteId, threadId);
       console.log(`Thread has ${pageCount} pages to sync`);
 
@@ -647,7 +663,7 @@ export class XenforoCrawlerService {
         await new Promise((resolve) => setTimeout(resolve, 75));
       }
 
-      console.log(`Completed sync for thread ID: ${threadId}`);
+      console.log(`Completed sync for thread originalId: ${thread.originalId}`);
     } catch (error) {
       console.error(`Error syncing thread ${threadId}:`, error);
       throw error;
