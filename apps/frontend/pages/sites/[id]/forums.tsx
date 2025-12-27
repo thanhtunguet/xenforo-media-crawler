@@ -5,16 +5,15 @@ import { Button } from '@/components/ui/button';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
 import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
-import { sitesApi, siteSyncApi, Forum, Site } from '@/lib/api';
+import { sitesApi, siteSyncApi, Forum } from '@/lib/api';
 import Link from 'next/link';
-import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink, Server } from 'lucide-react';
+import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink } from 'lucide-react';
 
 export default function ForumsPage() {
   const router = useRouter();
   const { id } = router.query;
   const siteId = id ? Number(id) : null;
 
-  const [site, setSite] = useState<Site | null>(null);
   const [forums, setForums] = useState<Forum[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -23,20 +22,9 @@ export default function ForumsPage() {
 
   useEffect(() => {
     if (siteId) {
-      loadSite();
       loadForums();
     }
   }, [siteId, page]);
-
-  const loadSite = async () => {
-    if (!siteId) return;
-    try {
-      const siteData = await sitesApi.getById(siteId);
-      setSite(siteData);
-    } catch (err) {
-      console.error('Failed to load site:', err);
-    }
-  };
 
   const loadForums = async () => {
     if (!siteId) return;
@@ -94,38 +82,15 @@ export default function ForumsPage() {
   return (
     <Layout title="Forums">
       <div className="space-y-6">
-        {/* Back Button & Site Info */}
-        <div className="flex items-start justify-between">
-          <div className="space-y-3">
-            <Button
-              variant="glass"
-              onClick={() => router.push('/sites')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Sites
-            </Button>
-            {site && (
-              <GlassCard className="inline-block">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center">
-                    <Server className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-medium">{site.name || 'Site'}</h3>
-                    <a
-                      href={site.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-cyan-400 hover:text-cyan-300 text-sm inline-flex items-center gap-1"
-                    >
-                      {site.url}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-              </GlassCard>
-            )}
-          </div>
+        {/* Back Button & Actions */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="glass"
+            onClick={() => router.push('/sites')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Sites
+          </Button>
           <Button
             variant="glass-primary"
             onClick={handleSyncAllForums}
@@ -185,7 +150,7 @@ export default function ForumsPage() {
                   </GlassTableHeader>
                   <GlassTableBody>
                     {forums.map((forum) => (
-                      <GlassTableRow key={forum.id || forum.originalId}>
+                      <GlassTableRow key={forum.id || `temp-${forum.originalId}`}>
                         <GlassTableCell className="font-medium text-white/90">
                           #{forum.id || '-'}
                         </GlassTableCell>
@@ -217,35 +182,35 @@ export default function ForumsPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
-                            <Button
-                              size="sm"
-                              variant="glass"
-                              onClick={() =>
-                                handleSyncThreads(forum.id || Number(forum.originalId))
-                              }
-                              disabled={
-                                syncing === (forum.id || Number(forum.originalId))
-                              }
-                            >
-                              {syncing === (forum.id || Number(forum.originalId)) ? (
-                                <>
-                                  <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-                                  Syncing...
-                                </>
-                              ) : (
-                                <>
-                                  <RefreshCw className="w-4 h-4 mr-1" />
-                                  Sync
-                                </>
-                              )}
-                            </Button>
-                            {forum.id && (
-                              <Link href={`/forums/${forum.id}/threads`}>
-                                <Button size="sm" variant="glass-primary">
-                                  <MessageSquare className="w-4 h-4 mr-1" />
-                                  Threads
+                            {forum.id ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="glass"
+                                  onClick={() => handleSyncThreads(forum.id!)}
+                                  disabled={syncing === forum.id}
+                                >
+                                  {syncing === forum.id ? (
+                                    <>
+                                      <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                                      Syncing...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <RefreshCw className="w-4 h-4 mr-1" />
+                                      Sync
+                                    </>
+                                  )}
                                 </Button>
-                              </Link>
+                                <Link href={`/forums/${forum.id}/threads`}>
+                                  <Button size="sm" variant="glass-primary">
+                                    <MessageSquare className="w-4 h-4 mr-1" />
+                                    Threads
+                                  </Button>
+                                </Link>
+                              </>
+                            ) : (
+                              <span className="text-white/40 text-sm">Not saved</span>
                             )}
                           </div>
                         </GlassTableCell>
