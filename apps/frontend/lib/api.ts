@@ -36,6 +36,22 @@ export interface Post {
   createdAt: string;
 }
 
+export interface Media {
+  id: number;
+  postId: number;
+  mediaTypeId: number;
+  originalId: string | null;
+  caption: string | null;
+  url: string | null;
+  thumbnailUrl: string | null;
+  filename: string | null;
+  isDownloaded: boolean | null;
+  localPath: string | null;
+  mimeType: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   meta: {
@@ -245,6 +261,17 @@ export const crawlerApi = {
         method: 'POST',
       }
     );
+  },
+};
+
+// Media APIs
+export const mediaApi = {
+  getThreadMedia: async (
+    threadId: number,
+    mediaTypeId?: number
+  ): Promise<Media[]> => {
+    const query = mediaTypeId !== undefined ? `?mediaTypeId=${mediaTypeId}` : '';
+    return apiRequest<Media[]>(`/api/media/thread/${threadId}${query}`);
   },
 };
 

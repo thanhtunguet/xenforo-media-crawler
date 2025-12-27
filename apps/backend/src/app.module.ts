@@ -11,6 +11,7 @@ import type { AppConfig } from './_config/app_config';
 import { SiteModule } from './site/site.module';
 import { XenforoCrawlerModule } from './xenforo_crawler/xenforo_crawler.module';
 import { ThreadModule } from './thread/thread.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ThreadModule } from './thread/thread.module';
     SiteModule,
     ThreadModule,
     XenforoCrawlerModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

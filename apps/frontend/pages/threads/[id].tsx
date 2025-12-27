@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout';
 import { threadsApi, crawlerApi, Post, Thread } from '@/lib/api';
 import { sitesApi, Site } from '@/lib/api';
+import Link from 'next/link';
 
 export default function ThreadPage() {
   const router = useRouter();
@@ -191,6 +192,9 @@ export default function ThreadPage() {
               >
                 {syncing ? 'Syncing Posts...' : 'Sync Posts'}
               </Button>
+              <Link href={`/threads/${threadId}/album`}>
+                <Button variant="outline">View Album</Button>
+              </Link>
               <div className="flex-1" />
               <div className="space-y-2">
                 <Label htmlFor="media-type">Media Type</Label>
