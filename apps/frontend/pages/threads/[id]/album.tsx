@@ -320,7 +320,7 @@ export default function ThreadAlbumPage() {
         {/* Media Viewer Modal */}
         {selectedMedia && (
           <div
-            className="fixed inset-0 z-50 flex bg-black/95 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md animate-fade-in"
             onClick={() => {
               // Prevent dismissal when zoomed in
               if (imageZoom > 1) {
@@ -335,8 +335,8 @@ export default function ThreadAlbumPage() {
               setImagePan({ x: 0, y: 0 });
             }}
           >
-            <div className="w-full h-full">
-              <div className="relative h-full">
+            <div className="absolute inset-0 w-full h-full">
+              <div className="relative h-full w-full">
                 <Button
                   variant="glass"
                   size="icon"
@@ -410,6 +410,8 @@ export default function ThreadAlbumPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setImageZoom(1);
+                        setImagePan({ x: 0, y: 0 });
                         setImageRotation((prev) => (prev + 90) % 360);
                       }}
                       className="gap-2"
@@ -421,6 +423,8 @@ export default function ThreadAlbumPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setImageZoom(1);
+                        setImagePan({ x: 0, y: 0 });
                         setImageRotation((prev) => (prev - 90) % 360);
                       }}
                       className="gap-2"
@@ -432,6 +436,8 @@ export default function ThreadAlbumPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setImageZoom(1);
+                        setImagePan({ x: 0, y: 0 });
                         setImageFlipH((prev) => prev * -1);
                       }}
                       className="gap-2"
@@ -443,6 +449,8 @@ export default function ThreadAlbumPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setImageZoom(1);
+                        setImagePan({ x: 0, y: 0 });
                         setImageFlipV((prev) => prev * -1);
                       }}
                       className="gap-2"
@@ -468,7 +476,7 @@ export default function ThreadAlbumPage() {
                 )}
 
                 <div 
-                  className="flex items-center justify-center h-full overflow-hidden"
+                  className="h-full w-full overflow-hidden flex items-center justify-center"
                   onMouseDown={(e) => {
                     if (isImage(selectedMedia) && imageZoom > 1 && imageRef) {
                       e.stopPropagation();
