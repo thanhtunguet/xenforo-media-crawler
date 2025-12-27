@@ -1,21 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  GlassCard,
+  GlassCardHeader,
+  GlassCardTitle,
+  GlassCardDescription,
+  GlassCardContent,
+  GlassCardFooter,
+} from '@/components/ui/glass-card';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout';
-import { threadsApi, crawlerApi, Post, Thread } from '@/lib/api';
+import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
 import { sitesApi, Site } from '@/lib/api';
 import Link from 'next/link';
+import {
+  RefreshCw,
+  Download,
+  Image as ImageIcon,
+  FileText,
+  ArrowLeft,
+  Album,
+  MessageSquare,
+} from 'lucide-react';
 
 export default function ThreadPage() {
   const router = useRouter();
@@ -30,15 +38,18 @@ export default function ThreadPage() {
   const [postsLoading, setPostsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalPosts, setTotalPosts] = useState(0);
   const [syncing, setSyncing] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [mediaType, setMediaType] = useState('0');
+  const [mediaCount, setMediaCount] = useState(0);
 
   useEffect(() => {
     if (threadId) {
       loadThread();
       loadPosts();
       loadSites();
+      loadMediaCount();
     }
   }, [threadId, page]);
 
@@ -71,10 +82,21 @@ export default function ThreadPage() {
       const response = await threadsApi.getPosts(threadId, page, 10);
       setPosts(response.items);
       setTotalPages(response.meta.totalPages);
+      setTotalPosts(response.meta.totalItems);
     } catch (err) {
       console.error('Failed to load posts:', err);
     } finally {
       setPostsLoading(false);
+    }
+  };
+
+  const loadMediaCount = async () => {
+    if (!threadId) return;
+    try {
+      const media = await mediaApi.getThreadMedia(threadId);
+      setMediaCount(media.length);
+    } catch (err) {
+      console.error('Failed to load media count:', err);
     }
   };
 
@@ -89,6 +111,7 @@ export default function ThreadPage() {
       alert('Post sync started. This may take a while.');
       setTimeout(() => {
         loadPosts();
+        loadMediaCount();
       }, 2000);
     } catch (err: any) {
       console.error('Failed to sync posts:', err);
@@ -122,59 +145,110 @@ export default function ThreadPage() {
   if (!threadId) {
     return (
       <Layout>
-        <div>Loading...</div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-white/60">Loading...</div>
+        </div>
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <Button variant="outline" onClick={() => router.back()}>
-              ← Back
-            </Button>
-            <h2 className="text-3xl font-bold mt-4">Thread Details</h2>
-          </div>
+          <Button
+            variant="glass"
+            size="sm"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
         </div>
 
+        {/* Thread Info Card */}
         {loading ? (
-          <div className="text-center py-8">Loading thread...</div>
+          <GlassCard>
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
+              <span className="ml-2 text-white/60">Loading thread...</span>
+            </div>
+          </GlassCard>
         ) : thread ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>{thread.title}</CardTitle>
-              <CardDescription>
-                Created: {new Date(thread.createdAt).toLocaleString()} | Updated:{' '}
-                {new Date(thread.updatedAt).toLocaleString()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div
-                className="prose max-w-none"
-                dangerouslySetInnerHTML={{ __html: thread.content }}
-              />
-            </CardContent>
-          </Card>
-        ) : null}
+          <>
+            <GlassCard variant="hover-glow">
+              <GlassCardHeader>
+                <GlassCardTitle className="gradient-text text-3xl">
+                  {thread.title}
+                </GlassCardTitle>
+                <GlassCardDescription>
+                  Created: {new Date(thread.createdAt).toLocaleString()} • Updated:{' '}
+                  {new Date(thread.updatedAt).toLocaleString()}
+                </GlassCardDescription>
+              </GlassCardHeader>
+              <GlassCardContent>
+                <div
+                  className="prose prose-invert max-w-none text-white/80"
+                  dangerouslySetInnerHTML={{ __html: thread.content }}
+                />
+              </GlassCardContent>
+            </GlassCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Thread Actions</CardTitle>
-            <CardDescription>
+            {/* Stats Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <GlassCard variant="bordered" className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <MessageSquare className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white">{totalPosts}</div>
+                    <div className="text-sm text-white/60">Total Posts</div>
+                  </div>
+                </div>
+              </GlassCard>
+
+              <GlassCard variant="bordered" className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                    <ImageIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white">{mediaCount}</div>
+                    <div className="text-sm text-white/60">Media Items</div>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+          </>
+        ) : (
+          <GlassCard>
+            <div className="text-center py-12 text-white/60">Thread not found</div>
+          </GlassCard>
+        )}
+
+        {/* Actions Card */}
+        <GlassCard>
+          <GlassCardHeader>
+            <GlassCardTitle>Thread Actions</GlassCardTitle>
+            <GlassCardDescription>
               Sync posts and download media from this thread
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </GlassCardDescription>
+          </GlassCardHeader>
+          <GlassCardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="site-select">Select Site</Label>
+              <Label htmlFor="site-select" className="text-white/80">
+                Select Site
+              </Label>
               <Select
                 id="site-select"
                 value={selectedSiteId}
                 onChange={(e) =>
                   setSelectedSiteId(e.target.value ? Number(e.target.value) : '')
                 }
+                className="glass-input"
               >
                 <option value="">Select a site</option>
                 {sites.map((site) => (
@@ -185,102 +259,136 @@ export default function ThreadPage() {
               </Select>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-3">
               <Button
+                variant="glass-primary"
                 onClick={handleSyncPosts}
                 disabled={syncing || !selectedSiteId}
+                className="gap-2"
               >
+                <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
                 {syncing ? 'Syncing Posts...' : 'Sync Posts'}
               </Button>
+
               <Link href={`/threads/${threadId}/album`}>
-                <Button variant="outline">View Album</Button>
+                <Button variant="glass" className="gap-2">
+                  <Album className="h-4 w-4" />
+                  View Album
+                </Button>
               </Link>
-              <div className="flex-1" />
-              <div className="space-y-2">
-                <Label htmlFor="media-type">Media Type</Label>
-                <Select
-                  id="media-type"
-                  value={mediaType}
-                  onChange={(e) => setMediaType(e.target.value)}
-                >
-                  <option value="0">All</option>
-                  <option value="1">Images</option>
-                  <option value="2">Videos</option>
-                  <option value="3">Links</option>
-                </Select>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleDownloadMedia}
-                disabled={downloading || !selectedSiteId}
-              >
-                {downloading ? 'Downloading...' : 'Download Media'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Posts</CardTitle>
-            <CardDescription>Posts in this thread</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {postsLoading ? (
-              <div className="text-center py-8">Loading posts...</div>
-            ) : (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Content</TableHead>
-                      <TableHead>Created</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {posts.map((post) => (
-                      <TableRow key={post.id}>
-                        <TableCell>{post.id}</TableCell>
-                        <TableCell>
-                          <div
-                            className="prose prose-sm max-w-none"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {new Date(post.createdAt).toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-
-                <div className="flex items-center justify-between mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
+              <div className="flex items-end gap-2 ml-auto">
+                <div className="space-y-2">
+                  <Label htmlFor="media-type" className="text-white/80 text-xs">
+                    Media Type
+                  </Label>
+                  <Select
+                    id="media-type"
+                    value={mediaType}
+                    onChange={(e) => setMediaType(e.target.value)}
+                    className="glass-input"
                   >
-                    Previous
-                  </Button>
-                  <span>
-                    Page {page} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                  >
-                    Next
-                  </Button>
+                    <option value="0">All</option>
+                    <option value="1">Images</option>
+                    <option value="2">Videos</option>
+                    <option value="3">Links</option>
+                  </Select>
                 </div>
-              </>
+                <Button
+                  variant="glass"
+                  onClick={handleDownloadMedia}
+                  disabled={downloading || !selectedSiteId}
+                  className="gap-2"
+                >
+                  <Download className={`h-4 w-4 ${downloading ? 'animate-spin' : ''}`} />
+                  {downloading ? 'Downloading...' : 'Download Media'}
+                </Button>
+              </div>
+            </div>
+          </GlassCardContent>
+        </GlassCard>
+
+        {/* Posts Section */}
+        <GlassCard>
+          <GlassCardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <GlassCardTitle>Posts</GlassCardTitle>
+                <GlassCardDescription>
+                  {totalPosts} post{totalPosts !== 1 ? 's' : ''} in this thread
+                </GlassCardDescription>
+              </div>
+            </div>
+          </GlassCardHeader>
+          <GlassCardContent>
+            {postsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
+                <span className="ml-2 text-white/60">Loading posts...</span>
+              </div>
+            ) : posts.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-white/20 mx-auto mb-3" />
+                <p className="text-white/60">No posts found</p>
+                <p className="text-white/40 text-sm mt-1">
+                  Try syncing posts from a site
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {posts.map((post, index) => (
+                  <div
+                    key={post.id}
+                    className="glass-card p-4 hover:shadow-glow transition-all duration-300"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold text-sm">
+                          {(page - 1) * 10 + index + 1}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className="prose prose-invert prose-sm max-w-none text-white/80"
+                          dangerouslySetInnerHTML={{ __html: post.content }}
+                        />
+                        <div className="mt-3 text-xs text-white/40">
+                          Posted: {new Date(post.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm text-white/60">
+                      Page {page} of {totalPages}
+                    </span>
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </GlassCardContent>
+        </GlassCard>
       </div>
     </Layout>
   );
 }
-

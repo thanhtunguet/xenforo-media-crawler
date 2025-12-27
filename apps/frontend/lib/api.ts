@@ -127,9 +127,9 @@ async function apiRequest<T>(
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    return text ? JSON.parse(text) : null as T;
   }
-  return null;
+  return null as T;
 }
 
 // Authentication APIs

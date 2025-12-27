@@ -1,13 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import {
+  GlassCard,
+  GlassCardHeader,
+  GlassCardTitle,
+  GlassCardDescription,
+  GlassCardContent,
+} from '@/components/ui/glass-card';
 import { Layout } from '@/components/layout';
 import { threadsApi, mediaApi, Thread, Media } from '@/lib/api';
+import {
+  ArrowLeft,
+  Image as ImageIcon,
+  Video,
+  Link as LinkIcon,
+  X,
+  Download,
+  Grid3x3,
+  RefreshCw,
+} from 'lucide-react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+const mediaTypeFilters = [
+  { id: '', label: 'All Media', icon: Grid3x3 },
+  { id: '1', label: 'Images', icon: ImageIcon },
+  { id: '2', label: 'Videos', icon: Video },
+  { id: '3', label: 'Links', icon: LinkIcon },
+];
 
 export default function ThreadAlbumPage() {
   const router = useRouter();
@@ -17,7 +38,7 @@ export default function ThreadAlbumPage() {
   const [thread, setThread] = useState<Thread | null>(null);
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mediaType, setMediaType] = useState<number | ''>('');
+  const [mediaType, setMediaType] = useState<string>('');
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
 
   useEffect(() => {
@@ -86,103 +107,143 @@ export default function ThreadAlbumPage() {
   const isImage = (mediaItem: Media): boolean => {
     const typeId = Number(mediaItem.mediaTypeId);
     if (typeId === 1) return true;
-    
+
     // Fallback: check URL extension or mimeType
     const url = mediaItem.url || '';
     const mimeType = mediaItem.mimeType || '';
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
-    const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
-    
-    return imageExtensions.some(ext => url.toLowerCase().includes(ext)) ||
-           imageMimeTypes.some(mime => mimeType.toLowerCase().includes(mime));
+    const imageMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/svg+xml',
+    ];
+
+    return (
+      imageExtensions.some((ext) => url.toLowerCase().includes(ext)) ||
+      imageMimeTypes.some((mime) => mimeType.toLowerCase().includes(mime))
+    );
   };
 
   const isVideo = (mediaItem: Media): boolean => {
     const typeId = Number(mediaItem.mediaTypeId);
     if (typeId === 2) return true;
-    
+
     // Fallback: check URL extension or mimeType
     const url = mediaItem.url || '';
     const mimeType = mediaItem.mimeType || '';
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.flv'];
-    const videoMimeTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo'];
-    
-    return videoExtensions.some(ext => url.toLowerCase().includes(ext)) ||
-           videoMimeTypes.some(mime => mimeType.toLowerCase().includes(mime));
+    const videoMimeTypes = [
+      'video/mp4',
+      'video/webm',
+      'video/ogg',
+      'video/quicktime',
+      'video/x-msvideo',
+    ];
+
+    return (
+      videoExtensions.some((ext) => url.toLowerCase().includes(ext)) ||
+      videoMimeTypes.some((mime) => mimeType.toLowerCase().includes(mime))
+    );
   };
 
   if (!threadId) {
     return (
       <Layout>
-        <div>Loading...</div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-white/60">Loading...</div>
+        </div>
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <Button variant="outline" onClick={() => router.back()}>
-              ← Back
-            </Button>
-            <h2 className="text-3xl font-bold mt-4">
-              Album: {thread?.title || 'Loading...'}
-            </h2>
-          </div>
+          <Button
+            variant="glass"
+            size="sm"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Filter Media</CardTitle>
-            <CardDescription>Filter media by type</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="space-y-2 flex-1">
-                <Label htmlFor="media-type-filter">Media Type</Label>
-                <Select
-                  id="media-type-filter"
-                  value={mediaType}
-                  onChange={(e) => setMediaType(e.target.value ? Number(e.target.value) : '')}
-                >
-                  <option value="">All Media</option>
-                  <option value="1">Images Only</option>
-                  <option value="2">Videos Only</option>
-                  <option value="3">Links Only</option>
-                </Select>
-              </div>
-              <div className="pt-6">
-                <span className="text-sm text-muted-foreground">
-                  {media.length} item{media.length !== 1 ? 's' : ''} found
-                </span>
+        {/* Album Header */}
+        <GlassCard variant="hover-glow">
+          <GlassCardHeader>
+            <GlassCardTitle className="gradient-text text-3xl">
+              {thread?.title || 'Loading...'}
+            </GlassCardTitle>
+            <GlassCardDescription>Media gallery for this thread</GlassCardDescription>
+          </GlassCardHeader>
+        </GlassCard>
+
+        {/* Filter Tabs */}
+        <GlassCard>
+          <GlassCardContent className="p-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm text-white/60">Filter:</span>
+              {mediaTypeFilters.map((filter) => {
+                const Icon = filter.icon;
+                const isActive = mediaType === filter.id;
+                return (
+                  <Button
+                    key={filter.id}
+                    variant={isActive ? 'glass-primary' : 'glass'}
+                    size="sm"
+                    onClick={() => setMediaType(filter.id)}
+                    className="gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {filter.label}
+                  </Button>
+                );
+              })}
+              <div className="ml-auto flex items-center gap-2">
+                <div className="text-sm text-white/60">
+                  {media.length} item{media.length !== 1 ? 's' : ''}
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </GlassCardContent>
+        </GlassCard>
 
+        {/* Media Grid */}
         {loading ? (
-          <div className="text-center py-8">Loading media...</div>
+          <GlassCard>
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
+              <span className="ml-2 text-white/60">Loading media...</span>
+            </div>
+          </GlassCard>
         ) : media.length === 0 ? (
-          <Card>
-            <CardContent className="py-8">
-              <div className="text-center text-muted-foreground">
-                No media found for this thread.
-              </div>
-            </CardContent>
-          </Card>
+          <GlassCard>
+            <div className="text-center py-12">
+              <Grid3x3 className="h-12 w-12 text-white/20 mx-auto mb-3" />
+              <p className="text-white/60">No media found</p>
+              <p className="text-white/40 text-sm mt-1">
+                Try changing the filter or download media for this thread
+              </p>
+            </div>
+          </GlassCard>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {media.map((mediaItem) => {
               const mediaUrl = getMediaUrl(mediaItem);
               const thumbnailUrl = getThumbnailUrl(mediaItem);
               const hasValidUrl = !!(mediaUrl || thumbnailUrl);
-              
+
               return (
                 <div
                   key={mediaItem.id}
-                  className="group relative aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                  className="glass-card group relative aspect-square overflow-hidden cursor-pointer hover:shadow-glow transition-all duration-300"
                   onClick={() => setSelectedMedia(mediaItem)}
                 >
                   {hasValidUrl && isImage(mediaItem) ? (
@@ -214,52 +275,39 @@ export default function ThreadAlbumPage() {
                         }
                       }}
                     >
-                      <source src={thumbnailUrl || mediaUrl} type={mediaItem.mimeType || 'video/mp4'} />
+                      <source
+                        src={thumbnailUrl || mediaUrl}
+                        type={mediaItem.mimeType || 'video/mp4'}
+                      />
                       Your browser does not support the video tag.
                     </video>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                    <div className="w-full h-full flex items-center justify-center bg-white/5">
                       <div className="text-center p-4">
-                        <svg
-                          className="w-12 h-12 mx-auto mb-2 text-muted-foreground"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                          />
-                        </svg>
-                        <p className="text-xs text-muted-foreground">
+                        <LinkIcon className="w-12 h-12 mx-auto mb-2 text-white/40" />
+                        <p className="text-xs text-white/60">
                           {hasValidUrl ? 'Link' : 'No URL'}
                         </p>
-                        {mediaItem.mediaTypeId && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Type: {mediaItem.mediaTypeId}
-                          </p>
-                        )}
                       </div>
                     </div>
                   )}
                   {mediaItem.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity truncate">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity truncate">
                       {mediaItem.caption}
                     </div>
                   )}
                   {hasValidUrl && isVideo(mediaItem) && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors pointer-events-none">
-                        <svg
-                          className="w-12 h-12 text-white opacity-80"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                        </svg>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors pointer-events-none">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <Video className="w-6 h-6 text-white" />
                       </div>
-                    )}
+                    </div>
+                  )}
+                  {mediaItem.isDownloaded && (
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500/90 flex items-center justify-center">
+                      <Download className="w-3 h-3 text-white" />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -269,64 +317,95 @@ export default function ThreadAlbumPage() {
         {/* Media Viewer Modal */}
         {selectedMedia && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-fade-in"
             onClick={() => setSelectedMedia(null)}
           >
-            <div className="max-w-4xl max-h-full w-full">
+            <div className="max-w-6xl max-h-full w-full">
               <div className="relative">
                 <Button
-                  variant="ghost"
+                  variant="glass"
                   size="icon"
-                  className="absolute top-4 right-4 z-10 bg-black/50 text-white hover:bg-black/70"
-                  onClick={() => setSelectedMedia(null)}
+                  className="absolute top-4 right-4 z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMedia(null);
+                  }}
                 >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X className="w-5 h-5" />
                 </Button>
-                {isImage(selectedMedia) ? (
-                  <img
-                    src={getMediaUrl(selectedMedia)}
-                    alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
-                    className="max-w-full max-h-[90vh] mx-auto object-contain"
-                    loading="eager"
-                  />
-                ) : isVideo(selectedMedia) ? (
-                  <video
-                    src={getMediaUrl(selectedMedia)}
-                    controls
-                    className="max-w-full max-h-[90vh] mx-auto"
-                    preload="auto"
+
+                {selectedMedia.url && (
+                  <a
+                    href={getMediaUrl(selectedMedia)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute top-4 left-4 z-10"
                   >
-                    <source src={getMediaUrl(selectedMedia)} type={selectedMedia.mimeType || 'video/mp4'} />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <div className="bg-white p-8 rounded-lg text-center">
-                    <p className="mb-4">{selectedMedia.caption || 'Link'}</p>
-                    <a
-                      href={selectedMedia.url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {selectedMedia.url}
-                    </a>
-                  </div>
+                    <Button variant="glass-primary" size="sm" className="gap-2">
+                      <Download className="w-4 h-4" />
+                      Download
+                    </Button>
+                  </a>
                 )}
+
+                <div className="flex items-center justify-center min-h-[200px]">
+                  {isImage(selectedMedia) ? (
+                    <img
+                      src={getMediaUrl(selectedMedia)}
+                      alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
+                      className="max-w-full max-h-[85vh] mx-auto object-contain rounded-lg shadow-glow-lg"
+                      loading="eager"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : isVideo(selectedMedia) ? (
+                    <video
+                      src={getMediaUrl(selectedMedia)}
+                      controls
+                      className="max-w-full max-h-[85vh] mx-auto rounded-lg shadow-glow-lg"
+                      preload="auto"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <source
+                        src={getMediaUrl(selectedMedia)}
+                        type={selectedMedia.mimeType || 'video/mp4'}
+                      />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <GlassCard
+                      className="max-w-md"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <GlassCardContent className="p-8 text-center">
+                        <LinkIcon className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+                        <p className="text-white/80 mb-4">
+                          {selectedMedia.caption || 'External Link'}
+                        </p>
+                        {selectedMedia.url && (
+                          <a
+                            href={selectedMedia.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 hover:underline break-all"
+                          >
+                            {selectedMedia.url}
+                          </a>
+                        )}
+                      </GlassCardContent>
+                    </GlassCard>
+                  )}
+                </div>
+
                 {selectedMedia.caption && (
-                  <div className="mt-4 text-white text-center">
-                    <p>{selectedMedia.caption}</p>
+                  <div className="mt-4">
+                    <GlassCard>
+                      <GlassCardContent className="p-4">
+                        <p className="text-white/80 text-center">
+                          {selectedMedia.caption}
+                        </p>
+                      </GlassCardContent>
+                    </GlassCard>
                   </div>
                 )}
               </div>
@@ -337,4 +416,3 @@ export default function ThreadAlbumPage() {
     </Layout>
   );
 }
-
