@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout';
 import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
+import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
 import {
   RefreshCw,
@@ -28,6 +29,7 @@ export default function ThreadPage() {
   const router = useRouter();
   const { id } = router.query;
   const threadId = id ? Number(id) : null;
+  const { addToast } = useToast();
 
   const [thread, setThread] = useState<Thread | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -89,20 +91,20 @@ export default function ThreadPage() {
 
   const handleSyncPosts = async () => {
     if (!threadId) {
-      alert('Thread ID is required');
+      addToast('Thread ID is required', 'error');
       return;
     }
     try {
       setSyncing(true);
       await crawlerApi.syncThreadPosts(threadId);
-      alert('Post sync started. This may take a while.');
+      addToast('Post sync started. This may take a while.', 'success');
       setTimeout(() => {
         loadPosts();
         loadMediaCount();
       }, 2000);
     } catch (err: any) {
       console.error('Failed to sync posts:', err);
-      alert(err.message || 'Failed to sync posts');
+      addToast(err.message || 'Failed to sync posts', 'error');
     } finally {
       setSyncing(false);
     }
@@ -110,7 +112,7 @@ export default function ThreadPage() {
 
   const handleDownloadMedia = async () => {
     if (!threadId) {
-      alert('Thread ID is required');
+      addToast('Thread ID is required', 'error');
       return;
     }
     try {
@@ -119,10 +121,10 @@ export default function ThreadPage() {
         threadId,
         Number(mediaType)
       );
-      alert('Media download started. This may take a while.');
+      addToast('Media download started. This may take a while.', 'success');
     } catch (err: any) {
       console.error('Failed to download media:', err);
-      alert(err.message || 'Failed to download media');
+      addToast(err.message || 'Failed to download media', 'error');
     } finally {
       setDownloading(false);
     }

@@ -1,6 +1,8 @@
 import { AppProps } from 'next/app';
 import Head from 'next/head';
 import './styles.css';
+import { ToastProvider } from '@/contexts/ToastContext';
+import { ToastContainer } from '@/components/ui/toast-container';
 
 function CustomApp({ Component, pageProps }: AppProps) {
   return (
@@ -8,9 +10,12 @@ function CustomApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>XenForo Media Crawler</title>
       </Head>
-      <main className="app">
-        <Component {...pageProps} />
-      </main>
+      <ToastProvider>
+        <main className="app">
+          <Component {...pageProps} />
+        </main>
+        <ToastContainer />
+      </ToastProvider>
     </>
   );
 }
