@@ -85,7 +85,7 @@ export default function LoginPage() {
 
   return (
     <Layout>
-      <div className="max-w-md mx-auto">
+      <div className="max-w-lg mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Login to XenForo Site</CardTitle>

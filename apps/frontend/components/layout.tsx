@@ -17,7 +17,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <nav className="border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="w-full px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">XenForo Media Crawler</h1>
             <div className="flex gap-4">
@@ -34,7 +34,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </nav>
-      <main className="container mx-auto px-4 py-8">{children}</main>
+      <main className="w-full px-4 py-8">{children}</main>
     </div>
   );
 }
