@@ -13,9 +13,11 @@ import { sitesApi, siteSyncApi, Site, Forum, threadsApi, crawlerApi, LoginAdapte
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle, LogIn, Key } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function SitesPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -82,10 +84,11 @@ export default function SitesPage() {
       await sitesApi.create(payload);
       setCreateDialogOpen(false);
       setFormData({ name: '', url: '', loginAdapter: '' });
+      addToast('Site created successfully', 'success');
       loadSites();
     } catch (err) {
       console.error('Failed to create site:', err);
-      alert('Failed to create site');
+      addToast('Failed to create site', 'error');
     }
   };
 
@@ -101,10 +104,11 @@ export default function SitesPage() {
       setEditDialogOpen(false);
       setSelectedSite(null);
       setFormData({ name: '', url: '', loginAdapter: '' });
+      addToast('Site updated successfully', 'success');
       loadSites();
     } catch (err) {
       console.error('Failed to update site:', err);
-      alert('Failed to update site');
+      addToast('Failed to update site', 'error');
     }
   };
 
@@ -114,10 +118,11 @@ export default function SitesPage() {
       await sitesApi.delete(selectedSite.id);
       setDeleteDialogOpen(false);
       setSelectedSite(null);
+      addToast('Site deleted successfully', 'success');
       loadSites();
     } catch (err) {
       console.error('Failed to delete site:', err);
-      alert('Failed to delete site');
+      addToast('Failed to delete site', 'error');
     }
   };
 
@@ -130,7 +135,7 @@ export default function SitesPage() {
       loadSites();
     } catch (err) {
       console.error('Failed to sync forums:', err);
-      alert('Failed to sync forums');
+      addToast('Failed to sync forums', 'error');
     } finally {
       setSyncing(null);
     }

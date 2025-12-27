@@ -8,11 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { sitesApi, siteSyncApi, Forum } from '@/lib/api';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function ForumsPage() {
   const router = useRouter();
   const { id } = router.query;
   const siteId = id ? Number(id) : null;
+  const { addToast } = useToast();
 
   const [forums, setForums] = useState<Forum[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,10 +47,10 @@ export default function ForumsPage() {
     try {
       setSyncing(forumId);
       await siteSyncApi.syncForumThreads(siteId, forumId);
-      alert('Thread sync started. This may take a while.');
+      addToast('Thread sync started. This may take a while.', 'success');
     } catch (err) {
       console.error('Failed to sync threads:', err);
-      alert('Failed to sync threads');
+      addToast('Failed to sync threads', 'error');
     } finally {
       setSyncing(null);
     }
@@ -59,10 +61,11 @@ export default function ForumsPage() {
     try {
       setLoading(true);
       await siteSyncApi.syncForums(siteId);
+      addToast('Forums synced successfully', 'success');
       loadForums();
     } catch (err) {
       console.error('Failed to sync all forums:', err);
-      alert('Failed to sync forums');
+      addToast('Failed to sync forums', 'error');
     } finally {
       setLoading(false);
     }
