@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build application
+      - name: Build applications
         run: yarn build
 
       - name: Install production dependencies
@@ -55,6 +55,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -70,16 +71,30 @@ jobs:
             echo "tag=latest" >> $GITHUB_ENV
           fi
 
-      - name: Build and push Docker image
+      - name: Build and push Backend Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.ci
+          file: apps/backend/Dockerfile.ci
           platforms: linux/amd64,linux/arm64
-          push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler:latest
-            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler:${{ env.COMMIT_SHA }}
-            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler:${{ env.tag }}
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-backend:${{ env.COMMIT_SHA }}
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-backend:${{ env.tag }}
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/frontend/Dockerfile.ci
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:latest
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:${{ env.COMMIT_SHA }}
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:${{ env.tag }}
