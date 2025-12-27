@@ -134,6 +134,28 @@
   .glass-button-primary {
     @apply bg-gradient-to-r from-indigo-600 to-blue-600 backdrop-blur-md border border-indigo-500/50 rounded-lg px-6 py-3 text-white font-medium hover:from-indigo-500 hover:to-blue-500 transition-all shadow-glow hover:shadow-glow-lg;
   }
+
+  /* Post content image constraints */
+  .post-content img {
+    display: inline-block;
+    max-width: 400px;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    margin: 0.25rem;
+    vertical-align: top;
+  }
+
+  /* Post content video constraints */
+  .post-content video {
+    display: inline-block;
+    max-width: 640px;
+    max-height: 640px;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    margin: 0.25rem;
+    vertical-align: top;
+  }
 }
 
 .shadow {
