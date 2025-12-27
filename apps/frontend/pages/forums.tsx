@@ -249,7 +249,7 @@ export default function ForumsPage() {
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
                             {forum.siteId && forum.id && (
-                              <Link href={`/sites/${forum.siteId}/forums`}>
+                              <Link href={`/forums/${forum.id}/threads`}>
                                 <Button size="sm" variant="glass" className="hover:shadow-glow">
                                   <Eye className="w-4 h-4 mr-1" />
                                   View Threads

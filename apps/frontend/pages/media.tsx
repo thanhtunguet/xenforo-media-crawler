@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Layout } from '@/components/layout';
 import {
   GlassCard,
@@ -30,6 +30,7 @@ import {
   FlipHorizontal,
   FlipVertical,
   RotateCcw,
+  ArrowUp,
 } from 'lucide-react';
 
 const mediaTypeFilters = [
@@ -45,10 +46,14 @@ export default function MediaPage() {
   const [media, setMedia] = useState<MediaWithThread[]>([]);
   const [stats, setStats] = useState<MediaStatsDto | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [statsLoading, setStatsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
   const [selectedMedia, setSelectedMedia] = useState<MediaWithThread | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
   const [imageRotation, setImageRotation] = useState(0);
@@ -93,19 +98,56 @@ export default function MediaPage() {
     loadStats();
   }, []);
 
+  // Load initial media when filters change
   useEffect(() => {
-    loadMedia();
-  }, [page, filters, settings.display.itemsPerPage]);
+    loadMedia(true);
+  }, [filters, settings.display.itemsPerPage]);
 
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setFilters((prev) => ({ ...prev, search: searchInput }));
-      setPage(1); // Reset to first page on search
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchInput]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadMedia(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loading, loadingMore]);
+
+  // Track scroll position for scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const loadStats = async () => {
     setStatsLoading(true);
@@ -119,17 +161,35 @@ export default function MediaPage() {
     }
   };
 
-  const loadMedia = async () => {
-    setLoading(true);
+  const loadMedia = async (reset: boolean = false) => {
+    // If resetting, use loading state; otherwise use loadingMore
+    if (reset) {
+      setLoading(true);
+      setPage(1);
+      setMedia([]);
+      setHasMore(true);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
+      const currentPage = reset ? 1 : page + 1;
       const response = await mediaApi.getAll(
-        page,
+        currentPage,
         settings.display.itemsPerPage,
         filters
       );
-      setMedia(response.items);
+
+      if (reset) {
+        setMedia(response.items);
+      } else {
+        setMedia((prev) => [...prev, ...response.items]);
+        setPage(currentPage);
+      }
+
       setTotalPages(response.meta.totalPages);
       setTotalItems(response.meta.totalItems);
+      setHasMore(currentPage < response.meta.totalPages);
 
       // Save last filters if enabled
       saveLastFilters({
@@ -142,13 +202,17 @@ export default function MediaPage() {
     } catch (error) {
       console.error('Failed to load media:', error);
     } finally {
-      setLoading(false);
+      if (reset) {
+        setLoading(false);
+      } else {
+        setLoadingMore(false);
+      }
     }
   };
 
   const handleRefresh = () => {
     loadStats();
-    loadMedia();
+    loadMedia(true);
   };
 
   const getMediaUrl = (mediaItem: MediaWithThread): string => {
@@ -228,7 +292,6 @@ export default function MediaPage() {
                           ...prev,
                           mediaTypeId: filter.id ? Number(filter.id) : undefined,
                         }));
-                        setPage(1);
                       }}
                       className="gap-2"
                     >
@@ -265,7 +328,6 @@ export default function MediaPage() {
                             ? true
                             : false,
                       }));
-                      setPage(1);
                     }}
                     className="glass-input"
                   >
@@ -290,7 +352,6 @@ export default function MediaPage() {
                         sortBy: sortBy as 'createdAt' | 'updatedAt' | 'filename',
                         sortOrder: sortOrder as 'ASC' | 'DESC',
                       }));
-                      setPage(1);
                     }}
                     className="glass-input"
                   >
@@ -311,11 +372,13 @@ export default function MediaPage() {
               {/* Results Info */}
               <div className="flex items-center justify-between text-sm text-white/60">
                 <span>
-                  Showing {media.length} of {totalItems} items
+                  {totalItems > 0 ? `Loaded ${media.length} of ${totalItems} items` : 'No results'}
                 </span>
-                <span>
-                  Page {page} of {totalPages}
-                </span>
+                {hasMore && totalItems > 0 && (
+                  <span className="text-white/40">
+                    Scroll down to load more
+                  </span>
+                )}
               </div>
             </div>
           </GlassCardContent>
@@ -421,35 +484,45 @@ export default function MediaPage() {
               })}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="glass"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-white/60">
-                  Page {page} of {totalPages}
-                </span>
-                <Button
-                  variant="glass"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Next
-                </Button>
+            {/* Infinite Scroll Trigger */}
+            {hasMore && (
+              <div
+                ref={observerTarget}
+                className="flex items-center justify-center py-8"
+              >
+                {loadingMore && (
+                  <div className="flex items-center gap-2 text-white/60">
+                    <RefreshCw className="h-5 w-5 animate-spin" />
+                    <span>Loading more...</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* End of Results */}
+            {!hasMore && media.length > 0 && (
+              <div className="text-center py-8 text-white/40 text-sm">
+                You've reached the end • {totalItems} items total
               </div>
             )}
           </>
         )}
 
-        
       </div>
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <Button
+          variant="glass-primary"
+          size="icon"
+          className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full shadow-glow animate-fade-in"
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </Button>
+      )}
+
       {/* Lightbox Modal */}
       {selectedMedia && (
           <div
