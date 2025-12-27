@@ -48,6 +48,9 @@ export default function ThreadAlbumPage() {
   const [imageRotation, setImageRotation] = useState(0);
   const [imageFlipH, setImageFlipH] = useState(1);
   const [imageFlipV, setImageFlipV] = useState(1);
+  const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (threadId) {
@@ -317,6 +320,7 @@ export default function ThreadAlbumPage() {
               setImageRotation(0);
               setImageFlipH(1);
               setImageFlipV(1);
+              setImagePan({ x: 0, y: 0 });
             }}
           >
             <div className="max-w-6xl max-h-full w-full">
@@ -333,6 +337,7 @@ export default function ThreadAlbumPage() {
                     setImageRotation(0);
                     setImageFlipH(1);
                     setImageFlipV(1);
+                    setImagePan({ x: 0, y: 0 });
                   }}
                 >
                   <X className="w-5 h-5" />
@@ -361,7 +366,12 @@ export default function ThreadAlbumPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setImageZoom((prev) => Math.min(prev + 0.25, 5));
+                        const newZoom = Math.min(imageZoom + 0.25, 5);
+                        setImageZoom(newZoom);
+                        // Reset pan when zooming out to 1x or less
+                        if (newZoom <= 1) {
+                          setImagePan({ x: 0, y: 0 });
+                        }
                       }}
                       className="gap-2"
                     >
@@ -372,7 +382,12 @@ export default function ThreadAlbumPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setImageZoom((prev) => Math.max(prev - 0.25, 0.25));
+                        const newZoom = Math.max(imageZoom - 0.25, 0.25);
+                        setImageZoom(newZoom);
+                        // Reset pan when zooming out to 1x or less
+                        if (newZoom <= 1) {
+                          setImagePan({ x: 0, y: 0 });
+                        }
                       }}
                       className="gap-2"
                     >
@@ -431,6 +446,7 @@ export default function ThreadAlbumPage() {
                         setImageRotation(0);
                         setImageFlipH(1);
                         setImageFlipV(1);
+                        setImagePan({ x: 0, y: 0 });
                       }}
                       className="gap-2"
                     >
@@ -439,18 +455,68 @@ export default function ThreadAlbumPage() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-center min-h-[200px] overflow-hidden">
+                <div 
+                  className="flex items-center justify-center min-h-[200px] overflow-hidden"
+                  onMouseDown={(e) => {
+                    if (isImage(selectedMedia) && imageZoom > 1) {
+                      e.stopPropagation();
+                      setIsDragging(true);
+                      setDragStart({ x: e.clientX - imagePan.x, y: e.clientY - imagePan.y });
+                    }
+                  }}
+                  onMouseMove={(e) => {
+                    if (isDragging && imageZoom > 1) {
+                      e.stopPropagation();
+                      setImagePan({
+                        x: e.clientX - dragStart.x,
+                        y: e.clientY - dragStart.y,
+                      });
+                    }
+                  }}
+                  onMouseUp={() => {
+                    setIsDragging(false);
+                  }}
+                  onMouseLeave={() => {
+                    setIsDragging(false);
+                  }}
+                  onTouchStart={(e) => {
+                    if (isImage(selectedMedia) && imageZoom > 1 && e.touches.length === 1) {
+                      e.stopPropagation();
+                      const touch = e.touches[0];
+                      setIsDragging(true);
+                      setDragStart({ x: touch.clientX - imagePan.x, y: touch.clientY - imagePan.y });
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (isDragging && imageZoom > 1 && e.touches.length === 1) {
+                      e.stopPropagation();
+                      const touch = e.touches[0];
+                      setImagePan({
+                        x: touch.clientX - dragStart.x,
+                        y: touch.clientY - dragStart.y,
+                      });
+                    }
+                  }}
+                  onTouchEnd={() => {
+                    setIsDragging(false);
+                  }}
+                >
                   {isImage(selectedMedia) ? (
                     <img
                       src={getMediaUrl(selectedMedia)}
                       alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
-                      className="max-w-full max-h-[85vh] mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200"
+                      className={`max-w-full max-h-[85vh] mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''}`}
                       style={{
-                        transform: `scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,
+                        transform: `translate(${imagePan.x}px, ${imagePan.y}px) scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,
                         transformOrigin: 'center center',
                       }}
                       loading="eager"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        if (imageZoom <= 1) {
+                          e.stopPropagation();
+                        }
+                      }}
+                      draggable={false}
                     />
                   ) : isVideo(selectedMedia) ? (
                     <video
