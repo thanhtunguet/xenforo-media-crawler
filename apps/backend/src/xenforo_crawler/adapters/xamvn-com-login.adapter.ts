@@ -66,9 +66,20 @@ export class XamVNComLoginAdapter extends BaseLoginAdapter {
         if (loginResponse.status === 303) {
             const redirectUrl = loginResponse.headers['location'];
             if (redirectUrl) {
-                const finalResponse = await axiosInstance.get(redirectUrl, {
-                    baseURL: siteUrl,
-                });
+                // Resolve the redirect URL properly
+                let finalUrl: string;
+                if (redirectUrl.startsWith('http://') || redirectUrl.startsWith('https://')) {
+                    // Absolute URL - use as is
+                    finalUrl = redirectUrl;
+                } else if (redirectUrl.startsWith('/')) {
+                    // Relative URL starting with / - append to base URL
+                    finalUrl = `${siteUrl}${redirectUrl}`;
+                } else {
+                    // Relative URL without leading / - append with /
+                    finalUrl = `${siteUrl}/${redirectUrl}`;
+                }
+
+                const finalResponse = await axiosInstance.get(finalUrl);
                 this.setCookiesFromResponse(expressResponse, finalResponse);
                 return finalResponse;
             }

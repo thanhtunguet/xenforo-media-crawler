@@ -87,8 +87,13 @@ export class XenforoCrawlerController {
       res.header('content-type', response.headers['content-type']);
       res.status(200).json(response.data);
     } catch (error) {
-      console.log(error);
-      res.status(500).end(error?.response.data);
+      console.error('Login error:', error);
+      const errorMessage = error?.response?.data || error?.message || 'Login failed';
+      res.status(500).json({
+        error: errorMessage,
+        code: error?.code,
+        message: 'Failed to login to the site'
+      });
     }
   }
 
@@ -119,8 +124,13 @@ export class XenforoCrawlerController {
       res.header('content-type', response.headers['content-type']);
       res.status(200).json(response.data);
     } catch (error) {
-      console.log(error);
-      res.status(500).end(error?.response.data);
+      console.error('Login with cookie error:', error);
+      const errorMessage = error?.response?.data || error?.message || 'Login with cookie failed';
+      res.status(500).json({
+        error: errorMessage,
+        code: error?.code,
+        message: 'Failed to login with cookie'
+      });
     }
   }
 

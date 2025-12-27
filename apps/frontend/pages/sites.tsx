@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
-import { sitesApi, siteSyncApi, Site, Forum, threadsApi, crawlerApi, LoginAdapter } from '@/lib/api';
+import { sitesApi, siteSyncApi, Site, Forum, threadsApi, crawlerApi, LoginAdapter, authApi } from '@/lib/api';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle } from 'lucide-react';
+import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle, LogIn, Key } from 'lucide-react';
 
 export default function SitesPage() {
   const router = useRouter();
@@ -32,6 +32,12 @@ export default function SitesPage() {
   const [searchOriginalId, setSearchOriginalId] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [loginSite, setLoginSite] = useState<Site | null>(null);
+  const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' });
+  const [loggingIn, setLoggingIn] = useState(false);
+  const [loginResult, setLoginResult] = useState<any>(null);
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     loadSites();
@@ -143,6 +149,38 @@ export default function SitesPage() {
   const openDeleteDialog = (site: Site) => {
     setSelectedSite(site);
     setDeleteDialogOpen(true);
+  };
+
+  const openLoginDialog = (site: Site) => {
+    setLoginSite(site);
+    setLoginCredentials({ username: '', password: '' });
+    setLoginResult(null);
+    setLoginError('');
+    setLoginDialogOpen(true);
+  };
+
+  const handleLogin = async () => {
+    if (!loginSite || !loginCredentials.username || !loginCredentials.password) {
+      setLoginError('Please enter both username and password');
+      return;
+    }
+
+    setLoggingIn(true);
+    setLoginError('');
+    setLoginResult(null);
+
+    try {
+      const result = await authApi.login(
+        loginCredentials.username,
+        loginCredentials.password,
+        loginSite.id
+      );
+      setLoginResult(result);
+    } catch (err: any) {
+      setLoginError(err.message || 'Login failed');
+    } finally {
+      setLoggingIn(false);
+    }
   };
 
   const handleSearchThread = async () => {
@@ -297,6 +335,14 @@ export default function SitesPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="glass"
+                              onClick={() => openLoginDialog(site)}
+                              title="Login to site"
+                            >
+                              <LogIn className="w-4 h-4" />
+                            </Button>
                             <Button
                               size="sm"
                               variant="glass"
@@ -565,6 +611,162 @@ export default function SitesPage() {
             <Button variant="glass-primary" onClick={() => setForumsDialogOpen(false)}>
               Close
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Login Dialog */}
+      <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
+        <DialogContent className="glass-card border-white/20 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <LogIn className="w-5 h-5" />
+              Login to {loginSite?.name || loginSite?.url}
+            </DialogTitle>
+            <DialogDescription className="text-white/60">
+              Enter your credentials to login and receive session cookies
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Credentials Input */}
+            {!loginResult && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="login-username" className="text-white/90">Username</Label>
+                  <Input
+                    id="login-username"
+                    value={loginCredentials.username}
+                    onChange={(e) => setLoginCredentials({ ...loginCredentials, username: e.target.value })}
+                    placeholder="Enter your username"
+                    className="glass-input"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleLogin();
+                      }
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password" className="text-white/90">Password</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    value={loginCredentials.password}
+                    onChange={(e) => setLoginCredentials({ ...loginCredentials, password: e.target.value })}
+                    placeholder="Enter your password"
+                    className="glass-input"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleLogin();
+                      }
+                    }}
+                  />
+                </div>
+                {loginSite && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
+                    <Key className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs text-white/70">
+                      Using login adapter: <Badge variant="success" className="ml-1">{loginSite.loginAdapter || 'xamvn-clone'}</Badge>
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Error Display */}
+            {loginError && (
+              <div className="p-3 bg-rose-500/20 border border-rose-500/30 rounded-lg">
+                <p className="text-rose-300 text-sm">{loginError}</p>
+              </div>
+            )}
+
+            {/* Success Result */}
+            {loginResult && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 p-3 bg-emerald-500/20 border border-emerald-500/30 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                  <span className="text-emerald-300 font-medium">Login Successful!</span>
+                </div>
+
+                {loginResult.message && (
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <p className="text-white/80 text-sm">{loginResult.message}</p>
+                  </div>
+                )}
+
+                {loginResult.cookies && (
+                  <div className="space-y-2">
+                    <Label className="text-white/90">Session Cookies</Label>
+                    <div className="max-h-64 overflow-y-auto p-3 bg-black/30 rounded-lg border border-white/10 font-mono text-xs">
+                      <pre className="text-white/70 whitespace-pre-wrap break-all">
+                        {JSON.stringify(loginResult.cookies, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+
+                {loginResult.user && (
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <Label className="text-white/90 block mb-2">User Information</Label>
+                    <div className="space-y-1 text-sm text-white/70">
+                      {loginResult.user.username && (
+                        <div>Username: <span className="text-cyan-400">{loginResult.user.username}</span></div>
+                      )}
+                      {loginResult.user.userId && (
+                        <div>User ID: <span className="text-cyan-400">{loginResult.user.userId}</span></div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            {!loginResult ? (
+              <>
+                <Button
+                  variant="glass"
+                  onClick={() => {
+                    setLoginDialogOpen(false);
+                    setLoginCredentials({ username: '', password: '' });
+                    setLoginError('');
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="glass-primary"
+                  onClick={handleLogin}
+                  disabled={loggingIn || !loginCredentials.username || !loginCredentials.password}
+                >
+                  {loggingIn ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Login
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="glass-primary"
+                onClick={() => {
+                  setLoginDialogOpen(false);
+                  setLoginCredentials({ username: '', password: '' });
+                  setLoginResult(null);
+                  setLoginError('');
+                }}
+              >
+                Close
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
