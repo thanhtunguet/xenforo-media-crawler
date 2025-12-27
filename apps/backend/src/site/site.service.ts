@@ -19,7 +19,7 @@ export class SiteService {
     private siteRepository: Repository<Site>,
     @InjectRepository(Forum)
     private forumRepository: Repository<Forum>,
-  ) {}
+  ) { }
 
   async create(createSiteDto: CreateSiteDto): Promise<SiteResponseDto> {
     const site = this.siteRepository.create(createSiteDto);
@@ -44,20 +44,24 @@ export class SiteService {
 
     // Get forum counts for all sites in a single query
     const siteIds = sites.map((site) => site.id);
-    const forumCounts = await this.forumRepository
-      .createQueryBuilder('forum')
-      .select('forum.siteId', 'siteId')
-      .addSelect('COUNT(forum.id)', 'count')
-      .where('forum.siteId IN (:...siteIds)', { siteIds })
-      .andWhere('forum.deletedAt IS NULL')
-      .groupBy('forum.siteId')
-      .getRawMany();
-
-    // Create a map of siteId -> forumCount
     const forumCountMap = new Map<number, number>();
-    forumCounts.forEach((item) => {
-      forumCountMap.set(item.siteId, parseInt(item.count, 10));
-    });
+
+    // Only query forum counts if there are sites
+    if (siteIds.length > 0) {
+      const forumCounts = await this.forumRepository
+        .createQueryBuilder('forum')
+        .select('forum.siteId', 'siteId')
+        .addSelect('COUNT(forum.id)', 'count')
+        .where('forum.siteId IN (:...siteIds)', { siteIds })
+        .andWhere('forum.deletedAt IS NULL')
+        .groupBy('forum.siteId')
+        .getRawMany();
+
+      // Create a map of siteId -> forumCount
+      forumCounts.forEach((item) => {
+        forumCountMap.set(item.siteId, parseInt(item.count, 10));
+      });
+    }
 
     return {
       items: sites.map((site) => {

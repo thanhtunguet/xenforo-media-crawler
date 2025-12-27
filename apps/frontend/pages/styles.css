@@ -72,12 +72,24 @@
   .glass-card {
     @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg shadow-glass;
     background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .glass-card:hover {
     @apply border-white/30 shadow-glass-lg;
     transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+
+  /* Disable transitions and hover effects for dialog content */
+  [class*="z-50"].glass-card,
+  [style*="transition: none"].glass-card {
+    transition: none !important;
+  }
+
+  [class*="z-50"].glass-card:hover,
+  [style*="transition: none"].glass-card:hover {
+    transform: none !important;
   }
 
   .glass-border {
