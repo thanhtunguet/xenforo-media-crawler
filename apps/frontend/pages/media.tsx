@@ -56,7 +56,15 @@ export default function MediaPage() {
   const [imageFlipV, setImageFlipV] = useState(1);
   const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState<{ 
+    x: number; 
+    y: number; 
+    screenX?: number; 
+    screenY?: number; 
+    containerCenterX?: number; 
+    containerCenterY?: number;
+  }>({ x: 0, y: 0 });
+  const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null);
 
   // Initialize filters from settings
   const getInitialFilters = (): MediaFilters => {
@@ -491,6 +499,10 @@ export default function MediaPage() {
           <div
             className="fixed inset-0 z-50 flex bg-black/95 backdrop-blur-md animate-fade-in"
             onClick={() => {
+              // Prevent dismissal when zoomed in
+              if (imageZoom > 1) {
+                return;
+              }
               setSelectedMedia(null);
               // Reset image transforms when closing
               setImageZoom(1);
@@ -634,20 +646,55 @@ export default function MediaPage() {
                 <div 
                   className="flex items-center justify-center h-full overflow-hidden"
                   onMouseDown={(e) => {
-                    if (isImage(selectedMedia) && imageZoom > 1) {
+                    if (isImage(selectedMedia) && imageZoom > 1 && imageRef) {
                       e.stopPropagation();
                       setIsDragging(true);
-                      setDragStart({ x: e.clientX - imagePan.x / 1.5, y: e.clientY - imagePan.y / 1.5 });
+                      
+                      // Lấy vị trí container (center của viewport)
+                      const container = e.currentTarget;
+                      const containerRect = container.getBoundingClientRect();
+                      const containerCenterX = containerRect.left + containerRect.width / 2;
+                      const containerCenterY = containerRect.top + containerRect.height / 2;
+                      
+                      // Vị trí click relative to container center
+                      const clickX = e.clientX - containerCenterX;
+                      const clickY = e.clientY - containerCenterY;
+                      
+                      // Tính vị trí pixel trên ảnh (accounting for current pan, zoom, rotation, flip)
+                      // Đảo ngược transform để lấy tọa độ trên ảnh gốc
+                      const imagePixelX = (clickX - imagePan.x) / imageZoom;
+                      const imagePixelY = (clickY - imagePan.y) / imageZoom;
+                      
+                      // Lưu vị trí pixel trên ảnh và vị trí click trên màn hình
+                      setDragStart({ 
+                        x: imagePixelX, 
+                        y: imagePixelY,
+                        screenX: e.clientX,
+                        screenY: e.clientY,
+                        containerCenterX,
+                        containerCenterY
+                      });
                     }
                   }}
                   onMouseMove={(e) => {
                     if (isDragging && imageZoom > 1) {
                       e.stopPropagation();
-                      const deltaX = (e.clientX - dragStart.x) * 1.5;
-                      const deltaY = (e.clientY - dragStart.y) * 1.5;
+                      
+                      // Tính vị trí mới của pixel ảnh trên màn hình
+                      const newScreenX = e.clientX;
+                      const newScreenY = e.clientY;
+                      
+                      // Vị trí relative to container center
+                      const relativeX = newScreenX - dragStart.containerCenterX!;
+                      const relativeY = newScreenY - dragStart.containerCenterY!;
+                      
+                      // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
+                      const newPanX = relativeX - dragStart.x * imageZoom;
+                      const newPanY = relativeY - dragStart.y * imageZoom;
+                      
                       setImagePan({
-                        x: deltaX,
-                        y: deltaY,
+                        x: newPanX,
+                        y: newPanY,
                       });
                     }
                   }}
@@ -658,22 +705,56 @@ export default function MediaPage() {
                     setIsDragging(false);
                   }}
                   onTouchStart={(e) => {
-                    if (isImage(selectedMedia) && imageZoom > 1 && e.touches.length === 1) {
+                    if (isImage(selectedMedia) && imageZoom > 1 && e.touches.length === 1 && imageRef) {
                       e.stopPropagation();
                       const touch = e.touches[0];
                       setIsDragging(true);
-                      setDragStart({ x: touch.clientX - imagePan.x / 1.5, y: touch.clientY - imagePan.y / 1.5 });
+                      
+                      // Lấy vị trí container (center của viewport)
+                      const container = e.currentTarget;
+                      const containerRect = container.getBoundingClientRect();
+                      const containerCenterX = containerRect.left + containerRect.width / 2;
+                      const containerCenterY = containerRect.top + containerRect.height / 2;
+                      
+                      // Vị trí touch relative to container center
+                      const touchX = touch.clientX - containerCenterX;
+                      const touchY = touch.clientY - containerCenterY;
+                      
+                      // Tính vị trí pixel trên ảnh
+                      const imagePixelX = (touchX - imagePan.x) / imageZoom;
+                      const imagePixelY = (touchY - imagePan.y) / imageZoom;
+                      
+                      // Lưu vị trí pixel trên ảnh và vị trí touch trên màn hình
+                      setDragStart({ 
+                        x: imagePixelX, 
+                        y: imagePixelY,
+                        screenX: touch.clientX,
+                        screenY: touch.clientY,
+                        containerCenterX,
+                        containerCenterY
+                      });
                     }
                   }}
                   onTouchMove={(e) => {
                     if (isDragging && imageZoom > 1 && e.touches.length === 1) {
                       e.stopPropagation();
                       const touch = e.touches[0];
-                      const deltaX = (touch.clientX - dragStart.x) * 1.5;
-                      const deltaY = (touch.clientY - dragStart.y) * 1.5;
+                      
+                      // Tính vị trí mới của pixel ảnh trên màn hình
+                      const newScreenX = touch.clientX;
+                      const newScreenY = touch.clientY;
+                      
+                      // Vị trí relative to container center
+                      const relativeX = newScreenX - dragStart.containerCenterX!;
+                      const relativeY = newScreenY - dragStart.containerCenterY!;
+                      
+                      // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
+                      const newPanX = relativeX - dragStart.x * imageZoom;
+                      const newPanY = relativeY - dragStart.y * imageZoom;
+                      
                       setImagePan({
-                        x: deltaX,
-                        y: deltaY,
+                        x: newPanX,
+                        y: newPanY,
                       });
                     }
                   }}
@@ -683,6 +764,7 @@ export default function MediaPage() {
                 >
                   {isImage(selectedMedia) ? (
                     <img
+                      ref={setImageRef}
                       src={getMediaUrl(selectedMedia)}
                       alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
                       className={`max-w-full max-h-full mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''}`}
@@ -694,6 +776,17 @@ export default function MediaPage() {
                       onClick={(e) => {
                         if (imageZoom <= 1) {
                           e.stopPropagation();
+                        }
+                      }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        if (imageZoom <= 1) {
+                          // Zoom in to 2x on double click
+                          setImageZoom(2);
+                        } else {
+                          // Reset zoom if already zoomed
+                          setImageZoom(1);
+                          setImagePan({ x: 0, y: 0 });
                         }
                       }}
                       draggable={false}
