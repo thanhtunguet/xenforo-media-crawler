@@ -1,6 +1,11 @@
 /// <reference lib="dom" />
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// In development, use relative URLs (proxied through Next.js)
+// In production, use the configured API URL or relative URLs
+const API_BASE_URL = 
+  process.env.NODE_ENV === 'development' 
+    ? '' // Use relative URLs - Next.js will proxy /api to backend
+    : (process.env.NEXT_PUBLIC_API_URL || '');
 
 export interface Site {
   id: number;

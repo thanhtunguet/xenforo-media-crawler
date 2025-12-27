@@ -12,6 +12,20 @@ const nextConfig = {
   nx: {},
   // Enable standalone output for Docker
   output: 'standalone',
+  // Proxy API requests to backend in development
+  async rewrites() {
+    // Only proxy in development mode
+    if (process.env.NODE_ENV === 'development') {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${backendUrl}/api/:path*`,
+        },
+      ];
+    }
+    return [];
+  },
 };
 
 const plugins = [
