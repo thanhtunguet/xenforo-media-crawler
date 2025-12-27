@@ -8,7 +8,11 @@
     "tsConfigPath": "tsconfig.app.json",
     "assets": [
       {
-        "include": "views/**/*",
+        "include": "./views/**/*",
+        "outDir": "../../dist/apps/backend"
+      },
+      {
+        "include": "./package.json",
         "outDir": "../../dist/apps/backend"
       }
     ],

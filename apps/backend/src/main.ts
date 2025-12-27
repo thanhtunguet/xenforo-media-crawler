@@ -3,7 +3,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import 'src/_config/dotenv';
-import { description, name, version } from '../package.json';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -11,9 +10,9 @@ async function bootstrap() {
     await NestFactory.create<NestExpressApplication>(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle(name)
-    .setDescription(description)
-    .setVersion(version)
+    .setTitle('xenforo-crawler-backend')
+    .setDescription('Xenforo Media Crawler Backend')
+    .setVersion('0.0.1')
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
