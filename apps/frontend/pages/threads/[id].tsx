@@ -240,7 +240,7 @@ export default function ThreadPage() {
                         <TableCell>{post.id}</TableCell>
                         <TableCell>
                           <div
-                            className="max-w-2xl prose prose-sm"
+                            className="prose prose-sm max-w-none"
                             dangerouslySetInnerHTML={{ __html: post.content }}
                           />
                         </TableCell>
