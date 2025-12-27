@@ -58,3 +58,11 @@ output/
 downloads/
 cookies.json
 sample-*.html
+
+# Nx
+.nx/cache
+.nx/workspace-data
+
+.nx/installation
+.nx/cache
+.nx/workspace-data

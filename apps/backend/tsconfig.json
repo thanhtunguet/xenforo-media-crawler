@@ -1,4 +1,5 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
@@ -6,10 +7,11 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "target": "es2015",
     "downlevelIteration": true,
     "sourceMap": true,
-    "outDir": "./dist",
+    "outDir": "../../dist/apps/backend",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -20,8 +22,17 @@
     "noFallthroughCasesInSwitch": false,
     "resolveJsonModule": true,
     "typeRoots": [
-      "node_modules/@types",
+      "../../node_modules/@types",
       "src/types"
     ]
-  }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "**/*spec.ts"
+  ]
 }
