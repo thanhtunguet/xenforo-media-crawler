@@ -11,6 +11,7 @@ export interface Site {
   id: number;
   name: string | null;
   url: string;
+  loginAdapter?: string;
   forumCount?: number;
   createdAt: string | null;
   updatedAt: string | null;
@@ -97,11 +98,23 @@ export interface PaginatedResponse<T> {
 export interface CreateSiteDto {
   name?: string;
   url: string;
+  loginAdapter?: string;
 }
 
 export interface UpdateSiteDto {
   name?: string;
   url?: string;
+  loginAdapter?: string;
+}
+
+export interface LoginAdapter {
+  key: string;
+  name: string;
+  description: string;
+}
+
+export interface LoginAdaptersResponse {
+  adapters: LoginAdapter[];
 }
 
 async function apiRequest<T>(
@@ -274,6 +287,10 @@ export const threadsApi = {
 
 // Xenforo Crawler APIs
 export const crawlerApi = {
+  getLoginAdapters: async (): Promise<LoginAdapter[]> => {
+    const response = await apiRequest<LoginAdaptersResponse>('/api/xenforo-crawler/login-adapters');
+    return response.adapters;
+  },
   syncThreadPosts: async (
     threadId: number
   ): Promise<{ message: string }> => {

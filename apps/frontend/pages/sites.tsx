@@ -8,7 +8,8 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { sitesApi, siteSyncApi, Site, Forum, threadsApi } from '@/lib/api';
+import { Select } from '@/components/ui/select';
+import { sitesApi, siteSyncApi, Site, Forum, threadsApi, crawlerApi, LoginAdapter } from '@/lib/api';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle } from 'lucide-react';
@@ -23,8 +24,9 @@ export default function SitesPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
-  const [formData, setFormData] = useState({ name: '', url: '' });
+  const [formData, setFormData] = useState({ name: '', url: '', loginAdapter: '' });
   const [forums, setForums] = useState<Forum[]>([]);
+  const [loginAdapters, setLoginAdapters] = useState<LoginAdapter[]>([]);
   const [forumsDialogOpen, setForumsDialogOpen] = useState(false);
   const [syncing, setSyncing] = useState<number | null>(null);
   const [searchOriginalId, setSearchOriginalId] = useState('');
@@ -33,7 +35,23 @@ export default function SitesPage() {
 
   useEffect(() => {
     loadSites();
+    loadLoginAdapters();
   }, [page]);
+
+  const loadLoginAdapters = async () => {
+    try {
+      const adapters = await crawlerApi.getLoginAdapters();
+      if (Array.isArray(adapters)) {
+        setLoginAdapters(adapters);
+      } else {
+        console.warn('Login adapters response is not an array:', adapters);
+        setLoginAdapters([]);
+      }
+    } catch (err) {
+      console.error('Failed to load login adapters:', err);
+      setLoginAdapters([]);
+    }
+  };
 
   const loadSites = async () => {
     try {
@@ -50,9 +68,14 @@ export default function SitesPage() {
 
   const handleCreate = async () => {
     try {
-      await sitesApi.create(formData);
+      const payload: any = { ...formData };
+      // Only include loginAdapter if it's set
+      if (!payload.loginAdapter) {
+        delete payload.loginAdapter;
+      }
+      await sitesApi.create(payload);
       setCreateDialogOpen(false);
-      setFormData({ name: '', url: '' });
+      setFormData({ name: '', url: '', loginAdapter: '' });
       loadSites();
     } catch (err) {
       console.error('Failed to create site:', err);
@@ -63,10 +86,15 @@ export default function SitesPage() {
   const handleUpdate = async () => {
     if (!selectedSite) return;
     try {
-      await sitesApi.update(selectedSite.id, formData);
+      const payload: any = { ...formData };
+      // Only include loginAdapter if it's set
+      if (!payload.loginAdapter) {
+        delete payload.loginAdapter;
+      }
+      await sitesApi.update(selectedSite.id, payload);
       setEditDialogOpen(false);
       setSelectedSite(null);
-      setFormData({ name: '', url: '' });
+      setFormData({ name: '', url: '', loginAdapter: '' });
       loadSites();
     } catch (err) {
       console.error('Failed to update site:', err);
@@ -104,7 +132,11 @@ export default function SitesPage() {
 
   const openEditDialog = (site: Site) => {
     setSelectedSite(site);
-    setFormData({ name: site.name || '', url: site.url });
+    setFormData({
+      name: site.name || '',
+      url: site.url,
+      loginAdapter: site.loginAdapter || ''
+    });
     setEditDialogOpen(true);
   };
 
@@ -361,6 +393,25 @@ export default function SitesPage() {
                 className="glass-input"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="loginAdapter" className="text-white/90">Login Adapter (optional)</Label>
+              <Select
+                id="loginAdapter"
+                value={formData.loginAdapter}
+                onChange={(e) => setFormData({ ...formData, loginAdapter: e.target.value })}
+                className="glass-input"
+              >
+                <option value="">Default (xamvn-clone)</option>
+                {Array.isArray(loginAdapters) && loginAdapters.map((adapter) => (
+                  <option key={adapter.key} value={adapter.key}>
+                    {adapter.name}
+                  </option>
+                ))}
+              </Select>
+              <p className="text-xs text-white/50">
+                Select the login method for this XenForo site
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="glass" onClick={() => setCreateDialogOpen(false)}>
@@ -402,6 +453,25 @@ export default function SitesPage() {
                 placeholder="https://example.com"
                 className="glass-input"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-loginAdapter" className="text-white/90">Login Adapter (optional)</Label>
+              <Select
+                id="edit-loginAdapter"
+                value={formData.loginAdapter}
+                onChange={(e) => setFormData({ ...formData, loginAdapter: e.target.value })}
+                className="glass-input"
+              >
+                <option value="">Default (xamvn-clone)</option>
+                {Array.isArray(loginAdapters) && loginAdapters.map((adapter) => (
+                  <option key={adapter.key} value={adapter.key}>
+                    {adapter.name}
+                  </option>
+                ))}
+              </Select>
+              <p className="text-xs text-white/50">
+                Select the login method for this XenForo site
+              </p>
             </div>
           </div>
           <DialogFooter>
