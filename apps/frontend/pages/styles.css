@@ -601,8 +601,3 @@ summary svg {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
-/* Override space-y-6 margin-top */
-.space-y-6> :not([hidden])~ :not([hidden]) {
-  margin-top: 0 !important;
-}

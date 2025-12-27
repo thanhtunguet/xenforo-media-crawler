@@ -494,8 +494,10 @@ export default function MediaPage() {
           </>
         )}
 
-        {/* Lightbox Modal */}
-        {selectedMedia && (
+        
+      </div>
+      {/* Lightbox Modal */}
+      {selectedMedia && (
           <div
             className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md animate-fade-in"
             onClick={() => {
@@ -840,7 +842,6 @@ export default function MediaPage() {
             </div>
           </div>
         )}
-      </div>
     </Layout>
   );
 }
