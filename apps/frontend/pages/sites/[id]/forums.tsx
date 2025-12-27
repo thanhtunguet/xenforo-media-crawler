@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Layout } from '@/components/layout';
-import { sitesApi, siteSyncApi, Forum } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
+import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
+import { Badge } from '@/components/ui/badge';
+import { sitesApi, siteSyncApi, Forum, Site } from '@/lib/api';
 import Link from 'next/link';
+import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink, Server } from 'lucide-react';
 
 export default function ForumsPage() {
   const router = useRouter();
   const { id } = router.query;
   const siteId = id ? Number(id) : null;
 
+  const [site, setSite] = useState<Site | null>(null);
   const [forums, setForums] = useState<Forum[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -27,9 +23,20 @@ export default function ForumsPage() {
 
   useEffect(() => {
     if (siteId) {
+      loadSite();
       loadForums();
     }
   }, [siteId, page]);
+
+  const loadSite = async () => {
+    if (!siteId) return;
+    try {
+      const siteData = await sitesApi.getById(siteId);
+      setSite(siteData);
+    } catch (err) {
+      console.error('Failed to load site:', err);
+    }
+  };
 
   const loadForums = async () => {
     if (!siteId) return;
@@ -59,114 +66,208 @@ export default function ForumsPage() {
     }
   };
 
+  const handleSyncAllForums = async () => {
+    if (!siteId) return;
+    try {
+      setLoading(true);
+      await siteSyncApi.syncForums(siteId);
+      loadForums();
+    } catch (err) {
+      console.error('Failed to sync all forums:', err);
+      alert('Failed to sync forums');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!siteId) {
     return (
       <Layout>
-        <div>Loading...</div>
+        <div className="text-center py-12">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-white/40" />
+          <p className="text-white/60 mt-4">Loading...</p>
+        </div>
       </Layout>
     );
   }
 
   return (
-    <Layout>
+    <Layout title="Forums">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Button variant="outline" onClick={() => router.push('/')}>
-              ← Back to Sites
+        {/* Back Button & Site Info */}
+        <div className="flex items-start justify-between">
+          <div className="space-y-3">
+            <Button
+              variant="glass"
+              onClick={() => router.push('/sites')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Sites
             </Button>
-            <h2 className="text-3xl font-bold mt-4">Forums</h2>
+            {site && (
+              <GlassCard className="inline-block">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center">
+                    <Server className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-medium">{site.name || 'Site'}</h3>
+                    <a
+                      href={site.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cyan-400 hover:text-cyan-300 text-sm inline-flex items-center gap-1"
+                    >
+                      {site.url}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </GlassCard>
+            )}
           </div>
-          <Button onClick={() => loadForums()}>Refresh</Button>
+          <Button
+            variant="glass-primary"
+            onClick={handleSyncAllForums}
+            disabled={loading}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Sync All Forums
+          </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Site Forums</CardTitle>
-            <CardDescription>
-              Manage forums and sync threads from this site
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        {/* Forums Table */}
+        <GlassCard>
+          <GlassCardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <GlassCardTitle className="text-lg">Forums</GlassCardTitle>
+                <p className="text-white/60 text-sm mt-1">
+                  Manage forums and sync threads from this site
+                </p>
+              </div>
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={loadForums}
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
+          </GlassCardHeader>
+          <GlassCardContent>
             {loading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-12">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-white/40" />
+                <p className="text-white/60 mt-4">Loading forums...</p>
+              </div>
+            ) : forums.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-white/60">No forums found</p>
+                <p className="text-white/40 text-sm mt-2">
+                  Click "Sync All Forums" to fetch forums from the site
+                </p>
+              </div>
             ) : (
               <>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Original ID</TableHead>
-                      <TableHead>URL</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <GlassTable>
+                  <GlassTableHeader>
+                    <GlassTableRow>
+                      <GlassTableHead>ID</GlassTableHead>
+                      <GlassTableHead>Name</GlassTableHead>
+                      <GlassTableHead>Original ID</GlassTableHead>
+                      <GlassTableHead>URL</GlassTableHead>
+                      <GlassTableHead>Created</GlassTableHead>
+                      <GlassTableHead className="text-right">Actions</GlassTableHead>
+                    </GlassTableRow>
+                  </GlassTableHeader>
+                  <GlassTableBody>
                     {forums.map((forum) => (
-                      <TableRow key={forum.id || forum.originalId}>
-                        <TableCell>{forum.id || '-'}</TableCell>
-                        <TableCell>{forum.name || '-'}</TableCell>
-                        <TableCell>{forum.originalId || '-'}</TableCell>
-                        <TableCell>
+                      <GlassTableRow key={forum.id || forum.originalId}>
+                        <GlassTableCell className="font-medium text-white/90">
+                          #{forum.id || '-'}
+                        </GlassTableCell>
+                        <GlassTableCell>
+                          {forum.name || <span className="text-white/40">-</span>}
+                        </GlassTableCell>
+                        <GlassTableCell>
+                          <Badge variant="info">#{forum.originalId || '-'}</Badge>
+                        </GlassTableCell>
+                        <GlassTableCell>
                           {forum.originalUrl ? (
                             <a
                               href={forum.originalUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
+                              className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1"
                             >
-                              {forum.originalUrl}
+                              View
+                              <ExternalLink className="w-3 h-3" />
                             </a>
                           ) : (
-                            '-'
+                            <span className="text-white/40">-</span>
                           )}
-                        </TableCell>
-                        <TableCell>
+                        </GlassTableCell>
+                        <GlassTableCell>
                           {forum.createdAt
                             ? new Date(forum.createdAt).toLocaleDateString()
                             : '-'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
+                        </GlassTableCell>
+                        <GlassTableCell>
+                          <div className="flex gap-2 justify-end">
                             <Button
                               size="sm"
-                              variant="outline"
-                              onClick={() => handleSyncThreads(forum.id || Number(forum.originalId))}
-                              disabled={syncing === (forum.id || Number(forum.originalId))}
+                              variant="glass"
+                              onClick={() =>
+                                handleSyncThreads(forum.id || Number(forum.originalId))
+                              }
+                              disabled={
+                                syncing === (forum.id || Number(forum.originalId))
+                              }
                             >
-                              {syncing === (forum.id || Number(forum.originalId))
-                                ? 'Syncing...'
-                                : 'Sync Threads'}
+                              {syncing === (forum.id || Number(forum.originalId)) ? (
+                                <>
+                                  <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                                  Syncing...
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw className="w-4 h-4 mr-1" />
+                                  Sync
+                                </>
+                              )}
                             </Button>
                             {forum.id && (
                               <Link href={`/forums/${forum.id}/threads`}>
-                                <Button size="sm" variant="outline">
-                                  View Threads
+                                <Button size="sm" variant="glass-primary">
+                                  <MessageSquare className="w-4 h-4 mr-1" />
+                                  Threads
                                 </Button>
                               </Link>
                             )}
                           </div>
-                        </TableCell>
-                      </TableRow>
+                        </GlassTableCell>
+                      </GlassTableRow>
                     ))}
-                  </TableBody>
-                </Table>
+                  </GlassTableBody>
+                </GlassTable>
 
-                <div className="flex items-center justify-between mt-4">
+                {/* Pagination */}
+                <div className="flex items-center justify-between mt-6">
                   <Button
-                    variant="outline"
+                    variant="glass"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
                     Previous
                   </Button>
-                  <span>
+                  <span className="text-white/60 text-sm">
                     Page {page} of {totalPages}
                   </span>
                   <Button
-                    variant="outline"
+                    variant="glass"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
                   >
@@ -175,10 +276,9 @@ export default function ForumsPage() {
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </GlassCardContent>
+        </GlassCard>
       </div>
     </Layout>
   );
 }
-
