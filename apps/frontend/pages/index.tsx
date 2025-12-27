@@ -4,7 +4,7 @@ import { StatCard } from '@/components/StatCard';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Server, Folder, MessageSquare, Image, Plus, RefreshCw } from 'lucide-react';
-import { sitesApi, threadsApi } from '@/lib/api';
+import { sitesApi, threadsApi, mediaApi } from '@/lib/api';
 import { useRouter } from 'next/router';
 
 export default function Dashboard() {
@@ -25,16 +25,17 @@ export default function Dashboard() {
     try {
       setLoading(true);
       // Fetch stats from API
-      const [sitesCount, threadsCount] = await Promise.all([
+      const [sitesCount, threadsCount, mediaCount] = await Promise.all([
         sitesApi.getAll(1, 1).then((res) => res.meta.totalItems),
         threadsApi.getAll(1, 1).then((res) => res.meta.totalItems),
+        mediaApi.getCount().then((res) => res.count),
       ]);
 
       setStats({
         sites: sitesCount,
         forums: 0, // Will be implemented later
         threads: threadsCount,
-        media: 0, // Will be implemented later
+        media: mediaCount,
       });
     } catch (err) {
       console.error('Failed to load stats:', err);

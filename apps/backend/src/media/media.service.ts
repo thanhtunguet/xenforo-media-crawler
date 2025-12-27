@@ -74,7 +74,7 @@ export class MediaService {
         'media',
         'post.threadId',
         'thread.id',
-        'thread.title',
+        'thread.name',
         'thread.originalId',
       ])
       .where('media.deletedAt IS NULL');
@@ -122,7 +122,7 @@ export class MediaService {
       ...this.mapToDto(media),
       thread: {
         id: media.post.thread.id,
-        title: media.post.thread.title,
+        title: media.post.thread.name || '',
         originalId: media.post.thread.originalId,
       },
     }));
