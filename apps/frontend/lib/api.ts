@@ -52,6 +52,32 @@ export interface Media {
   updatedAt: string | null;
 }
 
+export interface MediaWithThread extends Media {
+  thread: {
+    id: number;
+    title: string;
+    originalId: string | null;
+  };
+}
+
+export interface MediaStatsDto {
+  totalMedia: number;
+  totalImages: number;
+  totalVideos: number;
+  totalLinks: number;
+  totalDownloaded: number;
+  totalNotDownloaded: number;
+  downloadRate: number;
+}
+
+export interface MediaFilters {
+  mediaTypeId?: number;
+  isDownloaded?: boolean;
+  search?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'filename';
+  sortOrder?: 'ASC' | 'DESC';
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   meta: {
@@ -272,6 +298,57 @@ export const mediaApi = {
   ): Promise<Media[]> => {
     const query = mediaTypeId !== undefined ? `?mediaTypeId=${mediaTypeId}` : '';
     return apiRequest<Media[]>(`/api/media/thread/${threadId}${query}`);
+  },
+  getAll: async (
+    page: number = 1,
+    limit: number = 24,
+    filters?: MediaFilters
+  ): Promise<PaginatedResponse<MediaWithThread>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (filters) {
+      if (filters.mediaTypeId !== undefined) {
+        params.append('mediaTypeId', filters.mediaTypeId.toString());
+      }
+      if (filters.isDownloaded !== undefined) {
+        params.append('isDownloaded', filters.isDownloaded.toString());
+      }
+      if (filters.search) {
+        params.append('search', filters.search);
+      }
+      if (filters.sortBy) {
+        params.append('sortBy', filters.sortBy);
+      }
+      if (filters.sortOrder) {
+        params.append('sortOrder', filters.sortOrder);
+      }
+    }
+
+    return apiRequest<PaginatedResponse<MediaWithThread>>(
+      `/api/media?${params.toString()}`
+    );
+  },
+  getStats: async (): Promise<MediaStatsDto> => {
+    return apiRequest<MediaStatsDto>('/api/media/stats');
+  },
+  getCount: async (mediaTypeId?: number): Promise<{ count: number }> => {
+    const query = mediaTypeId !== undefined ? `?mediaTypeId=${mediaTypeId}` : '';
+    return apiRequest<{ count: number }>(`/api/media/count${query}`);
+  },
+};
+
+// System APIs
+export const systemApi = {
+  getStatus: async (): Promise<{
+    status: string;
+    version: string;
+    uptime: number;
+    timestamp: string;
+  }> => {
+    return apiRequest('/api/status');
   },
 };
 

@@ -14,6 +14,16 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Get('api/status')
+  getStatus() {
+    return {
+      status: 'online',
+      version: '1.0.0',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   @Get('albums/:id')
   @Render('albums')
   public album(@Param('id') id: number) {
