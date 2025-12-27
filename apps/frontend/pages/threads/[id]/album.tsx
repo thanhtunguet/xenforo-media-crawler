@@ -312,7 +312,7 @@ export default function ThreadAlbumPage() {
         {/* Media Viewer Modal */}
         {selectedMedia && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-fade-in"
+            className="fixed inset-0 z-50 flex bg-black/95 backdrop-blur-md animate-fade-in"
             onClick={() => {
               setSelectedMedia(null);
               // Reset image transforms when closing
@@ -323,8 +323,8 @@ export default function ThreadAlbumPage() {
               setImagePan({ x: 0, y: 0 });
             }}
           >
-            <div className="max-w-6xl max-h-full w-full">
-              <div className="relative">
+            <div className="w-full h-full">
+              <div className="relative h-full">
                 <Button
                   variant="glass"
                   size="icon"
@@ -456,20 +456,22 @@ export default function ThreadAlbumPage() {
                 )}
 
                 <div 
-                  className="flex items-center justify-center min-h-[200px] overflow-hidden"
+                  className="flex items-center justify-center h-full overflow-hidden"
                   onMouseDown={(e) => {
                     if (isImage(selectedMedia) && imageZoom > 1) {
                       e.stopPropagation();
                       setIsDragging(true);
-                      setDragStart({ x: e.clientX - imagePan.x, y: e.clientY - imagePan.y });
+                      setDragStart({ x: e.clientX - imagePan.x / 1.5, y: e.clientY - imagePan.y / 1.5 });
                     }
                   }}
                   onMouseMove={(e) => {
                     if (isDragging && imageZoom > 1) {
                       e.stopPropagation();
+                      const deltaX = (e.clientX - dragStart.x) * 1.5;
+                      const deltaY = (e.clientY - dragStart.y) * 1.5;
                       setImagePan({
-                        x: e.clientX - dragStart.x,
-                        y: e.clientY - dragStart.y,
+                        x: deltaX,
+                        y: deltaY,
                       });
                     }
                   }}
@@ -484,16 +486,18 @@ export default function ThreadAlbumPage() {
                       e.stopPropagation();
                       const touch = e.touches[0];
                       setIsDragging(true);
-                      setDragStart({ x: touch.clientX - imagePan.x, y: touch.clientY - imagePan.y });
+                      setDragStart({ x: touch.clientX - imagePan.x / 1.5, y: touch.clientY - imagePan.y / 1.5 });
                     }
                   }}
                   onTouchMove={(e) => {
                     if (isDragging && imageZoom > 1 && e.touches.length === 1) {
                       e.stopPropagation();
                       const touch = e.touches[0];
+                      const deltaX = (touch.clientX - dragStart.x) * 1.5;
+                      const deltaY = (touch.clientY - dragStart.y) * 1.5;
                       setImagePan({
-                        x: touch.clientX - dragStart.x,
-                        y: touch.clientY - dragStart.y,
+                        x: deltaX,
+                        y: deltaY,
                       });
                     }
                   }}
@@ -505,7 +509,7 @@ export default function ThreadAlbumPage() {
                     <img
                       src={getMediaUrl(selectedMedia)}
                       alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
-                      className={`max-w-full max-h-[85vh] mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''}`}
+                      className={`max-w-full max-h-full mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''}`}
                       style={{
                         transform: `translate(${imagePan.x}px, ${imagePan.y}px) scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,
                         transformOrigin: 'center center',
@@ -522,7 +526,7 @@ export default function ThreadAlbumPage() {
                     <video
                       src={getMediaUrl(selectedMedia)}
                       controls
-                      className="max-w-full max-h-[85vh] mx-auto rounded-lg shadow-glow-lg"
+                      className="max-w-full max-h-full mx-auto rounded-lg shadow-glow-lg"
                       preload="auto"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -556,18 +560,6 @@ export default function ThreadAlbumPage() {
                     </GlassCard>
                   )}
                 </div>
-
-                {selectedMedia.caption && (
-                  <div className="mt-4">
-                    <GlassCard>
-                      <GlassCardContent className="p-4">
-                        <p className="text-white/80 text-center">
-                          {selectedMedia.caption}
-                        </p>
-                      </GlassCardContent>
-                    </GlassCard>
-                  </div>
-                )}
               </div>
             </div>
           </div>
