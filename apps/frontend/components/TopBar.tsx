@@ -44,7 +44,7 @@ export function TopBar({ title }: TopBarProps) {
   const pageTitle = title || breadcrumbs[breadcrumbs.length - 1]?.name || 'Dashboard';
 
   return (
-    <div className="glass-card border-b border-white/10 sticky top-0 z-40">
+    <div className="glass-card border-b border-white/10 sticky top-4 z-40" style={{ borderRadius: '0.75rem 0.75rem 0 0' }}>
       <div className="flex items-center justify-between px-8 py-4">
         <div>
           <h1 className="text-2xl font-semibold text-white">{pageTitle}</h1>

@@ -13,19 +13,21 @@ export function Layout({ children, title }: LayoutProps) {
   return (
     <div className="min-h-screen gradient-bg">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isCollapsed={sidebarCollapsed} onToggle={setSidebarCollapsed} />
 
       {/* Main Content Area */}
       <div
         className={`transition-all duration-300 ${
-          sidebarCollapsed ? 'ml-20' : 'ml-64'
+          sidebarCollapsed ? 'ml-28' : 'ml-72'
         }`}
       >
         {/* Top Bar */}
-        <TopBar title={title} />
+        <div className="pt-4 pr-4">
+          <TopBar title={title} />
+        </div>
 
         {/* Page Content */}
-        <main className="p-8 animate-fade-in">
+        <main className="px-8 pb-8 pr-4 pt-6 animate-fade-in">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

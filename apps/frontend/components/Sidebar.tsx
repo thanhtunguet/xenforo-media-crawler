@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -27,11 +27,34 @@ const navItems: NavItem[] = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onToggle?: (collapsed: boolean) => void;
+}
+
+export function Sidebar({ isCollapsed: controlledCollapsed, onToggle }: SidebarProps) {
   const router = useRouter();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  // Use controlled state if provided, otherwise use internal state
+  const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
+  
+  const setIsCollapsed = (value: boolean) => {
+    if (onToggle) {
+      onToggle(value);
+    } else {
+      setInternalCollapsed(value);
+    }
+  };
+
+  // Ensure component is mounted before using router (prevents hydration mismatch)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isActive = (href: string) => {
+    if (!mounted || !router.pathname) return false;
     if (href === '/') {
       return router.pathname === '/';
     }
@@ -40,9 +63,13 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen glass-card border-r border-white/10 transition-all duration-300 z-50 ${
+      className={`fixed left-4 top-4 bottom-4 border-r border-white/10 transition-all duration-300 z-50 ${
         isCollapsed ? 'w-20' : 'w-64'
-      }`}
+      } glass-card`}
+      style={{ 
+        borderRadius: '0.75rem 0 0 0.75rem',
+        height: 'calc(100vh - 2rem)'
+      }}
     >
       <div className="flex flex-col h-full">
         {/* Logo/Brand */}
