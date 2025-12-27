@@ -37,6 +37,14 @@ export class Site {
   @Column('datetime', { name: 'deletedAt', nullable: true })
   deletedAt: Date | null;
 
+  @Column('varchar', {
+    name: 'loginAdapter',
+    nullable: false,
+    length: 50,
+    default: 'xamvn-clone',
+  })
+  loginAdapter: string;
+
   @OneToMany(() => Forum, (forum) => forum.site)
   forums: Forum[];
 

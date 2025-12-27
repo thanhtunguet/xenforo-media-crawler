@@ -4,6 +4,11 @@ import * as path from 'path';
 import type { AxiosResponse } from 'axios';
 import type { Response } from 'express';
 import { HttpClientService } from 'src/_services/http_client_service';
+import {
+  getLoginAdapter,
+  LoginAdapterType,
+  type ILoginAdapter,
+} from './adapters';
 
 @Injectable()
 export class XenforoClientService extends HttpClientService {
@@ -14,6 +19,28 @@ export class XenforoClientService extends HttpClientService {
       retryDelay: 1000,
       browserLike: true,
     });
+  }
+
+  /**
+   * Get login adapter by type string
+   */
+  private getLoginAdapterByType(adapterType: string): ILoginAdapter {
+    // Map string to enum
+    const typeMap: Record<string, LoginAdapterType> = {
+      'xamvn-clone': LoginAdapterType.XAMVN_CLONE,
+      'xamvn-com': LoginAdapterType.XAMVN_COM,
+    };
+
+    const type = typeMap[adapterType];
+    if (!type) {
+      // Default to xamvn-clone for backwards compatibility
+      console.warn(
+        `Unknown login adapter type: ${adapterType}, using default: xamvn-clone`,
+      );
+      return getLoginAdapter(LoginAdapterType.XAMVN_CLONE);
+    }
+
+    return getLoginAdapter(type);
   }
 
   protected extractCsrfToken(response: AxiosResponse<string>): string | null {
@@ -57,33 +84,11 @@ export class XenforoClientService extends HttpClientService {
     password: string,
     res?: Response,
     siteUrl?: string,
+    loginAdapterType: string = 'xamvn-clone',
   ): Promise<AxiosResponse> {
-    const loginPageResponse = await this.axiosInstance.get('/login/', {
-      baseURL: siteUrl,
-    });
-    this.setCookiesFromResponse(res, loginPageResponse);
-    const csrfToken = this.extractCsrfToken(loginPageResponse);
-    const payload = new URLSearchParams({
-      _xfToken: csrfToken,
-      login: username,
-      password,
-
-      remember: '1',
-      _xfRedirect: siteUrl,
-    }).toString();
-    const response = await this.axiosInstance.post('/login/login', payload, {
-      baseURL: siteUrl,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Requested-With': 'XMLHttpRequest',
-        Origin: siteUrl,
-        Referer: `${siteUrl}/login/`,
-      },
-      maxRedirects: 0,
-      validateStatus: (status) => status === 303,
-    });
-    this.setCookiesFromResponse(res, response);
-    return response;
+    const adapter = this.getLoginAdapterByType(loginAdapterType);
+    console.log(`Using login adapter: ${adapter.getName()}`);
+    return adapter.login(username, password, this.axiosInstance, siteUrl || '', res);
   }
 
   public async loginWithCookie(

@@ -10,13 +10,14 @@ create table MediaType
 
 create table Site
 (
-    id        bigint auto_increment
+    id           bigint auto_increment
         primary key,
-    name      varchar(255)                       null,
-    url       varchar(255)                       not null,
-    createdAt datetime default CURRENT_TIMESTAMP null,
-    updatedAt datetime default CURRENT_TIMESTAMP null,
-    deletedAt datetime                           null,
+    name         varchar(255)                       null,
+    url          varchar(255)                       not null,
+    loginAdapter varchar(50) default 'xamvn-clone'  not null,
+    createdAt    datetime    default CURRENT_TIMESTAMP null,
+    updatedAt    datetime    default CURRENT_TIMESTAMP null,
+    deletedAt    datetime                           null,
     constraint Site_pk_2
         unique (url)
 );

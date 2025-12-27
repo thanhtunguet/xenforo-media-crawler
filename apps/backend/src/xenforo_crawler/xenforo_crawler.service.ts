@@ -23,7 +23,7 @@ export class XenforoCrawlerService {
     private readonly threadRepository: Repository<Entities.Thread>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
-  ) {}
+  ) { }
 
   public async login(
     username: string,
@@ -34,8 +34,23 @@ export class XenforoCrawlerService {
     const site = await this.siteRepository.findOne({
       where: { id: siteId },
     });
-    const siteUrl = site?.url;
-    return this.xenforoClientService.login(username, password, res, siteUrl);
+
+    if (!site) {
+      throw new Error(`Site with ID ${siteId} not found`);
+    }
+
+    const siteUrl = site.url;
+    const loginAdapter = site.loginAdapter || 'xamvn-clone';
+
+    console.log(`Logging in to ${siteUrl} using adapter: ${loginAdapter}`);
+
+    return this.xenforoClientService.login(
+      username,
+      password,
+      res,
+      siteUrl,
+      loginAdapter,
+    );
   }
 
   public async loginWithCookie(siteId: number, res?: Response) {
@@ -101,7 +116,7 @@ export class XenforoCrawlerService {
         where: { id: Number(siteId) },
       });
       const siteUrl = site?.url;
-      
+
       // Use originalId for API calls
       const response = await this.xenforoClientService.get(
         `/forums/${forumOriginalId}/page-${pageId}/`,
@@ -198,20 +213,20 @@ export class XenforoCrawlerService {
     if (!site) {
       throw new Error(`Site with ID ${siteId} not found`);
     }
-    
+
     // Find forum by system id to get originalId for API calls
     const forum = await this.forumRepository.findOne({
       where: { id: Number(forumId), siteId: Number(siteId) },
     });
-    
+
     if (!forum) {
       throw new Error(`Forum with ID ${forumId} not found`);
     }
-    
+
     if (!forum.originalId) {
       throw new Error(`Forum with ID ${forumId} has no originalId`);
     }
-    
+
     // Use originalId for API calls, system id for database
     const forumOriginalId = Number(forum.originalId);
     const count = await this.countThreadPages(siteId, forumOriginalId);

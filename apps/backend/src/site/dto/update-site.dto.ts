@@ -9,4 +9,8 @@ export class UpdateSiteDto {
   @IsUrl()
   @IsOptional()
   url?: string;
+
+  @IsString()
+  @IsOptional()
+  loginAdapter?: string;
 }

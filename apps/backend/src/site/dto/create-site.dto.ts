@@ -9,4 +9,8 @@ export class CreateSiteDto {
   @IsUrl()
   @IsNotEmpty()
   url: string;
+
+  @IsString()
+  @IsOptional()
+  loginAdapter?: string;
 }

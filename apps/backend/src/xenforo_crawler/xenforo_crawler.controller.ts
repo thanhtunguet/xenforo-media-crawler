@@ -24,12 +24,40 @@ import {
 } from './dtos/list-thread-payload.dto';
 import { XenforoBasePayloadDto } from './dtos/xenforo_base_payload.dto';
 import { XenforoLoginDto } from './dtos/xenforo_login.dto';
+import { LoginAdaptersResponseDto } from './dtos/login-adapter.dto';
 import { XenforoCrawlerService } from './xenforo_crawler.service';
 
 @ApiTags('Xenforo Crawler')
 @Controller('/api/xenforo-crawler')
 export class XenforoCrawlerController {
-  constructor(private readonly xenforoCrawlerService: XenforoCrawlerService) {}
+  constructor(private readonly xenforoCrawlerService: XenforoCrawlerService) { }
+
+  @Get('/login-adapters')
+  @ApiOperation({
+    summary: 'List available login adapters',
+    description: 'Returns a list of all available login adapters for XenForo sites',
+    operationId: 'xenforoListLoginAdapters',
+  })
+  @ApiResponse({
+    type: LoginAdaptersResponseDto,
+    status: 200,
+  })
+  public async listLoginAdapters(): Promise<LoginAdaptersResponseDto> {
+    return {
+      adapters: [
+        {
+          key: 'xamvn-clone',
+          name: 'XamVN Clone (Standard XenForo)',
+          description: 'Works with standard XenForo installations and most clones',
+        },
+        {
+          key: 'xamvn-com',
+          name: 'XamVN.com',
+          description: 'Specific adapter for xamvn.com site with custom login flow',
+        },
+      ],
+    };
+  }
 
   @HttpPost('/login')
   @ApiOperation({
@@ -144,11 +172,11 @@ export class XenforoCrawlerController {
     const forum = await this.xenforoCrawlerService['forumRepository'].findOne({
       where: { id: Number(forumId) },
     });
-    
+
     if (!forum || !forum.originalId) {
       throw new Error(`Forum with ID ${forumId} not found or has no originalId`);
     }
-    
+
     return this.xenforoCrawlerService.listThreads(
       siteId,
       Number(forumId),
@@ -177,11 +205,11 @@ export class XenforoCrawlerController {
     const forum = await this.xenforoCrawlerService['forumRepository'].findOne({
       where: { id: Number(forumId) },
     });
-    
+
     if (!forum || !forum.originalId) {
       throw new Error(`Forum with ID ${forumId} not found or has no originalId`);
     }
-    
+
     return this.xenforoCrawlerService.countThreadPages(siteId, Number(forum.originalId));
   }
 
