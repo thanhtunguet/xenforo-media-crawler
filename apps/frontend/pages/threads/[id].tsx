@@ -23,6 +23,13 @@ import {
   ArrowLeft,
   Album,
   MessageSquare,
+  X,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  FlipHorizontal,
+  FlipVertical,
+  RotateCcw,
 } from 'lucide-react';
 
 export default function ThreadPage() {
@@ -43,6 +50,24 @@ export default function ThreadPage() {
   const [mediaType, setMediaType] = useState('0');
   const [mediaCount, setMediaCount] = useState(0);
 
+  // Image viewer state
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [imageZoom, setImageZoom] = useState(1);
+  const [imageRotation, setImageRotation] = useState(0);
+  const [imageFlipH, setImageFlipH] = useState(1);
+  const [imageFlipV, setImageFlipV] = useState(1);
+  const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<{
+    x: number;
+    y: number;
+    screenX?: number;
+    screenY?: number;
+    containerCenterX?: number;
+    containerCenterY?: number;
+  }>({ x: 0, y: 0 });
+  const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null);
+
   useEffect(() => {
     if (threadId) {
       loadThread();
@@ -50,6 +75,32 @@ export default function ThreadPage() {
       loadMediaCount();
     }
   }, [threadId, page]);
+
+  // Add click handlers to images in post content
+  useEffect(() => {
+    const handleImageClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'IMG') {
+        e.preventDefault();
+        const imgSrc = (target as HTMLImageElement).src;
+        setSelectedImageUrl(imgSrc);
+      }
+    };
+
+    // Add event listeners to all images in post content
+    const postImages = document.querySelectorAll('.post-content img');
+    postImages.forEach((img) => {
+      img.addEventListener('click', handleImageClick);
+      img.classList.add('cursor-pointer', 'hover:opacity-80', 'transition-opacity');
+    });
+
+    // Cleanup
+    return () => {
+      postImages.forEach((img) => {
+        img.removeEventListener('click', handleImageClick);
+      });
+    };
+  }, [posts]); // Re-run when posts change
 
   const loadThread = async () => {
     if (!threadId) return;
@@ -316,7 +367,7 @@ export default function ThreadPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div
-                          className="prose prose-invert prose-sm max-w-none text-white/80"
+                          className="prose prose-invert prose-sm max-w-none text-white/80 post-content"
                           dangerouslySetInnerHTML={{ __html: post.content }}
                         />
                         <div className="mt-3 text-xs text-white/40">
@@ -356,6 +407,238 @@ export default function ThreadPage() {
           </GlassCardContent>
         </GlassCard>
       </div>
+
+      {/* Image Viewer Modal */}
+      {selectedImageUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md animate-fade-in"
+          onClick={() => {
+            // Prevent dismissal when zoomed in
+            if (imageZoom > 1) {
+              return;
+            }
+            setSelectedImageUrl(null);
+            // Reset image transforms when closing
+            setImageZoom(1);
+            setImageRotation(0);
+            setImageFlipH(1);
+            setImageFlipV(1);
+            setImagePan({ x: 0, y: 0 });
+          }}
+        >
+          <div className="absolute inset-0 w-full h-full">
+            <div className="relative h-full w-full">
+              {/* Close Button */}
+              <Button
+                variant="glass"
+                size="icon"
+                className="absolute top-4 right-4 z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImageUrl(null);
+                  // Reset image transforms when closing
+                  setImageZoom(1);
+                  setImageRotation(0);
+                  setImageFlipH(1);
+                  setImageFlipV(1);
+                  setImagePan({ x: 0, y: 0 });
+                }}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              {/* Download Button */}
+              <a
+                href={selectedImageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-4 left-4 z-10"
+              >
+                <Button variant="glass-primary" size="sm" className="gap-2">
+                  <Download className="w-4 h-4" />
+                  Download
+                </Button>
+              </a>
+
+              {/* Image Controls */}
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newZoom = Math.min(imageZoom + 0.25, 5);
+                    setImageZoom(newZoom);
+                    if (newZoom <= 1) {
+                      setImagePan({ x: 0, y: 0 });
+                    }
+                  }}
+                  className="gap-2"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newZoom = Math.max(imageZoom - 0.25, 0.25);
+                    setImageZoom(newZoom);
+                    if (newZoom <= 1) {
+                      setImagePan({ x: 0, y: 0 });
+                    }
+                  }}
+                  className="gap-2"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImageZoom(1);
+                    setImagePan({ x: 0, y: 0 });
+                    setImageRotation((prev) => (prev + 90) % 360);
+                  }}
+                  className="gap-2"
+                >
+                  <RotateCw className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImageZoom(1);
+                    setImagePan({ x: 0, y: 0 });
+                    setImageRotation((prev) => (prev - 90) % 360);
+                  }}
+                  className="gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImageZoom(1);
+                    setImagePan({ x: 0, y: 0 });
+                    setImageFlipH((prev) => prev * -1);
+                  }}
+                  className="gap-2"
+                >
+                  <FlipHorizontal className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImageZoom(1);
+                    setImagePan({ x: 0, y: 0 });
+                    setImageFlipV((prev) => prev * -1);
+                  }}
+                  className="gap-2"
+                >
+                  <FlipVertical className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImageZoom(1);
+                    setImageRotation(0);
+                    setImageFlipH(1);
+                    setImageFlipV(1);
+                    setImagePan({ x: 0, y: 0 });
+                  }}
+                  className="gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Image Display */}
+              <div
+                className="h-full w-full overflow-hidden flex items-center justify-center"
+                onMouseDown={(e) => {
+                  if (imageZoom > 1 && imageRef) {
+                    e.stopPropagation();
+                    setIsDragging(true);
+                    const container = e.currentTarget;
+                    const containerRect = container.getBoundingClientRect();
+                    const containerCenterX = containerRect.left + containerRect.width / 2;
+                    const containerCenterY = containerRect.top + containerRect.height / 2;
+                    const clickX = e.clientX - containerCenterX;
+                    const clickY = e.clientY - containerCenterY;
+                    const imagePixelX = (clickX - imagePan.x) / imageZoom;
+                    const imagePixelY = (clickY - imagePan.y) / imageZoom;
+                    setDragStart({
+                      x: imagePixelX,
+                      y: imagePixelY,
+                      screenX: e.clientX,
+                      screenY: e.clientY,
+                      containerCenterX,
+                      containerCenterY
+                    });
+                  }
+                }}
+                onMouseMove={(e) => {
+                  if (isDragging && imageZoom > 1) {
+                    e.stopPropagation();
+                    const newScreenX = e.clientX;
+                    const newScreenY = e.clientY;
+                    const newScreenPosX = newScreenX - (dragStart.containerCenterX || 0);
+                    const newScreenPosY = newScreenY - (dragStart.containerCenterY || 0);
+                    const newPanX = newScreenPosX - dragStart.x * imageZoom;
+                    const newPanY = newScreenPosY - dragStart.y * imageZoom;
+                    setImagePan({ x: newPanX, y: newPanY });
+                  }
+                }}
+                onMouseUp={() => {
+                  setIsDragging(false);
+                }}
+                onMouseLeave={() => {
+                  setIsDragging(false);
+                }}
+              >
+                <img
+                  ref={setImageRef}
+                  src={selectedImageUrl}
+                  alt="Post image"
+                  className={`max-w-full max-h-full mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${
+                    isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''
+                  }`}
+                  style={{
+                    transform: `translate(${imagePan.x}px, ${imagePan.y}px) scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,
+                    transformOrigin: 'center center',
+                  }}
+                  loading="eager"
+                  onClick={(e) => {
+                    if (imageZoom <= 1) {
+                      e.stopPropagation();
+                    }
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (imageZoom <= 1) {
+                      setImageZoom(2);
+                    } else {
+                      setImageZoom(1);
+                      setImagePan({ x: 0, y: 0 });
+                    }
+                  }}
+                  draggable={false}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
