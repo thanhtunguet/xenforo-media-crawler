@@ -25,7 +25,7 @@ const navItems: NavItem[] = [
   { name: 'Forums', href: '/forums', icon: Folder },
   { name: 'Threads', href: '/threads', icon: MessageSquare },
   { name: 'Media', href: '/media', icon: Image },
-  { name: 'Recent Activity', href: '/activity', icon: Clock },
+  { name: 'Recent Activities', href: '/activity', icon: Clock },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

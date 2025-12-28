@@ -14,7 +14,7 @@ import {
   Plus,
   Edit,
   Trash2,
-  Sync,
+  RotateCw,
   Clock
 } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
@@ -40,12 +40,12 @@ const EVENT_TYPE_ICONS: Record<string, React.ElementType> = {
   site_created: Plus,
   site_updated: Edit,
   site_deleted: Trash2,
-  sites_sync: Sync,
+  sites_sync: RotateCw,
   forum_created: Plus,
   forum_updated: Edit,
   forum_deleted: Trash2,
-  thread_sync: Sync,
-  post_sync: Sync,
+  thread_sync: RotateCw,
+  post_sync: RotateCw,
   media_download: Download,
 };
 
@@ -190,12 +190,12 @@ export default function ActivityPage() {
   };
 
   return (
-    <Layout title="Recent Activity">
+    <Layout title="Recent Activities">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Recent Activity</h1>
+            <h1 className="text-3xl font-bold gradient-text">recent activities</h1>
             <p className="text-white/60 mt-1">
               View all recent events and actions in the system
             </p>

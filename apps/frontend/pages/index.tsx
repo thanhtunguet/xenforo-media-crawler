@@ -124,14 +124,14 @@ export default function Dashboard() {
           </GlassCardContent>
         </GlassCard>
 
-        {/* Recent Activity */}
+        {/* recent activities */}
         <GlassCard>
           <GlassCardHeader>
-            <GlassCardTitle className="text-xl">Recent Activity</GlassCardTitle>
+            <GlassCardTitle className="text-xl">recent activities</GlassCardTitle>
           </GlassCardHeader>
           <GlassCardContent>
             <div className="text-center py-8 text-white/50">
-              <p>No recent activity to display</p>
+              <p>No recent activities to display</p>
               <p className="text-sm mt-2">Start by adding a site or syncing forums</p>
             </div>
           </GlassCardContent>

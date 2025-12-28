@@ -263,6 +263,15 @@ export const siteSyncApi = {
   },
 };
 
+// Event Logs APIs
+export const eventLogsApi = {
+  getAll: async (page = 1, limit = 50): Promise<PaginatedResponse<EventLog>> => {
+    return apiRequest<PaginatedResponse<EventLog>>(
+      `/api/event-logs?page=${page}&limit=${limit}`
+    );
+  },
+};
+
 // Threads APIs
 export const threadsApi = {
   getAll: async (page = 1, limit = 10, forumId?: number): Promise<PaginatedResponse<Thread>> => {
