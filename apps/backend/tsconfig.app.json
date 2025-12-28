@@ -23,6 +23,11 @@
       ]
     }
   },
+  "references": [
+    {
+      "path": "../../libs/contracts/tsconfig.lib.json"
+    }
+  ],
   "include": [
     "src/**/*"
   ],

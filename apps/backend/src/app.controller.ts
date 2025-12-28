@@ -1,5 +1,4 @@
 import { Controller, Get, Param, Query, Render } from '@nestjs/common';
-import { AppService } from './app.service';
 import fs from 'fs';
 import { resolve } from 'path';
 import sharp from 'sharp';
@@ -7,12 +6,7 @@ import { Readable } from 'stream';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
+  constructor() {}
 
   @Get('api/status')
   getStatus() {
