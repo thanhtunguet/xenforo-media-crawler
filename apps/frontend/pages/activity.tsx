@@ -18,6 +18,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
+import { ToastType, ButtonVariant } from '@/lib/enums';
 // Simple time formatter (replacing date-fns dependency)
 const formatTimeAgo = (dateString: string | null): string => {
   if (!dateString) return 'Unknown time';
@@ -173,7 +174,7 @@ export default function ActivityPage() {
       }
     } catch (err) {
       console.error('Failed to load activity:', err);
-      addToast('Failed to load activity', 'error');
+      addToast('Failed to load activity', ToastType.ERROR);
     } finally {
       setLoading(false);
     }
@@ -241,7 +242,7 @@ export default function ActivityPage() {
                 <Button
                   onClick={handleLoadMore}
                   disabled={loading}
-                  variant="outline"
+                  variant={ButtonVariant.OUTLINE}
                   className="glass-card border-white/10"
                 >
                   {loading ? 'Loading...' : 'Load More'}

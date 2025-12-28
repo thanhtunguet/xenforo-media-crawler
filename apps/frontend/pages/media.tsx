@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/select';
 import { StatCard } from '@/components/StatCard';
 import { useSettings } from '@/hooks/useSettings';
 import { mediaApi, MediaWithThread, MediaStatsDto, MediaFilters } from '@/lib/api';
+import { MediaSortBy, SortOrder } from '@/lib/enums';
 import Link from 'next/link';
 import {
   Image as ImageIcon,
@@ -78,8 +79,8 @@ export default function MediaPage() {
         mediaTypeId: settings.filters.lastFilters.mediaTypeId ? Number(settings.filters.lastFilters.mediaTypeId) : undefined,
         isDownloaded: settings.filters.lastFilters.isDownloaded === 'true' ? true : settings.filters.lastFilters.isDownloaded === 'false' ? false : undefined,
         search: settings.filters.lastFilters.search || '',
-        sortBy: (settings.filters.lastFilters.sortBy as 'createdAt' | 'updatedAt' | 'filename') || settings.filters.defaultSort,
-        sortOrder: (settings.filters.lastFilters.sortOrder as 'ASC' | 'DESC') || settings.filters.defaultSortOrder,
+        sortBy: (settings.filters.lastFilters.sortBy as MediaSortBy) || settings.filters.defaultSort,
+        sortOrder: (settings.filters.lastFilters.sortOrder as SortOrder) || settings.filters.defaultSortOrder,
       };
     }
 
@@ -349,8 +350,8 @@ export default function MediaPage() {
                       const [sortBy, sortOrder] = e.target.value.split('-');
                       setFilters((prev) => ({
                         ...prev,
-                        sortBy: sortBy as 'createdAt' | 'updatedAt' | 'filename',
-                        sortOrder: sortOrder as 'ASC' | 'DESC',
+                        sortBy: sortBy as MediaSortBy,
+                        sortOrder: sortOrder as SortOrder,
                       }));
                     }}
                     className="glass-input"

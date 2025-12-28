@@ -1,5 +1,7 @@
 /// <reference lib="dom" />
 
+import { JobStatus, MediaSortBy, SortOrder } from './enums';
+
 // In development, use relative URLs (proxied through Next.js)
 // In production, use the configured API URL or relative URLs
 const API_BASE_URL = 
@@ -81,8 +83,8 @@ export interface MediaFilters {
   mediaTypeId?: number;
   isDownloaded?: boolean;
   search?: string;
-  sortBy?: 'createdAt' | 'updatedAt' | 'filename';
-  sortOrder?: 'ASC' | 'DESC';
+  sortBy?: MediaSortBy;
+  sortOrder?: SortOrder;
 }
 
 export interface PaginatedResponse<T> {
@@ -344,7 +346,7 @@ export const crawlerApi = {
 export interface Job {
   id: number;
   jobType: string;
-  status: 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+  status: JobStatus;
   siteId: number | null;
   forumId: number | null;
   threadId: number | null;
@@ -362,10 +364,10 @@ export interface Job {
 
 // Jobs APIs
 export const jobsApi = {
-  getAll: async (limit?: number, status?: string): Promise<Job[]> => {
+  getAll: async (limit?: number, status?: JobStatus): Promise<Job[]> => {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
-    if (status) params.append('status', status);
+    if (status) params.append('status', status.toString());
     const query = params.toString();
     return apiRequest<Job[]>(`/api/jobs${query ? `?${query}` : ''}`);
   },

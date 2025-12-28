@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MediaSortBy, SortOrder } from '@/lib/enums';
 
 export interface AppSettings {
   version: string;
@@ -9,8 +10,8 @@ export interface AppSettings {
   };
   filters: {
     defaultMediaType: '' | '1' | '2' | '3';
-    defaultSort: 'createdAt' | 'updatedAt' | 'filename';
-    defaultSortOrder: 'ASC' | 'DESC';
+    defaultSort: MediaSortBy;
+    defaultSortOrder: SortOrder;
     rememberLastFilters: boolean;
     lastFilters?: {
       mediaTypeId?: string;
@@ -36,8 +37,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   filters: {
     defaultMediaType: '',
-    defaultSort: 'createdAt',
-    defaultSortOrder: 'DESC',
+    defaultSort: MediaSortBy.CREATED_AT,
+    defaultSortOrder: SortOrder.DESC,
     rememberLastFilters: true,
   },
   api: {

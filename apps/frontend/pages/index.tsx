@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Server, Folder, MessageSquare, Image, Plus, RefreshCw, Clock, Edit, Trash2, RotateCw, Download, ArrowRight } from 'lucide-react';
 import { sitesApi, threadsApi, mediaApi, eventLogsApi, EventLog } from '@/lib/api';
+import { ButtonVariant, ButtonSize } from '@/lib/enums';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
@@ -194,8 +195,8 @@ export default function Dashboard() {
           <GlassCardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Button
-                variant="glass-primary"
-                size="lg"
+                variant={ButtonVariant.GLASS_PRIMARY}
+                size={ButtonSize.LG}
                 className="w-full justify-start"
                 onClick={() => router.push('/sites')}
               >
@@ -203,8 +204,8 @@ export default function Dashboard() {
                 Add New Site
               </Button>
               <Button
-                variant="glass"
-                size="lg"
+                variant={ButtonVariant.GLASS}
+                size={ButtonSize.LG}
                 className="w-full justify-start"
                 onClick={() => router.push('/sites')}
               >
@@ -212,8 +213,8 @@ export default function Dashboard() {
                 Manage Sites
               </Button>
               <Button
-                variant="glass"
-                size="lg"
+                variant={ButtonVariant.GLASS}
+                size={ButtonSize.LG}
                 className="w-full justify-start"
                 onClick={loadStats}
               >
@@ -231,8 +232,8 @@ export default function Dashboard() {
               <GlassCardTitle className="text-xl">Recent Activities</GlassCardTitle>
               <Link href="/activity">
                 <Button
-                  variant="glass"
-                  size="sm"
+                  variant={ButtonVariant.GLASS}
+                  size={ButtonSize.SM}
                   className="flex items-center gap-2"
                 >
                   View all

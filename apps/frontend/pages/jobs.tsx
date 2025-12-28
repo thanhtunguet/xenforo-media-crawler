@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { jobsApi, Job } from '@/lib/api';
 import { useJobProgress } from '@/hooks/useJobProgress';
 import { useToast } from '@/contexts/ToastContext';
+import { JobStatus, ToastType, BadgeVariant } from '@/lib/enums';
 import {
   Play,
   Pause,
@@ -22,16 +23,16 @@ import {
   Loader2,
 } from 'lucide-react';
 
-type JobStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled' | 'all';
+type JobStatusFilter = JobStatus | 'all';
 
-const STATUS_OPTIONS: { value: JobStatus; label: string }[] = [
+const STATUS_OPTIONS: { value: JobStatusFilter; label: string }[] = [
   { value: 'all', label: 'All Statuses' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'running', label: 'Running' },
-  { value: 'paused', label: 'Paused' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'failed', label: 'Failed' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: JobStatus.PENDING, label: 'Pending' },
+  { value: JobStatus.RUNNING, label: 'Running' },
+  { value: JobStatus.PAUSED, label: 'Paused' },
+  { value: JobStatus.COMPLETED, label: 'Completed' },
+  { value: JobStatus.FAILED, label: 'Failed' },
+  { value: JobStatus.CANCELLED, label: 'Cancelled' },
 ];
 
 function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
@@ -40,7 +41,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
 
   // Subscribe to real-time updates for running/paused jobs
   const { progress: realtimeProgress } = useJobProgress({
-    jobId: job.status === 'running' || job.status === 'paused' ? job.id : null,
+    jobId: job.status === JobStatus.RUNNING || job.status === JobStatus.PAUSED ? job.id : null,
     onProgress: (data) => {
       // Update will be handled by parent refresh
       onUpdate();
@@ -71,10 +72,10 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
           await jobsApi.cancel(job.id);
           break;
       }
-      addToast(`Job ${actionName} successfully`, 'success');
+      addToast(`Job ${actionName} successfully`, ToastType.SUCCESS);
       onUpdate();
     } catch (err: any) {
-      addToast(err.message || `Failed to ${actionName} job`, 'error');
+      addToast(err.message || `Failed to ${actionName} job`, ToastType.ERROR);
     } finally {
       setActionLoading(null);
     }
@@ -82,17 +83,17 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
 
   const getStatusIcon = () => {
     switch (displayStatus) {
-      case 'completed':
+      case JobStatus.COMPLETED:
         return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case 'failed':
+      case JobStatus.FAILED:
         return <XCircle className="w-4 h-4 text-red-400" />;
-      case 'running':
+      case JobStatus.RUNNING:
         return <Loader2 className="w-4 h-4 animate-spin text-blue-400" />;
-      case 'paused':
+      case JobStatus.PAUSED:
         return <Pause className="w-4 h-4 text-yellow-400" />;
-      case 'cancelled':
+      case JobStatus.CANCELLED:
         return <X className="w-4 h-4 text-gray-400" />;
-      case 'pending':
+      case JobStatus.PENDING:
         return <Clock className="w-4 h-4 text-gray-400" />;
       default:
         return <AlertCircle className="w-4 h-4 text-gray-400" />;
@@ -101,17 +102,17 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
 
   const getStatusBadge = () => {
     switch (displayStatus) {
-      case 'completed':
-        return <Badge variant="success">Completed</Badge>;
-      case 'failed':
-        return <Badge variant="error">Failed</Badge>;
-      case 'running':
-        return <Badge variant="info">Running</Badge>;
-      case 'paused':
-        return <Badge variant="warning">Paused</Badge>;
-      case 'cancelled':
+      case JobStatus.COMPLETED:
+        return <Badge variant={BadgeVariant.SUCCESS}>Completed</Badge>;
+      case JobStatus.FAILED:
+        return <Badge variant={BadgeVariant.ERROR}>Failed</Badge>;
+      case JobStatus.RUNNING:
+        return <Badge variant={BadgeVariant.INFO}>Running</Badge>;
+      case JobStatus.PAUSED:
+        return <Badge variant={BadgeVariant.WARNING}>Paused</Badge>;
+      case JobStatus.CANCELLED:
         return <Badge>Cancelled</Badge>;
-      case 'pending':
+      case JobStatus.PENDING:
         return <Badge>Pending</Badge>;
       default:
         return <Badge>{displayStatus}</Badge>;
@@ -152,11 +153,11 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
             <p className="text-sm text-white/70 mb-2">{displayStep}</p>
           )}
 
-          {(displayStatus === 'running' || displayStatus === 'paused') && (
+          {(displayStatus === JobStatus.RUNNING || displayStatus === JobStatus.PAUSED) && (
             <div className="space-y-2 mb-2">
               <Progress
                 value={displayProgress}
-                status={displayStatus === 'running' ? 'running' : 'pending'}
+                status={displayStatus === JobStatus.RUNNING ? 'syncing' : 'syncing'}
               />
               <div className="flex items-center justify-between text-xs text-white/60">
                 <span>
@@ -167,7 +168,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
             </div>
           )}
 
-          {displayStatus === 'completed' && displayTotal && (
+          {displayStatus === JobStatus.COMPLETED && displayTotal && (
             <p className="text-sm text-white/60">
               Completed: {displayProcessed} / {displayTotal} items
             </p>
@@ -184,7 +185,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          {displayStatus === 'pending' && (
+          {displayStatus === JobStatus.PENDING && (
             <Button
               variant="glass-primary"
               size="sm"
@@ -200,7 +201,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
             </Button>
           )}
 
-          {displayStatus === 'running' && (
+          {displayStatus === JobStatus.RUNNING && (
             <>
               <Button
                 variant="glass"
@@ -231,7 +232,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
             </>
           )}
 
-          {displayStatus === 'paused' && (
+          {displayStatus === JobStatus.PAUSED && (
             <>
               <Button
                 variant="glass-primary"
@@ -271,7 +272,7 @@ export default function JobsPage() {
   const { addToast } = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<JobStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<JobStatusFilter>('all');
 
   const loadJobs = useCallback(async () => {
     try {
@@ -281,7 +282,7 @@ export default function JobsPage() {
       setJobs(jobsList);
     } catch (err) {
       console.error('Failed to load jobs:', err);
-      addToast('Failed to load jobs', 'error');
+      addToast('Failed to load jobs', ToastType.ERROR);
     } finally {
       setLoading(false);
     }
@@ -295,7 +296,7 @@ export default function JobsPage() {
   }, [loadJobs]);
 
   const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value as JobStatus);
+    setStatusFilter(value as JobStatusFilter);
   };
 
   return (

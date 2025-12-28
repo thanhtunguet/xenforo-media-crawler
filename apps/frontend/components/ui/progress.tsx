@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
+import { ProgressStatus } from '@/lib/enums';
 
 export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: number;
   max?: number;
-  status?: 'syncing' | 'completed' | 'failed';
+  status?: ProgressStatus;
   showPercentage?: boolean;
   statusText?: string;
 }
@@ -15,7 +16,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       className,
       value = 0,
       max = 100,
-      status = 'syncing',
+      status = ProgressStatus.SYNCING,
       showPercentage = true,
       statusText,
       ...props
@@ -26,9 +27,9 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
 
     const getStatusColor = () => {
       switch (status) {
-        case 'completed':
+        case ProgressStatus.COMPLETED:
           return 'from-emerald-500 to-green-500';
-        case 'failed':
+        case ProgressStatus.FAILED:
           return 'from-rose-500 to-red-500';
         default:
           return 'from-indigo-500 to-cyan-500';

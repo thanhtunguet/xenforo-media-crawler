@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { JobStatus } from '@/lib/enums';
 
 export interface JobProgress {
   jobId: number;
-  status: 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+  status: JobStatus;
   progress: number;
   totalItems?: number;
   processedItems?: number;
@@ -59,9 +60,9 @@ export function useJobProgress({
       setProgress(data);
       onProgress?.(data);
 
-      if (data.status === 'completed') {
+      if (data.status === JobStatus.COMPLETED) {
         onComplete?.(data);
-      } else if (data.status === 'failed') {
+      } else if (data.status === JobStatus.FAILED) {
         onError?.(data.errorMessage || 'Job failed');
       }
     });
@@ -70,9 +71,9 @@ export function useJobProgress({
       setProgress(data);
       onProgress?.(data);
 
-      if (data.status === 'completed') {
+      if (data.status === JobStatus.COMPLETED) {
         onComplete?.(data);
-      } else if (data.status === 'failed') {
+      } else if (data.status === JobStatus.FAILED) {
         onError?.(data.errorMessage || 'Job failed');
       }
     });

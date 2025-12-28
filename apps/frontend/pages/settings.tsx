@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { useSettings } from '@/hooks/useSettings';
 import { systemApi } from '@/lib/api';
+import { MediaSortBy } from '@/lib/enums';
 import {
   Settings as SettingsIcon,
   Save,
@@ -260,7 +261,7 @@ export default function SettingsPage() {
                       ...localSettings,
                       filters: {
                         ...localSettings.filters,
-                        defaultSort: e.target.value as 'createdAt' | 'updatedAt' | 'filename',
+                        defaultSort: e.target.value as MediaSortBy,
                       },
                     })
                   }

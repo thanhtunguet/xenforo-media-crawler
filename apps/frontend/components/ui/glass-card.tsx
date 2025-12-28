@@ -1,19 +1,20 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
+import { GlassCardVariant } from '@/lib/enums';
 
 export interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'hover-glow' | 'bordered';
+  variant?: GlassCardVariant;
 }
 
 const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ className, variant = 'default', children, ...props }, ref) => {
+  ({ className, variant = GlassCardVariant.DEFAULT, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
           'glass-card p-6',
-          variant === 'hover-glow' && 'hover:shadow-glow-lg',
-          variant === 'bordered' && 'glass-border',
+          variant === GlassCardVariant.HOVER_GLOW && 'hover:shadow-glow-lg',
+          variant === GlassCardVariant.BORDERED && 'glass-border',
           className
         )}
         {...props}
