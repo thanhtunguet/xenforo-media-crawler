@@ -340,9 +340,14 @@ export class XenforoCrawlerController {
     @Res() res: Response,
   ) {
     try {
-      // Get thread to get siteId and name
-      const thread = await this.xenforoCrawlerService.getThread(0, threadId);
-      const siteId = thread.forum?.siteId;
+      // Get thread with forum relation to get siteId and name
+      const thread = await this.xenforoCrawlerService.getThreadById(threadId);
+      
+      if (!thread.forum) {
+        throw new Error('Thread has no associated forum');
+      }
+      
+      const siteId = thread.forum.siteId;
       
       if (!siteId) {
         throw new Error('Thread has no associated site');

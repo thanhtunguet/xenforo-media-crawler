@@ -501,6 +501,35 @@ export class XenforoCrawlerService {
     return thread;
   }
 
+  public async getThreadById(
+    threadId: number,
+  ): Promise<Entities.Thread> {
+    // First try to find by database ID with forum relation
+    let thread = await this.threadRepository.findOne({
+      where: { id: Number(threadId) },
+      relations: ['forum'],
+    });
+
+    // If not found by database ID, try to find by originalId
+    if (!thread) {
+      let cleanThreadId = String(threadId);
+      if (cleanThreadId.startsWith('thread-')) {
+        cleanThreadId = cleanThreadId.replace('thread-', '');
+      }
+
+      thread = await this.threadRepository.findOne({
+        where: { originalId: cleanThreadId },
+        relations: ['forum'],
+      });
+    }
+
+    if (!thread) {
+      throw new Error(`Thread with ID ${threadId} not found`);
+    }
+
+    return thread;
+  }
+
   public async getThreadPosts(
     siteId: number,
     threadId: number,
