@@ -13,7 +13,7 @@ import { Response } from 'express';
 import { EventLogService } from '../event-log/event-log.service';
 import { JobService } from '../job/job.service';
 import { JobGateway } from '../job/job.gateway';
-import { JobType } from '../_entities/SyncJob';
+import { JobType, JobStatus } from '../_entities/SyncJob';
 
 @Injectable()
 export class XenforoCrawlerService {
@@ -300,7 +300,7 @@ export class XenforoCrawlerService {
         });
         this.jobGateway.emitProgress({
           jobId,
-          status: 'running',
+          status: JobStatus.RUNNING,
           progress: Math.round((i / count) * 100),
           totalItems: count,
           processedItems: i,
@@ -331,7 +331,7 @@ export class XenforoCrawlerService {
       await this.jobService.start(job.id);
       this.jobGateway.emitProgress({
         jobId: job.id,
-        status: 'running',
+        status: JobStatus.RUNNING,
         progress: 0,
         currentStep: 'Starting sync...',
       });
@@ -361,7 +361,7 @@ export class XenforoCrawlerService {
         });
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'running',
+          status: JobStatus.RUNNING,
           progress: Math.round((processedForums / forums.length) * 100),
           totalItems: forums.length,
           processedItems: processedForums,
@@ -377,7 +377,7 @@ export class XenforoCrawlerService {
         });
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'running',
+          status: JobStatus.RUNNING,
           progress: Math.round((processedForums / forums.length) * 100),
           totalItems: forums.length,
           processedItems: processedForums,
@@ -392,7 +392,7 @@ export class XenforoCrawlerService {
       });
       this.jobGateway.emitProgress({
         jobId: job.id,
-        status: 'completed',
+        status: JobStatus.COMPLETED,
         progress: 100,
         totalItems: forums.length,
         processedItems: processedForums,
@@ -404,7 +404,7 @@ export class XenforoCrawlerService {
       await this.jobService.fail(job.id, errorMessage);
       this.jobGateway.emitProgress({
         jobId: job.id,
-        status: 'failed',
+        status: JobStatus.FAILED,
         progress: job.progress,
         errorMessage,
       });
@@ -897,7 +897,7 @@ export class XenforoCrawlerService {
         await this.jobService.start(job.id);
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'running',
+          status: JobStatus.RUNNING,
           progress: 0,
           currentStep: 'Starting thread sync...',
         });
@@ -934,7 +934,7 @@ export class XenforoCrawlerService {
           });
           this.jobGateway.emitProgress({
             jobId: job.id,
-            status: 'running',
+            status: JobStatus.RUNNING,
             progress: Math.round(((page - 1) / pageCount) * 100),
             totalItems: pageCount,
             processedItems: page - 1,
@@ -963,7 +963,7 @@ export class XenforoCrawlerService {
         });
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'completed',
+          status: JobStatus.COMPLETED,
           progress: 100,
           totalItems: pageCount,
           processedItems: pageCount,
@@ -975,7 +975,7 @@ export class XenforoCrawlerService {
         await this.jobService.fail(job.id, errorMessage);
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'failed',
+          status: JobStatus.FAILED,
           progress: job.progress,
           errorMessage,
         });
@@ -1031,7 +1031,7 @@ export class XenforoCrawlerService {
         await this.jobService.start(job.id);
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'running',
+          status: JobStatus.RUNNING,
           progress: 0,
           currentStep: 'Starting media download...',
         });
@@ -1109,7 +1109,7 @@ export class XenforoCrawlerService {
       });
       this.jobGateway.emitProgress({
         jobId: job.id,
-        status: 'running',
+        status: JobStatus.RUNNING,
         progress: 0,
         totalItems: uniqueMediaUrls.length,
         processedItems: 0,
@@ -1330,7 +1330,7 @@ export class XenforoCrawlerService {
           });
           this.jobGateway.emitProgress({
             jobId: job.id,
-            status: 'running',
+            status: JobStatus.RUNNING,
             progress,
             totalItems: uniqueMediaUrls.length,
             processedItems: processedCount,
@@ -1392,7 +1392,7 @@ export class XenforoCrawlerService {
           });
           this.jobGateway.emitProgress({
             jobId: job.id,
-            status: 'running',
+            status: JobStatus.RUNNING,
             progress,
             totalItems: uniqueMediaUrls.length,
             processedItems: processedCount,
@@ -1418,7 +1418,7 @@ export class XenforoCrawlerService {
       await this.jobService.complete(job.id, stats);
       this.jobGateway.emitProgress({
         jobId: job.id,
-        status: 'completed',
+        status: JobStatus.COMPLETED,
         progress: 100,
         totalItems: uniqueMediaUrls.length,
         processedItems: processedCount,
@@ -1433,7 +1433,7 @@ export class XenforoCrawlerService {
         await this.jobService.fail(job.id, errorMessage);
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'failed',
+          status: JobStatus.FAILED,
           progress: job.progress,
           errorMessage,
         });
@@ -1446,7 +1446,7 @@ export class XenforoCrawlerService {
         await this.jobService.fail(job.id, errorMessage);
         this.jobGateway.emitProgress({
           jobId: job.id,
-          status: 'failed',
+          status: JobStatus.FAILED,
           progress: job.progress,
           errorMessage,
         });

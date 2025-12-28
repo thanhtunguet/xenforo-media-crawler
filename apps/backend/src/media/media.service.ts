@@ -5,6 +5,7 @@ import { Media } from '../_entities/Media';
 import { MediaResponseDto } from './dto/media-response.dto';
 import { MediaStatsDto } from './dto/media-stats.dto';
 import { PaginatedResponseDto, PaginationDto } from '../common/dto/pagination.dto';
+import { MediaSortBy, SortOrder } from '../common/enums';
 
 export interface MediaWithThreadDto extends MediaResponseDto {
   thread: {
@@ -18,8 +19,8 @@ export interface MediaFilters {
   mediaTypeId?: number;
   isDownloaded?: boolean;
   search?: string;
-  sortBy?: 'createdAt' | 'updatedAt' | 'filename';
-  sortOrder?: 'ASC' | 'DESC';
+  sortBy?: MediaSortBy;
+  sortOrder?: SortOrder;
 }
 
 @Injectable()
@@ -101,11 +102,11 @@ export class MediaService {
       }
 
       // Sorting
-      const sortBy = filters.sortBy || 'createdAt';
-      const sortOrder = filters.sortOrder || 'DESC';
+      const sortBy = filters.sortBy || MediaSortBy.CREATED_AT;
+      const sortOrder = filters.sortOrder || SortOrder.DESC;
       queryBuilder.orderBy(`media.${sortBy}`, sortOrder);
     } else {
-      queryBuilder.orderBy('media.createdAt', 'DESC');
+      queryBuilder.orderBy('media.createdAt', SortOrder.DESC);
     }
 
     // Count total items

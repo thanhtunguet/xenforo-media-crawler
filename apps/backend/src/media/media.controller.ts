@@ -16,6 +16,7 @@ import { MediaService, MediaWithThreadDto, MediaFilters } from './media.service'
 import { MediaResponseDto } from './dto/media-response.dto';
 import { MediaStatsDto } from './dto/media-stats.dto';
 import { PaginatedResponseDto, PaginationDto } from '../common/dto/pagination.dto';
+import { MediaSortBy, SortOrder } from '../common/enums';
 
 @ApiTags('Media')
 @Controller('/api/media')
@@ -62,13 +63,13 @@ export class MediaController {
     name: 'sortBy',
     required: false,
     description: 'Sort by field',
-    enum: ['createdAt', 'updatedAt', 'filename'],
+    enum: MediaSortBy,
   })
   @ApiQuery({
     name: 'sortOrder',
     required: false,
     description: 'Sort order',
-    enum: ['ASC', 'DESC'],
+    enum: SortOrder,
   })
   @ApiResponse({
     status: 200,
@@ -80,8 +81,8 @@ export class MediaController {
     @Query('mediaTypeId') mediaTypeId?: number,
     @Query('isDownloaded') isDownloaded?: string,
     @Query('search') search?: string,
-    @Query('sortBy') sortBy?: 'createdAt' | 'updatedAt' | 'filename',
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+    @Query('sortBy') sortBy?: MediaSortBy,
+    @Query('sortOrder') sortOrder?: SortOrder,
   ): Promise<PaginatedResponseDto<MediaWithThreadDto>> {
     const paginationDto = new PaginationDto();
     paginationDto.page = page ? Number(page) : 1;

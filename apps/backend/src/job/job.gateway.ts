@@ -7,10 +7,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { JobStatus } from '../_entities/SyncJob';
 
 export interface JobProgressEvent {
   jobId: number;
-  status: string;
+  status: JobStatus;
   progress: number;
   totalItems?: number;
   processedItems?: number;
