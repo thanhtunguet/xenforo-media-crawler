@@ -16,8 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@backend/*": ["apps/backend/src/*"],
-      "@/*": ["apps/frontend/*"],
-      "@xenforo-media-crawler/contracts": ["libs/contracts/src/index.ts"]
+      "@/*": ["apps/frontend/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

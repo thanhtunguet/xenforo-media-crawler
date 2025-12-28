@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "license": "MIT",
+  "workspaces": [
+    "libs/*"
+  ],
   "author": {
     "name": "thanhtunguet",
     "email": "ht@thanhtunguet.info",
@@ -22,6 +25,7 @@
     "build:frontend": "nx build frontend"
   },
   "dependencies": {
+    "@xenforo-media-crawler/contracts": "file:dist/libs/contracts",
     "@faker-js/faker": "^9.7.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
