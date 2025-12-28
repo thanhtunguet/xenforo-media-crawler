@@ -5,15 +5,17 @@ import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/
 import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { sitesApi, Forum, Site } from '@/lib/api';
+import { sitesApi, siteSyncApi, Forum, Site } from '@/lib/api';
 import Link from 'next/link';
-import { RefreshCw, Eye, Search, Folder, Clock, Server } from 'lucide-react';
+import { RefreshCw, Eye, Search, Folder, Clock, Server, RotateCw } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 interface ForumWithSite extends Forum {
   site?: Site;
 }
 
 export default function ForumsPage() {
+  const { addToast } = useToast();
   const [forums, setForums] = useState<ForumWithSite[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -21,6 +23,7 @@ export default function ForumsPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [sites, setSites] = useState<Site[]>([]);
+  const [syncingForumId, setSyncingForumId] = useState<number | null>(null);
 
   useEffect(() => {
     loadSites();
@@ -82,6 +85,24 @@ export default function ForumsPage() {
       console.error('Failed to load forums:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncThreads = async (forum: ForumWithSite) => {
+    if (!forum.siteId || !forum.id || !forum.site) {
+      addToast('Cannot sync threads: missing forum or site information', 'error');
+      return;
+    }
+
+    try {
+      setSyncingForumId(forum.id);
+      await siteSyncApi.syncForumThreads(forum.siteId, forum.id);
+      addToast(`Thread sync started for "${forum.name || 'forum'}". This may take a while.`, 'success');
+    } catch (err: any) {
+      console.error('Failed to sync threads:', err);
+      addToast(err.message || 'Failed to sync threads', 'error');
+    } finally {
+      setSyncingForumId(null);
     }
   };
 
@@ -249,12 +270,24 @@ export default function ForumsPage() {
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
                             {forum.siteId && forum.id && (
-                              <Link href={`/forums/${forum.id}/threads`}>
-                                <Button size="sm" variant="glass" className="hover:shadow-glow">
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  View Threads
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="glass"
+                                  onClick={() => handleSyncThreads(forum)}
+                                  disabled={syncingForumId === forum.id}
+                                  className="hover:shadow-glow"
+                                >
+                                  <RotateCw className={`w-4 h-4 mr-1 ${syncingForumId === forum.id ? 'animate-spin' : ''}`} />
+                                  Sync Threads
                                 </Button>
-                              </Link>
+                                <Link href={`/forums/${forum.id}/threads`}>
+                                  <Button size="sm" variant="glass" className="hover:shadow-glow">
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    View Threads
+                                  </Button>
+                                </Link>
+                              </>
                             )}
                           </div>
                         </GlassTableCell>

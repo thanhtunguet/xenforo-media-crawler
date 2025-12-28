@@ -5,17 +5,20 @@ import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/
 import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { threadsApi, Thread } from '@/lib/api';
+import { threadsApi, crawlerApi, Thread } from '@/lib/api';
 import Link from 'next/link';
-import { RefreshCw, Eye, Image as ImageIcon, Search, MessageSquare, Clock } from 'lucide-react';
+import { RefreshCw, Eye, Image as ImageIcon, Search, MessageSquare, Clock, RotateCw } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function ThreadsPage() {
+  const { addToast } = useToast();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [syncingThreadId, setSyncingThreadId] = useState<number | null>(null);
 
   useEffect(() => {
     loadThreads();
@@ -32,6 +35,19 @@ export default function ThreadsPage() {
       console.error('Failed to load threads:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncPosts = async (threadId: number) => {
+    try {
+      setSyncingThreadId(threadId);
+      await crawlerApi.syncThreadPosts(threadId);
+      addToast('Post sync started. This may take a while.', 'success');
+    } catch (err: any) {
+      console.error('Failed to sync posts:', err);
+      addToast(err.message || 'Failed to sync posts', 'error');
+    } finally {
+      setSyncingThreadId(null);
     }
   };
 
@@ -178,6 +194,16 @@ export default function ThreadsPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="glass"
+                              onClick={() => handleSyncPosts(thread.id)}
+                              disabled={syncingThreadId === thread.id}
+                              className="hover:shadow-glow"
+                            >
+                              <RotateCw className={`w-4 h-4 mr-1 ${syncingThreadId === thread.id ? 'animate-spin' : ''}`} />
+                              Sync Posts
+                            </Button>
                             <Link href={`/threads/${thread.id}`}>
                               <Button size="sm" variant="glass" className="hover:shadow-glow">
                                 <Eye className="w-4 h-4 mr-1" />
