@@ -33,11 +33,14 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build applications
-        run: yarn build
+      - name: Build contracts
+        run: nx build contracts
 
-      - name: Install production dependencies
-        run: yarn install --frozen-lockfile --production=true
+      - name: Build backend
+        run: nx build backend
+
+      - name: Build frontend
+        run: nx build frontend
 
       - name: Cache build artifacts
         uses: actions/cache@v4
