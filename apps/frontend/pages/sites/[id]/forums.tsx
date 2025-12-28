@@ -6,6 +6,7 @@ import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/
 import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
 import { sitesApi, siteSyncApi, Forum } from '@/lib/api';
+import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
@@ -42,11 +43,18 @@ export default function ForumsPage() {
     }
   };
 
+  const [syncJobId, setSyncJobId] = useState<number | null>(null);
+  const [showSyncProgress, setShowSyncProgress] = useState(false);
+  const [syncAllJobId, setSyncAllJobId] = useState<number | null>(null);
+  const [showSyncAllProgress, setShowSyncAllProgress] = useState(false);
+
   const handleSyncThreads = async (forumId: number) => {
     if (!siteId) return;
     try {
       setSyncing(forumId);
-      await siteSyncApi.syncForumThreads(siteId, forumId);
+      const response = await siteSyncApi.syncForumThreads(siteId, forumId);
+      setSyncJobId(response.jobId);
+      setShowSyncProgress(true);
       addToast('Thread sync started. This may take a while.', 'success');
     } catch (err) {
       console.error('Failed to sync threads:', err);
@@ -60,9 +68,10 @@ export default function ForumsPage() {
     if (!siteId) return;
     try {
       setLoading(true);
-      await siteSyncApi.syncForums(siteId);
-      addToast('Forums synced successfully', 'success');
-      loadForums();
+      const response = await siteSyncApi.syncAllForumsAndThreads(siteId);
+      setSyncAllJobId(response.jobId);
+      setShowSyncAllProgress(true);
+      addToast('Sync started. This may take a while.', 'success');
     } catch (err) {
       console.error('Failed to sync all forums:', err);
       addToast('Failed to sync forums', 'error');
@@ -246,6 +255,28 @@ export default function ForumsPage() {
             )}
           </GlassCardContent>
         </GlassCard>
+
+        <JobProgressDialog
+          jobId={syncJobId}
+          isOpen={showSyncProgress}
+          onClose={() => {
+            setShowSyncProgress(false);
+            setSyncJobId(null);
+            loadForums();
+          }}
+          title="Syncing Forum Threads"
+        />
+
+        <JobProgressDialog
+          jobId={syncAllJobId}
+          isOpen={showSyncAllProgress}
+          onClose={() => {
+            setShowSyncAllProgress(false);
+            setSyncAllJobId(null);
+            loadForums();
+          }}
+          title="Syncing All Forums and Threads"
+        />
       </div>
     </Layout>
   );

@@ -26,11 +26,16 @@ import { XenforoBasePayloadDto } from './dtos/xenforo_base_payload.dto';
 import { XenforoLoginDto } from './dtos/xenforo_login.dto';
 import { LoginAdaptersResponseDto } from './dtos/login-adapter.dto';
 import { XenforoCrawlerService } from './xenforo_crawler.service';
+import { JobService } from '../job/job.service';
+import { JobType } from '../_entities/SyncJob';
 
 @ApiTags('Xenforo Crawler')
 @Controller('/api/xenforo-crawler')
 export class XenforoCrawlerController {
-  constructor(private readonly xenforoCrawlerService: XenforoCrawlerService) { }
+  constructor(
+    private readonly xenforoCrawlerService: XenforoCrawlerService,
+    private readonly jobService: JobService,
+  ) { }
 
   @Get('/login-adapters')
   @ApiOperation({
@@ -335,11 +340,28 @@ export class XenforoCrawlerController {
     @Res() res: Response,
   ) {
     try {
-      await this.xenforoCrawlerService.syncAllThreadPosts(
+      // Get thread to get siteId and name
+      const thread = await this.xenforoCrawlerService.getThread(0, threadId);
+      const siteId = thread.forum?.siteId;
+      
+      if (!siteId) {
+        throw new Error('Thread has no associated site');
+      }
+      
+      // Create job and run sync asynchronously
+      const job = await this.jobService.create({
+        jobType: JobType.SYNC_THREAD_POSTS,
+        siteId,
         threadId,
-        req,
-      );
-      res.status(200).json({ message: `Synced thread with ID: ${threadId}` });
+        entityName: thread.name || 'Unknown Thread',
+      });
+      
+      void this.xenforoCrawlerService.syncAllThreadPosts(threadId, req, job.id);
+      
+      res.status(200).json({
+        jobId: job.id,
+        message: `Syncing thread with ID: ${threadId}`,
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -368,17 +390,32 @@ export class XenforoCrawlerController {
     description: 'Download process initiated',
   })
   @HttpPost('/download-thread-media')
-  public downloadThreadMedia(
+  public async downloadThreadMedia(
     @Query('threadId') threadId: number,
     @Query('mediaTypeId') mediaTypeId: MediaTypeEnum = MediaTypeEnum.all,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      // Start the download process without awaiting its completion
-      // Pass the request object to have access to cookies
-      this.xenforoCrawlerService
-        .downloadThreadMedia(threadId, mediaTypeId, req)
+      // Get thread to get siteId and name
+      const thread = await this.xenforoCrawlerService.getThread(0, threadId);
+      const siteId = thread.forum?.siteId;
+      
+      if (!siteId) {
+        throw new Error('Thread has no associated site');
+      }
+      
+      // Create job and run download asynchronously
+      const job = await this.jobService.create({
+        jobType: JobType.DOWNLOAD_THREAD_MEDIA,
+        siteId,
+        threadId,
+        entityName: thread.name || 'Unknown Thread',
+        metadata: { mediaTypeId },
+      });
+      
+      void this.xenforoCrawlerService
+        .downloadThreadMedia(threadId, mediaTypeId, req, job.id)
         .then((stats) => {
           console.log(
             `Download completed for thread ${threadId}. Results:`,
@@ -394,6 +431,7 @@ export class XenforoCrawlerController {
 
       // Return success message immediately
       res.status(200).json({
+        jobId: job.id,
         message: `Download process triggered for thread ID: ${threadId}`,
         mediaType: MediaTypeEnum[mediaTypeId] || 'all',
         authenticated: !!req.headers.cookie, // Indicate if request is authenticated

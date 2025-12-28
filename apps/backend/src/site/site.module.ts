@@ -7,12 +7,14 @@ import { Forum } from '../_entities/Forum';
 import { XenforoCrawlerModule } from 'src/xenforo_crawler/xenforo_crawler.module';
 import { SiteSyncController } from './site-sync.controller';
 import { EventLogModule } from '../event-log/event-log.module';
+import { JobModule } from '../job/job.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Site, Forum]),
     XenforoCrawlerModule,
     EventLogModule,
+    JobModule,
   ],
   controllers: [SiteController, SiteSyncController],
   providers: [SiteService],

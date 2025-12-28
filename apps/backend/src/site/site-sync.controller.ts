@@ -1,9 +1,11 @@
 import { Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { ApiParam, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiParam, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { XenforoCrawlerService } from 'src/xenforo_crawler/xenforo_crawler.service';
 import { ForumResponseDto } from './dto/forum-response.dto';
 import { SiteService } from './site.service';
 import { EventLogService } from '../event-log/event-log.service';
+import { JobService } from '../job/job.service';
+import { JobType } from '../_entities/SyncJob';
 
 @ApiTags('Site sync')
 @Controller('/api/sites')
@@ -12,6 +14,7 @@ export class SiteSyncController {
     private readonly siteService: SiteService,
     private readonly xenforoCrawlerService: XenforoCrawlerService,
     private readonly eventLogService: EventLogService,
+    private readonly jobService: JobService,
   ) {}
 
   @Post(':id/sync')
@@ -53,9 +56,32 @@ export class SiteSyncController {
     required: true,
     type: Number,
   })
-  syncAllForumsAndThreads(@Param('id', ParseIntPipe) id: number): string {
-    void this.xenforoCrawlerService.syncAllForumsAndThreads(id);
-    return 'All forums and threads are being synced';
+  @ApiResponse({
+    status: 200,
+    description: 'Sync job started',
+    schema: {
+      type: 'object',
+      properties: {
+        jobId: { type: 'number' },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async syncAllForumsAndThreads(@Param('id', ParseIntPipe) id: number): Promise<{ jobId: number; message: string }> {
+    const site = await this.siteService.findOne(id);
+    const job = await this.jobService.create({
+      jobType: JobType.SYNC_ALL_FORUMS_AND_THREADS,
+      siteId: id,
+      entityName: site.name || site.url,
+    });
+    
+    // Run sync asynchronously
+    void this.xenforoCrawlerService.syncAllForumsAndThreads(id, job.id);
+    
+    return {
+      jobId: job.id,
+      message: 'All forums and threads are being synced',
+    };
   }
 
   @Post(':id/forums/:forumId/sync')
@@ -76,11 +102,38 @@ export class SiteSyncController {
     required: true,
     type: Number,
   })
-  syncThreads(
+  @ApiResponse({
+    status: 200,
+    description: 'Sync job started',
+    schema: {
+      type: 'object',
+      properties: {
+        jobId: { type: 'number' },
+        message: { type: 'string' },
+      },
+    },
+  })
+  async syncThreads(
     @Param('id', ParseIntPipe) id: number,
     @Param('forumId', ParseIntPipe) forumId: number,
-  ): string {
-    void this.xenforoCrawlerService.syncAllThreads(id, forumId);
-    return 'All threads are being synced';
+  ): Promise<{ jobId: number; message: string }> {
+    // Get forum name for job entity name
+    const forums = await this.xenforoCrawlerService.listForums(id);
+    const forum = forums.find(f => f.id === forumId);
+    
+    const job = await this.jobService.create({
+      jobType: JobType.SYNC_FORUM_THREADS,
+      siteId: id,
+      forumId,
+      entityName: forum?.name || `Forum ${forumId}`,
+    });
+    
+    // Run sync asynchronously
+    void this.xenforoCrawlerService.syncAllThreads(id, forumId, job.id);
+    
+    return {
+      jobId: job.id,
+      message: 'All threads are being synced',
+    };
   }
 }

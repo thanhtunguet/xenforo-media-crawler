@@ -1,7 +1,7 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { Site } from './Site';
 
-@Index('User_pk_2', ['siteId', 'username', 'email'], { unique: true })
+@Unique('User_pk_2', ['siteId', 'username', 'email'])
 @Entity('User', {})
 export class User {
   @Column('bigint', { primary: true, name: 'id' })

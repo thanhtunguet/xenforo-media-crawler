@@ -13,6 +13,7 @@ import { XenforoCrawlerModule } from './xenforo_crawler/xenforo_crawler.module';
 import { ThreadModule } from './thread/thread.module';
 import { MediaModule } from './media/media.module';
 import { EventLogModule } from './event-log/event-log.module';
+import { JobModule } from './job/job.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { EventLogModule } from './event-log/event-log.module';
     XenforoCrawlerModule,
     MediaModule,
     EventLogModule,
+    JobModule,
   ],
   controllers: [AppController],
   providers: [AppService],

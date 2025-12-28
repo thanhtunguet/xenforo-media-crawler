@@ -11,6 +11,9 @@ import type { EntityManager, Repository } from 'typeorm';
 import { XenforoClientService } from './xenforo_client.service';
 import { Response } from 'express';
 import { EventLogService } from '../event-log/event-log.service';
+import { JobService } from '../job/job.service';
+import { JobGateway } from '../job/job.gateway';
+import { JobType } from '../_entities/SyncJob';
 
 @Injectable()
 export class XenforoCrawlerService {
@@ -25,6 +28,8 @@ export class XenforoCrawlerService {
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
     private readonly eventLogService: EventLogService,
+    private readonly jobService: JobService,
+    private readonly jobGateway: JobGateway,
   ) {}
 
   public async login(
@@ -252,7 +257,7 @@ export class XenforoCrawlerService {
     }
   }
 
-  public async syncAllThreads(siteId: number, forumId: number) {
+  public async syncAllThreads(siteId: number, forumId: number, jobId?: number) {
     const site = await this.siteRepository.findOne({
       where: { id: Number(siteId) },
     });
@@ -276,12 +281,36 @@ export class XenforoCrawlerService {
     // Use originalId for API calls, system id for database
     const forumOriginalId = Number(forum.originalId);
     const count = await this.countThreadPages(siteId, forumOriginalId);
+    
+    if (jobId) {
+      await this.jobService.updateProgress(jobId, {
+        totalItems: count,
+        currentStep: `Syncing ${count} thread pages for forum: ${forum.name}`,
+      });
+    }
+
     for (let i = 1; i <= count; i++) {
       await this.listThreads(siteId, Number(forumId), forumOriginalId, i);
+      
+      if (jobId) {
+        await this.jobService.updateProgress(jobId, {
+          processedItems: i,
+          progress: Math.round((i / count) * 100),
+          currentStep: `Synced page ${i} of ${count}`,
+        });
+        this.jobGateway.emitProgress({
+          jobId,
+          status: 'running',
+          progress: Math.round((i / count) * 100),
+          totalItems: count,
+          processedItems: i,
+          currentStep: `Synced page ${i} of ${count}`,
+        });
+      }
     }
   }
 
-  public async syncAllForumsAndThreads(siteId: number): Promise<void> {
+  public async syncAllForumsAndThreads(siteId: number, jobId?: number): Promise<void> {
     const site = await this.siteRepository.findOne({
       where: { id: Number(siteId) },
     });
@@ -289,23 +318,98 @@ export class XenforoCrawlerService {
       throw new Error(`Site with ID ${siteId} not found`);
     }
 
-    console.log(`Starting sync for site: ${site.url} (ID: ${siteId})`);
-
-    const forums = await this.listForums(siteId);
-    console.log(`Found ${forums.length} forums to sync`);
-
-    for (const forum of forums) {
-      if (!forum.id) {
-        console.log(`Skipping forum ${forum.name} - not saved to database yet`);
-        continue;
-      }
-      console.log(
-        `Syncing threads for forum: ${forum.name} (System ID: ${forum.id}, Original ID: ${forum.originalId})`,
-      );
-      await this.syncAllThreads(siteId, Number(forum.id));
+    let job = jobId ? await this.jobService.findOne(jobId) : null;
+    if (!job) {
+      job = await this.jobService.create({
+        jobType: JobType.SYNC_ALL_FORUMS_AND_THREADS,
+        siteId,
+        entityName: site.name || site.url,
+      });
     }
 
-    console.log(`Completed sync for site ID: ${siteId}`);
+    try {
+      await this.jobService.start(job.id);
+      this.jobGateway.emitProgress({
+        jobId: job.id,
+        status: 'running',
+        progress: 0,
+        currentStep: 'Starting sync...',
+      });
+
+      console.log(`Starting sync for site: ${site.url} (ID: ${siteId})`);
+
+      const forums = await this.listForums(siteId);
+      console.log(`Found ${forums.length} forums to sync`);
+
+      await this.jobService.updateProgress(job.id, {
+        totalItems: forums.length,
+        currentStep: `Found ${forums.length} forums to sync`,
+      });
+
+      let processedForums = 0;
+      for (const forum of forums) {
+        if (!forum.id) {
+          console.log(`Skipping forum ${forum.name} - not saved to database yet`);
+          continue;
+        }
+        console.log(
+          `Syncing threads for forum: ${forum.name} (System ID: ${forum.id}, Original ID: ${forum.originalId})`,
+        );
+        
+        await this.jobService.updateProgress(job.id, {
+          currentStep: `Syncing threads for forum: ${forum.name}`,
+        });
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'running',
+          progress: Math.round((processedForums / forums.length) * 100),
+          totalItems: forums.length,
+          processedItems: processedForums,
+          currentStep: `Syncing threads for forum: ${forum.name}`,
+        });
+
+        await this.syncAllThreads(siteId, Number(forum.id), undefined);
+        processedForums++;
+
+        await this.jobService.updateProgress(job.id, {
+          processedItems: processedForums,
+          progress: Math.round((processedForums / forums.length) * 100),
+        });
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'running',
+          progress: Math.round((processedForums / forums.length) * 100),
+          totalItems: forums.length,
+          processedItems: processedForums,
+          currentStep: `Completed ${processedForums} of ${forums.length} forums`,
+        });
+      }
+
+      console.log(`Completed sync for site ID: ${siteId}`);
+      await this.jobService.complete(job.id, {
+        totalForums: forums.length,
+        processedForums,
+      });
+      this.jobGateway.emitProgress({
+        jobId: job.id,
+        status: 'completed',
+        progress: 100,
+        totalItems: forums.length,
+        processedItems: processedForums,
+        currentStep: 'Sync completed successfully',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Error syncing site ${siteId}:`, error);
+      await this.jobService.fail(job.id, errorMessage);
+      this.jobGateway.emitProgress({
+        jobId: job.id,
+        status: 'failed',
+        progress: job.progress,
+        errorMessage,
+      });
+      throw error;
+    }
   }
 
   public async countPostPages(
@@ -727,6 +831,7 @@ export class XenforoCrawlerService {
   public async syncAllThreadPosts(
     threadId: number,
     req?: Request,
+    jobId?: number,
   ): Promise<void> {
     try {
       // Get thread with forum relation to access siteId
@@ -748,40 +853,105 @@ export class XenforoCrawlerService {
       if (!thread.originalId) {
         throw new Error(`Thread with ID ${threadId} has no originalId`);
       }
-      console.log(
-        `Starting sync for thread: ${thread.name} (originalId: ${thread.originalId})`,
-      );
 
-      // Log thread sync start
-      await this.eventLogService.logThreadSync(
-        threadId,
-        thread.name || 'Unknown Thread',
-        siteId,
-        Number(thread.forumId),
-      );
-
-      // Use originalId for all API operations
-      const pageCount = await this.countPostPages(siteId, threadId);
-      console.log(`Thread has ${pageCount} pages to sync`);
-
-      let totalPosts = 0;
-      for (let page = 1; page <= pageCount; page++) {
-        console.log(`Syncing page ${page} of ${pageCount}`);
-        const posts = await this.getThreadPosts(siteId, threadId, page, req);
-        console.log(`Synced ${posts.length} posts from page ${page}`);
-        totalPosts += posts.length;
-
-        await new Promise((resolve) => setTimeout(resolve, 75));
+      let job = jobId ? await this.jobService.findOne(jobId) : null;
+      if (!job) {
+        job = await this.jobService.create({
+          jobType: JobType.SYNC_THREAD_POSTS,
+          siteId,
+          threadId,
+          entityName: thread.name || 'Unknown Thread',
+        });
       }
 
-      console.log(`Completed sync for thread originalId: ${thread.originalId}`);
-      
-      // Log post sync completion
-      await this.eventLogService.logPostSync(
-        threadId,
-        thread.name || 'Unknown Thread',
-        totalPosts,
-      );
+      try {
+        await this.jobService.start(job.id);
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'running',
+          progress: 0,
+          currentStep: 'Starting thread sync...',
+        });
+
+        console.log(
+          `Starting sync for thread: ${thread.name} (originalId: ${thread.originalId})`,
+        );
+
+        // Log thread sync start
+        await this.eventLogService.logThreadSync(
+          threadId,
+          thread.name || 'Unknown Thread',
+          siteId,
+          Number(thread.forumId),
+        );
+
+        // Use originalId for all API operations
+        const pageCount = await this.countPostPages(siteId, threadId);
+        console.log(`Thread has ${pageCount} pages to sync`);
+
+        await this.jobService.updateProgress(job.id, {
+          totalItems: pageCount,
+          currentStep: `Found ${pageCount} pages to sync`,
+        });
+
+        let totalPosts = 0;
+        for (let page = 1; page <= pageCount; page++) {
+          console.log(`Syncing page ${page} of ${pageCount}`);
+          
+          await this.jobService.updateProgress(job.id, {
+            processedItems: page - 1,
+            progress: Math.round(((page - 1) / pageCount) * 100),
+            currentStep: `Syncing page ${page} of ${pageCount}`,
+          });
+          this.jobGateway.emitProgress({
+            jobId: job.id,
+            status: 'running',
+            progress: Math.round(((page - 1) / pageCount) * 100),
+            totalItems: pageCount,
+            processedItems: page - 1,
+            currentStep: `Syncing page ${page} of ${pageCount}`,
+          });
+
+          const posts = await this.getThreadPosts(siteId, threadId, page, req);
+          console.log(`Synced ${posts.length} posts from page ${page}`);
+          totalPosts += posts.length;
+
+          await new Promise((resolve) => setTimeout(resolve, 75));
+        }
+
+        console.log(`Completed sync for thread originalId: ${thread.originalId}`);
+        
+        // Log post sync completion
+        await this.eventLogService.logPostSync(
+          threadId,
+          thread.name || 'Unknown Thread',
+          totalPosts,
+        );
+
+        await this.jobService.complete(job.id, {
+          totalPosts,
+          totalPages: pageCount,
+        });
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'completed',
+          progress: 100,
+          totalItems: pageCount,
+          processedItems: pageCount,
+          currentStep: `Sync completed: ${totalPosts} posts synced`,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error syncing thread ${threadId}:`, error);
+        await this.jobService.fail(job.id, errorMessage);
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'failed',
+          progress: job.progress,
+          errorMessage,
+        });
+        throw error;
+      }
     } catch (error) {
       console.error(`Error syncing thread ${threadId}:`, error);
       throw error;
@@ -792,12 +962,14 @@ export class XenforoCrawlerService {
     threadId: number,
     mediaTypeId: MediaTypeEnum = MediaTypeEnum.all,
     req?: Request,
+    jobId?: number,
   ): Promise<{
     total: number;
     downloaded: number;
     failed: number;
     skipped: number;
   }> {
+    let job: Entities.SyncJob | null = null;
     try {
       // Get thread with forum relation to access siteId
       const thread = await this.threadRepository.findOne({
@@ -815,9 +987,29 @@ export class XenforoCrawlerService {
 
       const siteId = thread.forum.siteId;
 
-      console.log(
-        `Starting media download for thread: ${thread.name} (ID: ${thread.id})`,
-      );
+      job = jobId ? await this.jobService.findOne(jobId) : null;
+      if (!job) {
+        job = await this.jobService.create({
+          jobType: JobType.DOWNLOAD_THREAD_MEDIA,
+          siteId,
+          threadId,
+          entityName: thread.name || 'Unknown Thread',
+          metadata: { mediaTypeId },
+        });
+      }
+
+      try {
+        await this.jobService.start(job.id);
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'running',
+          progress: 0,
+          currentStep: 'Starting media download...',
+        });
+
+        console.log(
+          `Starting media download for thread: ${thread.name} (ID: ${thread.id})`,
+        );
 
       // Create download directories
       const downloadDir = path.resolve(
@@ -882,6 +1074,19 @@ export class XenforoCrawlerService {
 
       stats.total = uniqueMediaUrls.length;
 
+      await this.jobService.updateProgress(job.id, {
+        totalItems: uniqueMediaUrls.length,
+        currentStep: `Found ${uniqueMediaUrls.length} unique media items to download`,
+      });
+      this.jobGateway.emitProgress({
+        jobId: job.id,
+        status: 'running',
+        progress: 0,
+        totalItems: uniqueMediaUrls.length,
+        processedItems: 0,
+        currentStep: `Found ${uniqueMediaUrls.length} unique media items to download`,
+      });
+
       // Get site URL for config
       const site = await this.siteRepository.findOne({
         where: { id: Number(siteId) },
@@ -908,6 +1113,7 @@ export class XenforoCrawlerService {
       }
 
       // Download each unique media file
+      let processedCount = 0;
       for (const mediaUrl of uniqueMediaUrls) {
         // Find all media items with this URL to update them all
         const mediaItemsWithUrl = filteredMedia.filter(
@@ -1084,6 +1290,28 @@ export class XenforoCrawlerService {
             `Downloaded media with URL ${media.url} to ${finalFilePath} (updated ${mediaItemsWithUrl.length} records)`,
           );
           stats.downloaded++;
+          processedCount++;
+
+          // Update progress
+          const progress = Math.round((processedCount / uniqueMediaUrls.length) * 100);
+          await this.jobService.updateProgress(job.id, {
+            processedItems: processedCount,
+            progress,
+            currentStep: `Downloaded ${stats.downloaded} of ${uniqueMediaUrls.length} items`,
+          });
+          this.jobGateway.emitProgress({
+            jobId: job.id,
+            status: 'running',
+            progress,
+            totalItems: uniqueMediaUrls.length,
+            processedItems: processedCount,
+            currentStep: `Downloaded ${stats.downloaded} of ${uniqueMediaUrls.length} items`,
+            metadata: {
+              downloaded: stats.downloaded,
+              failed: stats.failed,
+              skipped: stats.skipped,
+            },
+          });
 
           // Add a delay to avoid rate limiting (429 errors)
           const delayTime = 200 + Math.floor(Math.random() * 150);
@@ -1124,6 +1352,28 @@ export class XenforoCrawlerService {
           }
 
           stats.failed++;
+          processedCount++;
+
+          // Update progress even on failure
+          const progress = Math.round((processedCount / uniqueMediaUrls.length) * 100);
+          await this.jobService.updateProgress(job.id, {
+            processedItems: processedCount,
+            progress,
+            currentStep: `Failed to download item ${processedCount} of ${uniqueMediaUrls.length}`,
+          });
+          this.jobGateway.emitProgress({
+            jobId: job.id,
+            status: 'running',
+            progress,
+            totalItems: uniqueMediaUrls.length,
+            processedItems: processedCount,
+            currentStep: `Failed to download item ${processedCount} of ${uniqueMediaUrls.length}`,
+            metadata: {
+              downloaded: stats.downloaded,
+              failed: stats.failed,
+              skipped: stats.skipped,
+            },
+          });
         }
       }
 
@@ -1135,10 +1385,43 @@ export class XenforoCrawlerService {
         thread.name || 'Unknown Thread',
         stats,
       );
+
+      await this.jobService.complete(job.id, stats);
+      this.jobGateway.emitProgress({
+        jobId: job.id,
+        status: 'completed',
+        progress: 100,
+        totalItems: uniqueMediaUrls.length,
+        processedItems: processedCount,
+        currentStep: `Download completed: ${stats.downloaded} downloaded, ${stats.failed} failed, ${stats.skipped} skipped`,
+        metadata: stats,
+      });
       
       return stats;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error downloading media for thread ${threadId}:`, error);
+        await this.jobService.fail(job.id, errorMessage);
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'failed',
+          progress: job.progress,
+          errorMessage,
+        });
+        throw error;
+      }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error(`Error downloading media for thread ${threadId}:`, error);
+      if (job) {
+        await this.jobService.fail(job.id, errorMessage);
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: 'failed',
+          progress: job.progress,
+          errorMessage,
+        });
+      }
       throw error;
     }
   }

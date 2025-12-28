@@ -10,6 +10,8 @@ export { Post } from './Post';
 
 export { Site } from './Site';
 
+export { SyncJob } from './SyncJob';
+
 export { Thread } from './Thread';
 
 export { User } from './User';

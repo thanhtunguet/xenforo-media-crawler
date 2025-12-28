@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout';
 import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
+import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import {
   RefreshCw,
@@ -47,6 +48,10 @@ export default function ThreadPage() {
   const [totalPosts, setTotalPosts] = useState(0);
   const [syncing, setSyncing] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [syncJobId, setSyncJobId] = useState<number | null>(null);
+  const [downloadJobId, setDownloadJobId] = useState<number | null>(null);
+  const [showSyncProgress, setShowSyncProgress] = useState(false);
+  const [showDownloadProgress, setShowDownloadProgress] = useState(false);
   const [mediaType, setMediaType] = useState('0');
   const [mediaCount, setMediaCount] = useState(0);
 
@@ -147,12 +152,10 @@ export default function ThreadPage() {
     }
     try {
       setSyncing(true);
-      await crawlerApi.syncThreadPosts(threadId);
+      const response = await crawlerApi.syncThreadPosts(threadId);
+      setSyncJobId(response.jobId);
+      setShowSyncProgress(true);
       addToast('Post sync started. This may take a while.', 'success');
-      setTimeout(() => {
-        loadPosts();
-        loadMediaCount();
-      }, 2000);
     } catch (err: any) {
       console.error('Failed to sync posts:', err);
       addToast(err.message || 'Failed to sync posts', 'error');
@@ -168,10 +171,12 @@ export default function ThreadPage() {
     }
     try {
       setDownloading(true);
-      await crawlerApi.downloadThreadMedia(
+      const response = await crawlerApi.downloadThreadMedia(
         threadId,
         Number(mediaType)
       );
+      setDownloadJobId(response.jobId);
+      setShowDownloadProgress(true);
       addToast('Media download started. This may take a while.', 'success');
     } catch (err: any) {
       console.error('Failed to download media:', err);
@@ -639,6 +644,29 @@ export default function ThreadPage() {
           </div>
         </div>
       )}
+
+      <JobProgressDialog
+        jobId={syncJobId}
+        isOpen={showSyncProgress}
+        onClose={() => {
+          setShowSyncProgress(false);
+          setSyncJobId(null);
+          loadPosts();
+          loadMediaCount();
+        }}
+        title="Syncing Thread Posts"
+      />
+
+      <JobProgressDialog
+        jobId={downloadJobId}
+        isOpen={showDownloadProgress}
+        onClose={() => {
+          setShowDownloadProgress(false);
+          setDownloadJobId(null);
+          loadMediaCount();
+        }}
+        title="Downloading Media"
+      />
     </Layout>
   );
 }

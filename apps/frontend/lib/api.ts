@@ -241,6 +241,12 @@ export const sitesApi = {
   },
 };
 
+// Job response type
+export interface JobResponse {
+  jobId: number;
+  message: string;
+}
+
 // Site Sync APIs
 export const siteSyncApi = {
   syncForums: async (siteId: number): Promise<Forum[]> => {
@@ -248,16 +254,16 @@ export const siteSyncApi = {
       method: 'POST',
     });
   },
-  syncAllForumsAndThreads: async (siteId: number): Promise<string> => {
-    return apiRequest<string>(`/api/sites/${siteId}/sync/threads`, {
+  syncAllForumsAndThreads: async (siteId: number): Promise<JobResponse> => {
+    return apiRequest<JobResponse>(`/api/sites/${siteId}/sync/threads`, {
       method: 'POST',
     });
   },
   syncForumThreads: async (
     siteId: number,
     forumId: number
-  ): Promise<string> => {
-    return apiRequest<string>(`/api/sites/${siteId}/forums/${forumId}/sync`, {
+  ): Promise<JobResponse> => {
+    return apiRequest<JobResponse>(`/api/sites/${siteId}/forums/${forumId}/sync`, {
       method: 'POST',
     });
   },
@@ -313,8 +319,8 @@ export const crawlerApi = {
   },
   syncThreadPosts: async (
     threadId: number
-  ): Promise<{ message: string }> => {
-    return apiRequest<{ message: string }>(
+  ): Promise<JobResponse> => {
+    return apiRequest<JobResponse>(
       `/api/xenforo-crawler/sync-thread-posts?threadId=${threadId}`,
       {
         method: 'POST',
@@ -324,12 +330,8 @@ export const crawlerApi = {
   downloadThreadMedia: async (
     threadId: number,
     mediaTypeId: number = 0
-  ): Promise<{ message: string; mediaType: string; authenticated: boolean }> => {
-    return apiRequest<{
-      message: string;
-      mediaType: string;
-      authenticated: boolean;
-    }>(
+  ): Promise<JobResponse & { mediaType: string; authenticated: boolean }> => {
+    return apiRequest<JobResponse & { mediaType: string; authenticated: boolean }>(
       `/api/xenforo-crawler/download-thread-media?threadId=${threadId}&mediaTypeId=${mediaTypeId}`,
       {
         method: 'POST',
