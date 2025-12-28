@@ -4635,11 +4635,6 @@
     "@webassemblyjs/ast" "1.14.1"
     "@xtuc/long" "4.2.2"
 
-"@xenforo-media-crawler/contracts@file:dist/libs/contracts":
-  version "0.0.1"
-  dependencies:
-    tslib "^2.3.0"
-
 "@xhmikosr/archive-type@^7.1.0":
   version "7.1.0"
   resolved "https://registry.yarnpkg.com/@xhmikosr/archive-type/-/archive-type-7.1.0.tgz#2983bcc547e119cdd345e50abaaeb6b7097daa44"

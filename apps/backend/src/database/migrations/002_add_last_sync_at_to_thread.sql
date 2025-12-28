@@ -5,3 +5,5 @@ ALTER TABLE Thread
 ADD COLUMN lastSyncAt datetime NULL
 COMMENT 'Last time posts were synced for this thread';
 
+
+
