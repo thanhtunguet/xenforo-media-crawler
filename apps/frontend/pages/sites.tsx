@@ -182,6 +182,12 @@ export default function SitesPage() {
         loginSite.id
       );
       setLoginResult(result);
+      addToast('Login successful!', 'success');
+      // Close dialog on success
+      setLoginDialogOpen(false);
+      setLoginCredentials({ username: '', password: '' });
+      setLoginResult(null);
+      setLoginError('');
     } catch (err: any) {
       setLoginError(err.message || 'Login failed');
     } finally {
@@ -683,7 +689,7 @@ export default function SitesPage() {
             {/* Error Display */}
             {loginError && (
               <div className="p-3 bg-rose-500/20 border border-rose-500/30 rounded-lg">
-                <p className="text-rose-300 text-sm">{loginError}</p>
+                <p className="text-destructive text-sm">{loginError}</p>
               </div>
             )}
 
