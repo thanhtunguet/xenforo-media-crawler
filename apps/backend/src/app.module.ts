@@ -12,6 +12,7 @@ import { SiteModule } from './site/site.module';
 import { XenforoCrawlerModule } from './xenforo_crawler/xenforo_crawler.module';
 import { ThreadModule } from './thread/thread.module';
 import { MediaModule } from './media/media.module';
+import { EventLogModule } from './event-log/event-log.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { MediaModule } from './media/media.module';
     ThreadModule,
     XenforoCrawlerModule,
     MediaModule,
+    EventLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

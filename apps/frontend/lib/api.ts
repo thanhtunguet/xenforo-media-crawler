@@ -95,6 +95,17 @@ export interface PaginatedResponse<T> {
   };
 }
 
+export interface EventLog {
+  id: number;
+  eventType: string;
+  entityType: string | null;
+  entityId: number | null;
+  entityName: string | null;
+  description: string | null;
+  metadata: Record<string, any> | null;
+  createdAt: string | null;
+}
+
 export interface CreateSiteDto {
   name?: string;
   url: string;

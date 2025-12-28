@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventLog, EventType } from '../_entities/EventLog';
+import {
+  PaginatedResponseDto,
+  PaginationDto,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class EventLogService {
@@ -9,6 +13,29 @@ export class EventLogService {
     @InjectRepository(EventLog)
     private eventLogRepository: Repository<EventLog>,
   ) {}
+
+  async findAll(
+    pagination: PaginationDto = new PaginationDto(),
+  ): Promise<PaginatedResponseDto<EventLog>> {
+    const [eventLogs, totalItems] = await this.eventLogRepository.findAndCount(
+      {
+        skip: pagination.skip,
+        take: pagination.limit,
+        order: {
+          createdAt: 'DESC',
+        },
+      },
+    );
+
+    const totalPages = Math.ceil(totalItems / pagination.limit);
+
+    return new PaginatedResponseDto(eventLogs, {
+      totalItems,
+      itemsPerPage: pagination.limit,
+      currentPage: pagination.page,
+      totalPages,
+    });
+  }
 
   async logEvent(
     eventType: EventType,
