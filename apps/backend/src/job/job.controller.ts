@@ -2,7 +2,8 @@ import { Controller, Get, Post, Patch, Param, ParseIntPipe, Query } from '@nestj
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JobService } from './job.service';
 import { JobGateway } from './job.gateway';
-import { SyncJob, JobStatus } from '../_entities/SyncJob';
+import { SyncJob } from '../_entities/SyncJob';
+import { JobStatus } from '@xenforo-media-crawler/contracts';
 
 @ApiTags('Jobs')
 @Controller('/api/jobs')

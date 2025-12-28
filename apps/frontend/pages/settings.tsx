@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { useSettings } from '@/hooks/useSettings';
 import { systemApi } from '@/lib/api';
-import { MediaSortBy } from '@/lib/enums';
+import { MediaSortBy } from '@xenforo-media-crawler/contracts';
+import { GlassCardVariant, ButtonVariant } from '@/lib/enums';
 import {
   Settings as SettingsIcon,
   Save,
@@ -381,7 +382,7 @@ export default function SettingsPage() {
 
             <div className="flex items-center gap-3">
               <Button
-                variant="glass"
+                variant={ButtonVariant.GLASS}
                 onClick={handleTestConnection}
                 disabled={testingConnection}
                 className="gap-2"
@@ -414,7 +415,7 @@ export default function SettingsPage() {
         </GlassCard>
 
         {/* System Information */}
-        <GlassCard variant="bordered">
+        <GlassCard variant={GlassCardVariant.BORDERED}>
           <GlassCardHeader>
             <GlassCardTitle>System Information</GlassCardTitle>
             <GlassCardDescription>
@@ -473,7 +474,7 @@ export default function SettingsPage() {
             Save Settings
           </Button>
 
-          <Button variant="glass" onClick={handleReset} className="gap-2">
+          <Button variant={ButtonVariant.GLASS} onClick={handleReset} className="gap-2">
             <RotateCcw className="h-4 w-4" />
             Reset to Defaults
           </Button>

@@ -1,6 +1,5 @@
 import { apiRequest } from './utils';
-import { JobStatus } from '../enums';
-import type { Job } from './types';
+import { JobStatus, type Job } from '@xenforo-media-crawler/contracts';
 
 // Jobs APIs
 export const jobsApi = {

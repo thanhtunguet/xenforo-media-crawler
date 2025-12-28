@@ -4,19 +4,10 @@ import {
   Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EventType } from '@xenforo-media-crawler/contracts';
 
-export enum EventType {
-  SITE_CREATED = 'site_created',
-  SITE_UPDATED = 'site_updated',
-  SITE_DELETED = 'site_deleted',
-  SITES_SYNC = 'sites_sync',
-  FORUM_CREATED = 'forum_created',
-  FORUM_UPDATED = 'forum_updated',
-  FORUM_DELETED = 'forum_deleted',
-  THREAD_SYNC = 'thread_sync',
-  POST_SYNC = 'post_sync',
-  MEDIA_DOWNLOAD = 'media_download',
-}
+// Re-export for backward compatibility
+export { EventType };
 
 @Index('EventLog_createdAt_idx', ['createdAt'])
 @Entity('EventLog', {})

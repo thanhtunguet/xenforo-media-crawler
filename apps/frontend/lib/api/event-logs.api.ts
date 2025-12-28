@@ -1,5 +1,5 @@
 import { apiRequest } from './utils';
-import type { PaginatedResponse, EventLog } from './types';
+import type { PaginatedResponse, EventLog } from '@xenforo-media-crawler/contracts';
 
 // Event Logs APIs
 export const eventLogsApi = {

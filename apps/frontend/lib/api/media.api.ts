@@ -1,5 +1,5 @@
 import { apiRequest } from './utils';
-import type { Media, MediaWithThread, MediaStatsDto, MediaFilters, PaginatedResponse } from './types';
+import type { Media, MediaWithThread, MediaStatsDto, MediaFilters, PaginatedResponse } from '@xenforo-media-crawler/contracts';
 
 // Media APIs
 export const mediaApi = {

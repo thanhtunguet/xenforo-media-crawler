@@ -5,7 +5,7 @@ import { ForumResponseDto } from './dto/forum-response.dto';
 import { SiteService } from './site.service';
 import { EventLogService } from '../event-log/event-log.service';
 import { JobService } from '../job/job.service';
-import { JobType } from '../_entities/SyncJob';
+import { JobType } from '@xenforo-media-crawler/contracts';
 
 @ApiTags('Site sync')
 @Controller('/api/sites')

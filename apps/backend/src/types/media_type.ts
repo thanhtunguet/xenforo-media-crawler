@@ -1,6 +1,2 @@
-export enum MediaTypeEnum {
-  all = 0,
-  image = 1,
-  video = 2,
-  link = 3,
-}
+// Re-export from contracts library
+export { MediaTypeEnum } from '@xenforo-media-crawler/contracts';

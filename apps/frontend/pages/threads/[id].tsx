@@ -15,6 +15,7 @@ import { Layout } from '@/components/layout';
 import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
 import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import { useToast } from '@/contexts/ToastContext';
+import { ToastType, GlassCardVariant, ButtonVariant } from '@/lib/enums';
 import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import {
@@ -148,7 +149,7 @@ export default function ThreadPage() {
 
   const handleSyncPosts = async () => {
     if (!threadId) {
-      addToast('Thread ID is required', 'error');
+      addToast('Thread ID is required', ToastType.ERROR);
       return;
     }
     try {
@@ -156,10 +157,10 @@ export default function ThreadPage() {
       const response = await crawlerApi.syncThreadPosts(threadId);
       setSyncJobId(response.jobId);
       setShowSyncProgress(true);
-      addToast('Post sync started. This may take a while.', 'success');
+      addToast('Post sync started. This may take a while.', ToastType.SUCCESS);
     } catch (err: any) {
       console.error('Failed to sync posts:', err);
-      addToast(err.message || 'Failed to sync posts', 'error');
+      addToast(err.message || 'Failed to sync posts', ToastType.ERROR);
     } finally {
       setSyncing(false);
     }
@@ -167,7 +168,7 @@ export default function ThreadPage() {
 
   const handleDownloadMedia = async () => {
     if (!threadId) {
-      addToast('Thread ID is required', 'error');
+      addToast('Thread ID is required', ToastType.ERROR);
       return;
     }
     try {
@@ -178,10 +179,10 @@ export default function ThreadPage() {
       );
       setDownloadJobId(response.jobId);
       setShowDownloadProgress(true);
-      addToast('Media download started. This may take a while.', 'success');
+      addToast('Media download started. This may take a while.', ToastType.SUCCESS);
     } catch (err: any) {
       console.error('Failed to download media:', err);
-      addToast(err.message || 'Failed to download media', 'error');
+      addToast(err.message || 'Failed to download media', ToastType.ERROR);
     } finally {
       setDownloading(false);
     }
@@ -203,7 +204,7 @@ export default function ThreadPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <Button
-            variant="glass"
+            variant={ButtonVariant.GLASS}
             size="sm"
             onClick={() => router.back()}
             className="gap-2"
@@ -243,7 +244,7 @@ export default function ThreadPage() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <GlassCard variant="bordered" className="p-4">
+              <GlassCard variant={GlassCardVariant.BORDERED} className="p-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                     <MessageSquare className="h-6 w-6 text-white" />
@@ -255,7 +256,7 @@ export default function ThreadPage() {
                 </div>
               </GlassCard>
 
-              <GlassCard variant="bordered" className="p-4">
+              <GlassCard variant={GlassCardVariant.BORDERED} className="p-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
                     <ImageIcon className="h-6 w-6 text-white" />
@@ -295,7 +296,7 @@ export default function ThreadPage() {
               </Button>
 
               <Link href={`/threads/${threadId}/album`}>
-                <Button variant="glass" className="gap-2">
+                <Button variant={ButtonVariant.GLASS} className="gap-2">
                   <Album className="h-4 w-4" />
                   View Album
                 </Button>
@@ -319,7 +320,7 @@ export default function ThreadPage() {
                   </Select>
                 </div>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   onClick={handleDownloadMedia}
                   disabled={downloading}
                   className="gap-2"
@@ -388,7 +389,7 @@ export default function ThreadPage() {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4 border-t border-white/10">
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={() => goToPage(Math.max(1, page - 1))}
                       disabled={page === 1}
@@ -399,7 +400,7 @@ export default function ThreadPage() {
                       Page {page} of {totalPages}
                     </span>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={() => goToPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages}
@@ -436,7 +437,7 @@ export default function ThreadPage() {
             <div className="relative h-full w-full">
               {/* Close Button */}
               <Button
-                variant="glass"
+                variant={ButtonVariant.GLASS}
                 size="icon"
                 className="absolute top-4 right-4 z-10"
                 onClick={(e) => {
@@ -470,7 +471,7 @@ export default function ThreadPage() {
               {/* Image Controls */}
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -485,7 +486,7 @@ export default function ThreadPage() {
                   <ZoomIn className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -500,7 +501,7 @@ export default function ThreadPage() {
                   <ZoomOut className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -513,7 +514,7 @@ export default function ThreadPage() {
                   <RotateCw className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -526,7 +527,7 @@ export default function ThreadPage() {
                   <RotateCcw className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -539,7 +540,7 @@ export default function ThreadPage() {
                   <FlipHorizontal className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -552,7 +553,7 @@ export default function ThreadPage() {
                   <FlipVertical className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();

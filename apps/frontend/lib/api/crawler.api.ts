@@ -1,5 +1,5 @@
 import { apiRequest } from './utils';
-import type { LoginAdapter, LoginAdaptersResponse, JobResponse } from './types';
+import type { LoginAdapter, LoginAdaptersResponse, JobResponse } from '@xenforo-media-crawler/contracts';
 
 // Xenforo Crawler APIs
 export const crawlerApi = {

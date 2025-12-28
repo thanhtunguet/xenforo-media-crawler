@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EventLog, EventType } from '../_entities/EventLog';
+import { EventLog } from '../_entities/EventLog';
+import { EventType } from '@xenforo-media-crawler/contracts';
 import {
   PaginatedResponseDto,
   PaginationDto,

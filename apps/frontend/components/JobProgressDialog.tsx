@@ -3,6 +3,7 @@ import { X, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useJobProgress, JobProgress } from '../hooks/useJobProgress';
 import { Progress } from './ui/progress';
 import { Button } from './ui/button';
+import { ButtonVariant, ButtonSize } from '../lib/enums';
 
 interface JobProgressDialogProps {
   jobId: number | null;
@@ -133,7 +134,7 @@ export function JobProgressDialog({
 
           {(progress?.status === 'completed' || progress?.status === 'failed') && (
             <div className="flex justify-end">
-              <Button onClick={onClose} variant="outline" size="sm">
+              <Button onClick={onClose} variant={ButtonVariant.OUTLINE} size={ButtonSize.SM}>
                 Close
               </Button>
             </div>

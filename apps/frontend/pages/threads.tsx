@@ -10,6 +10,7 @@ import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import Link from 'next/link';
 import { RefreshCw, Eye, Image as ImageIcon, Search, MessageSquare, Clock, RotateCw } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
+import { ToastType, GlassCardVariant, ButtonVariant, BadgeVariant } from '@/lib/enums';
 
 export default function ThreadsPage() {
   const { addToast } = useToast();
@@ -43,10 +44,10 @@ export default function ThreadsPage() {
     try {
       setSyncingThreadId(threadId);
       await crawlerApi.syncThreadPosts(threadId);
-      addToast('Post sync started. This may take a while.', 'success');
+      addToast('Post sync started. This may take a while.', ToastType.SUCCESS);
     } catch (err: any) {
       console.error('Failed to sync posts:', err);
-      addToast(err.message || 'Failed to sync posts', 'error');
+      addToast(err.message || 'Failed to sync posts', ToastType.ERROR);
     } finally {
       setSyncingThreadId(null);
     }
@@ -60,7 +61,7 @@ export default function ThreadsPage() {
     <Layout title="Threads">
       <div className="space-y-6 animate-fade-in">
         {/* Header Card */}
-        <GlassCard variant="bordered">
+        <GlassCard variant={GlassCardVariant.BORDERED}>
           <GlassCardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -91,7 +92,7 @@ export default function ThreadsPage() {
                   className="glass-input pl-10"
                 />
               </div>
-              <Button variant="glass" onClick={loadThreads} disabled={loading}>
+              <Button variant={ButtonVariant.GLASS} onClick={loadThreads} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
@@ -172,7 +173,7 @@ export default function ThreadsPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           {thread.originalId ? (
-                            <Badge variant="info">#{thread.originalId}</Badge>
+                            <Badge variant={BadgeVariant.INFO}>#{thread.originalId}</Badge>
                           ) : (
                             <span className="text-white/40">-</span>
                           )}
@@ -197,7 +198,7 @@ export default function ThreadsPage() {
                           <div className="flex gap-2 justify-end">
                             <Button
                               size="sm"
-                              variant="glass"
+                              variant={ButtonVariant.GLASS}
                               onClick={() => handleSyncPosts(thread.id)}
                               disabled={syncingThreadId === thread.id}
                               className="hover:shadow-glow"
@@ -206,13 +207,13 @@ export default function ThreadsPage() {
                               Sync Posts
                             </Button>
                             <Link href={`/threads/${thread.id}`}>
-                              <Button size="sm" variant="glass" className="hover:shadow-glow">
+                              <Button size="sm" variant={ButtonVariant.GLASS} className="hover:shadow-glow">
                                 <Eye className="w-4 h-4 mr-1" />
                                 View
                               </Button>
                             </Link>
                             <Link href={`/threads/${thread.id}/album`}>
-                              <Button size="sm" variant="glass" className="hover:shadow-glow">
+                              <Button size="sm" variant={ButtonVariant.GLASS} className="hover:shadow-glow">
                                 <ImageIcon className="w-4 h-4" />
                               </Button>
                             </Link>
@@ -227,7 +228,7 @@ export default function ThreadsPage() {
                 {!searchQuery && (
                   <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       onClick={() => goToPage(Math.max(1, page - 1))}
                       disabled={page === 1 || loading}
                     >
@@ -237,7 +238,7 @@ export default function ThreadsPage() {
                       Page {page} of {totalPages}
                     </span>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       onClick={() => goToPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages || loading}
                     >

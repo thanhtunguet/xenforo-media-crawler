@@ -4,23 +4,10 @@ import {
   Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { JobType, JobStatus } from '@xenforo-media-crawler/contracts';
 
-export enum JobType {
-  SYNC_FORUMS = 'sync_forums',
-  SYNC_FORUM_THREADS = 'sync_forum_threads',
-  SYNC_ALL_FORUMS_AND_THREADS = 'sync_all_forums_and_threads',
-  SYNC_THREAD_POSTS = 'sync_thread_posts',
-  DOWNLOAD_THREAD_MEDIA = 'download_thread_media',
-}
-
-export enum JobStatus {
-  PENDING = 'pending',
-  RUNNING = 'running',
-  PAUSED = 'paused',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-}
+// Re-export for backward compatibility
+export { JobType, JobStatus };
 
 @Index('SyncJob_status_idx', ['status'])
 @Index('SyncJob_createdAt_idx', ['createdAt'])

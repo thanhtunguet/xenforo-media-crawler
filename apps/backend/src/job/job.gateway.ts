@@ -7,7 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { JobStatus } from '../_entities/SyncJob';
+import { JobStatus } from '@xenforo-media-crawler/contracts';
 
 export interface JobProgressEvent {
   jobId: number;

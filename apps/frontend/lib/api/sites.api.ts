@@ -1,5 +1,5 @@
 import { apiRequest } from './utils';
-import type { Site, CreateSiteDto, UpdateSiteDto, PaginatedResponse, Forum } from './types';
+import type { Site, CreateSiteDto, UpdateSiteDto, PaginatedResponse, Forum } from '@xenforo-media-crawler/contracts';
 
 // Sites APIs
 export const sitesApi = {

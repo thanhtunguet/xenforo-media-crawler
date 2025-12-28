@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { JobStatus } from '@/lib/enums';
+import { JobStatus } from '@xenforo-media-crawler/contracts';
 
 export interface JobProgress {
   jobId: number;

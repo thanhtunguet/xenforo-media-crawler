@@ -1,5 +1,5 @@
 import { apiRequest } from './utils';
-import type { PaginatedResponse, Thread, Post } from './types';
+import type { PaginatedResponse, Thread, Post } from '@xenforo-media-crawler/contracts';
 
 // Threads APIs
 export const threadsApi = {

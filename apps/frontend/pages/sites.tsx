@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle, LogIn, Key } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
+import { ToastType, ButtonVariant, BadgeVariant } from '@/lib/enums';
 
 export default function SitesPage() {
   const router = useRouter();
@@ -85,11 +86,11 @@ export default function SitesPage() {
       await sitesApi.create(payload);
       setCreateDialogOpen(false);
       setFormData({ name: '', url: '', loginAdapter: '' });
-      addToast('Site created successfully', 'success');
+      addToast('Site created successfully', ToastType.SUCCESS);
       loadSites();
     } catch (err) {
       console.error('Failed to create site:', err);
-      addToast('Failed to create site', 'error');
+      addToast('Failed to create site', ToastType.ERROR);
     }
   };
 
@@ -105,11 +106,11 @@ export default function SitesPage() {
       setEditDialogOpen(false);
       setSelectedSite(null);
       setFormData({ name: '', url: '', loginAdapter: '' });
-      addToast('Site updated successfully', 'success');
+      addToast('Site updated successfully', ToastType.SUCCESS);
       loadSites();
     } catch (err) {
       console.error('Failed to update site:', err);
-      addToast('Failed to update site', 'error');
+      addToast('Failed to update site', ToastType.ERROR);
     }
   };
 
@@ -119,11 +120,11 @@ export default function SitesPage() {
       await sitesApi.delete(selectedSite.id);
       setDeleteDialogOpen(false);
       setSelectedSite(null);
-      addToast('Site deleted successfully', 'success');
+      addToast('Site deleted successfully', ToastType.SUCCESS);
       loadSites();
     } catch (err) {
       console.error('Failed to delete site:', err);
-      addToast('Failed to delete site', 'error');
+      addToast('Failed to delete site', ToastType.ERROR);
     }
   };
 
@@ -136,7 +137,7 @@ export default function SitesPage() {
       loadSites();
     } catch (err) {
       console.error('Failed to sync forums:', err);
-      addToast('Failed to sync forums', 'error');
+      addToast('Failed to sync forums', ToastType.ERROR);
     } finally {
       setSyncing(null);
     }
@@ -182,7 +183,7 @@ export default function SitesPage() {
         loginSite.id
       );
       setLoginResult(result);
-      addToast('Login successful!', 'success');
+      addToast('Login successful!', ToastType.SUCCESS);
       // Close dialog on success
       setLoginDialogOpen(false);
       setLoginCredentials({ username: '', password: '' });
@@ -275,7 +276,7 @@ export default function SitesPage() {
             <div className="flex items-center justify-between">
               <GlassCardTitle className="text-lg">Sites</GlassCardTitle>
               <Button
-                variant="glass"
+                variant={ButtonVariant.GLASS}
                 size="sm"
                 onClick={loadSites}
                 disabled={loading}
@@ -336,7 +337,7 @@ export default function SitesPage() {
                           </Badge>
                         </GlassTableCell>
                         <GlassTableCell>
-                          <Badge variant="info">
+                          <Badge variant={BadgeVariant.INFO}>
                             {site.forumCount !== undefined ? site.forumCount : '-'}
                           </Badge>
                         </GlassTableCell>
@@ -349,7 +350,7 @@ export default function SitesPage() {
                           <div className="flex gap-2 justify-end">
                             <Button
                               size="sm"
-                              variant="glass"
+                              variant={ButtonVariant.GLASS}
                               onClick={() => openLoginDialog(site)}
                               title="Login to site"
                             >
@@ -357,7 +358,7 @@ export default function SitesPage() {
                             </Button>
                             <Button
                               size="sm"
-                              variant="glass"
+                              variant={ButtonVariant.GLASS}
                               onClick={() => handleSyncForums(site.id)}
                               disabled={syncing === site.id}
                             >
@@ -374,14 +375,14 @@ export default function SitesPage() {
                               )}
                             </Button>
                             <Link href={`/sites/${site.id}`}>
-                              <Button size="sm" variant="glass">
+                              <Button size="sm" variant={ButtonVariant.GLASS}>
                                 <Folder className="w-4 h-4 mr-1" />
                                 Forums
                               </Button>
                             </Link>
                             <Button
                               size="sm"
-                              variant="glass"
+                              variant={ButtonVariant.GLASS}
                               onClick={() => openEditDialog(site)}
                             >
                               <Edit className="w-4 h-4" />
@@ -403,7 +404,7 @@ export default function SitesPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-6">
                   <Button
-                    variant="glass"
+                    variant={ButtonVariant.GLASS}
                     onClick={() => goToPage(Math.max(1, page - 1))}
                     disabled={page === 1}
                   >
@@ -413,7 +414,7 @@ export default function SitesPage() {
                     Page {page} of {totalPages}
                   </span>
                   <Button
-                    variant="glass"
+                    variant={ButtonVariant.GLASS}
                     onClick={() => goToPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
                   >
@@ -478,7 +479,7 @@ export default function SitesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="glass" onClick={() => setCreateDialogOpen(false)}>
+            <Button variant={ButtonVariant.GLASS} onClick={() => setCreateDialogOpen(false)}>
               Cancel
             </Button>
             <Button variant="glass-primary" onClick={handleCreate}>
@@ -539,7 +540,7 @@ export default function SitesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="glass" onClick={() => setEditDialogOpen(false)}>
+            <Button variant={ButtonVariant.GLASS} onClick={() => setEditDialogOpen(false)}>
               Cancel
             </Button>
             <Button variant="glass-primary" onClick={handleUpdate}>
@@ -559,7 +560,7 @@ export default function SitesPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="glass" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant={ButtonVariant.GLASS} onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
             <Button variant="glass-danger" onClick={handleDelete}>
@@ -597,7 +598,7 @@ export default function SitesPage() {
                   <GlassTableRow key={forum.id || idx}>
                     <GlassTableCell>{forum.name || '-'}</GlassTableCell>
                     <GlassTableCell>
-                      <Badge variant="info">#{forum.originalId || '-'}</Badge>
+                      <Badge variant={BadgeVariant.INFO}>#{forum.originalId || '-'}</Badge>
                     </GlassTableCell>
                     <GlassTableCell>
                       {forum.originalUrl ? (
@@ -739,7 +740,7 @@ export default function SitesPage() {
             {!loginResult ? (
               <>
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   onClick={() => {
                     setLoginDialogOpen(false);
                     setLoginCredentials({ username: '', password: '' });

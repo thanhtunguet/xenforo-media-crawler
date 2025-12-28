@@ -10,6 +10,7 @@ import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import Link from 'next/link';
 import { RefreshCw, Eye, Search, Folder, Clock, Server, RotateCw } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
+import { ToastType, GlassCardVariant, ButtonVariant, BadgeVariant } from '@/lib/enums';
 
 interface ForumWithSite extends Forum {
   site?: Site;
@@ -91,17 +92,17 @@ export default function ForumsPage() {
 
   const handleSyncThreads = async (forum: ForumWithSite) => {
     if (!forum.siteId || !forum.id || !forum.site) {
-      addToast('Cannot sync threads: missing forum or site information', 'error');
+      addToast('Cannot sync threads: missing forum or site information', ToastType.ERROR);
       return;
     }
 
     try {
       setSyncingForumId(forum.id);
       await siteSyncApi.syncForumThreads(forum.siteId, forum.id);
-      addToast(`Thread sync started for "${forum.name || 'forum'}". This may take a while.`, 'success');
+      addToast(`Thread sync started for "${forum.name || 'forum'}". This may take a while.`, ToastType.SUCCESS);
     } catch (err: any) {
       console.error('Failed to sync threads:', err);
-      addToast(err.message || 'Failed to sync threads', 'error');
+      addToast(err.message || 'Failed to sync threads', ToastType.ERROR);
     } finally {
       setSyncingForumId(null);
     }
@@ -117,7 +118,7 @@ export default function ForumsPage() {
     <Layout title="Forums">
       <div className="space-y-6 animate-fade-in">
         {/* Header Card */}
-        <GlassCard variant="bordered">
+        <GlassCard variant={GlassCardVariant.BORDERED}>
           <GlassCardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -148,7 +149,7 @@ export default function ForumsPage() {
                   className="glass-input pl-10"
                 />
               </div>
-              <Button variant="glass" onClick={loadForums} disabled={loading}>
+              <Button variant={ButtonVariant.GLASS} onClick={loadForums} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
@@ -235,7 +236,7 @@ export default function ForumsPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           {forum.originalId ? (
-                            <Badge variant="info">#{forum.originalId}</Badge>
+                            <Badge variant={BadgeVariant.INFO}>#{forum.originalId}</Badge>
                           ) : (
                             <span className="text-white/40">-</span>
                           )}
@@ -274,7 +275,7 @@ export default function ForumsPage() {
                               <>
                                 <Button
                                   size="sm"
-                                  variant="glass"
+                                  variant={ButtonVariant.GLASS}
                                   onClick={() => handleSyncThreads(forum)}
                                   disabled={syncingForumId === forum.id}
                                   className="hover:shadow-glow"
@@ -301,7 +302,7 @@ export default function ForumsPage() {
                 {!searchQuery && (
                   <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       onClick={() => goToPage(Math.max(1, page - 1))}
                       disabled={page === 1 || loading}
                     >
@@ -311,7 +312,7 @@ export default function ForumsPage() {
                       Page {page} of {totalPages}
                     </span>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       onClick={() => goToPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages || loading}
                     >

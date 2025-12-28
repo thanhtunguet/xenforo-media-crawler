@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { jobsApi, Job } from '@/lib/api';
 import { useJobProgress } from '@/hooks/useJobProgress';
 import { useToast } from '@/contexts/ToastContext';
-import { JobStatus, ToastType, BadgeVariant } from '@/lib/enums';
+import { JobStatus } from '@xenforo-media-crawler/contracts';
+import { ToastType, BadgeVariant, ButtonVariant } from '@/lib/enums';
 import {
   Play,
   Pause,
@@ -204,7 +205,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
           {displayStatus === JobStatus.RUNNING && (
             <>
               <Button
-                variant="glass"
+                variant={ButtonVariant.GLASS}
                 size="sm"
                 onClick={() => handleAction('pause', 'paused')}
                 disabled={actionLoading !== null}
@@ -313,7 +314,7 @@ export default function JobsPage() {
           <Button
             onClick={loadJobs}
             disabled={loading}
-            variant="glass"
+            variant={ButtonVariant.GLASS}
             className="flex items-center gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />

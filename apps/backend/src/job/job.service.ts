@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SyncJob, JobType, JobStatus } from '../_entities/SyncJob';
+import { SyncJob } from '../_entities/SyncJob';
+import { JobType, JobStatus } from '@xenforo-media-crawler/contracts';
 
 export interface CreateJobDto {
   jobType: JobType;

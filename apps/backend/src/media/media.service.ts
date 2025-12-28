@@ -5,7 +5,7 @@ import { Media } from '../_entities/Media';
 import { MediaResponseDto } from './dto/media-response.dto';
 import { MediaStatsDto } from './dto/media-stats.dto';
 import { PaginatedResponseDto, PaginationDto } from '../common/dto/pagination.dto';
-import { MediaSortBy, SortOrder } from '../common/enums';
+import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
 
 export interface MediaWithThreadDto extends MediaResponseDto {
   thread: {

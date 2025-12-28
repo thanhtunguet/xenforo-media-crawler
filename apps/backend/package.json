@@ -1,5 +1,5 @@
 {
-  "name": "xenforo-crawler",
+  "name": "@xenforo-media-crawler/backend",
   "version": "0.0.1",
   "description": "Xenforo Media Crawler",
   "author": {

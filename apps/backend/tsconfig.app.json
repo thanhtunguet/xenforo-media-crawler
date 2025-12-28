@@ -9,11 +9,18 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "es2015",
-    "baseUrl": ".",
-    "rootDir": "./src",
+    "baseUrl": "../../",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "@xenforo-media-crawler/contracts": [
+        "libs/contracts/src/index.ts"
+      ],
+      "src/*": [
+        "apps/backend/src/*"
+      ]
+    }
   },
   "include": [
     "src/**/*"

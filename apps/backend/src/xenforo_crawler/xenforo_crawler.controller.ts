@@ -27,7 +27,7 @@ import { XenforoLoginDto } from './dtos/xenforo_login.dto';
 import { LoginAdaptersResponseDto } from './dtos/login-adapter.dto';
 import { XenforoCrawlerService } from './xenforo_crawler.service';
 import { JobService } from '../job/job.service';
-import { JobType } from '../_entities/SyncJob';
+import { JobType } from '@xenforo-media-crawler/contracts';
 
 @ApiTags('Xenforo Crawler')
 @Controller('/api/xenforo-crawler')
@@ -397,7 +397,7 @@ export class XenforoCrawlerController {
   @HttpPost('/download-thread-media')
   public async downloadThreadMedia(
     @Query('threadId') threadId: number,
-    @Query('mediaTypeId') mediaTypeId: MediaTypeEnum = MediaTypeEnum.all,
+    @Query('mediaTypeId') mediaTypeId: MediaTypeEnum = MediaTypeEnum.ALL,
     @Req() req: Request,
     @Res() res: Response,
   ) {

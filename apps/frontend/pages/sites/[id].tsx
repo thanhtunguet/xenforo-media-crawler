@@ -11,6 +11,7 @@ import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
+import { ToastType, ButtonVariant, BadgeVariant } from '@/lib/enums';
 
 export default function SiteForumsPage() {
   const router = useRouter();
@@ -55,10 +56,10 @@ export default function SiteForumsPage() {
       const response = await siteSyncApi.syncForumThreads(siteId, forumId);
       setSyncJobId(response.jobId);
       setShowSyncProgress(true);
-      addToast('Thread sync started. This may take a while.', 'success');
+      addToast('Thread sync started. This may take a while.', ToastType.SUCCESS);
     } catch (err) {
       console.error('Failed to sync threads:', err);
-      addToast('Failed to sync threads', 'error');
+      addToast('Failed to sync threads', ToastType.ERROR);
     } finally {
       setSyncing(null);
     }
@@ -71,10 +72,10 @@ export default function SiteForumsPage() {
       const response = await siteSyncApi.syncAllForumsAndThreads(siteId);
       setSyncAllJobId(response.jobId);
       setShowSyncAllProgress(true);
-      addToast('Sync started. This may take a while.', 'success');
+      addToast('Sync started. This may take a while.', ToastType.SUCCESS);
     } catch (err) {
       console.error('Failed to sync all forums:', err);
-      addToast('Failed to sync forums', 'error');
+      addToast('Failed to sync forums', ToastType.ERROR);
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,7 @@ export default function SiteForumsPage() {
         {/* Back Button & Actions */}
         <div className="flex items-center justify-between">
           <Button
-            variant="glass"
+            variant={ButtonVariant.GLASS}
             onClick={() => router.push('/sites')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -124,7 +125,7 @@ export default function SiteForumsPage() {
                 </p>
               </div>
               <Button
-                variant="glass"
+                variant={ButtonVariant.GLASS}
                 size="sm"
                 onClick={loadForums}
                 disabled={loading}
@@ -170,7 +171,7 @@ export default function SiteForumsPage() {
                           {forum.name || <span className="text-white/40">-</span>}
                         </GlassTableCell>
                         <GlassTableCell>
-                          <Badge variant="info">#{forum.originalId || '-'}</Badge>
+                          <Badge variant={BadgeVariant.INFO}>#{forum.originalId || '-'}</Badge>
                         </GlassTableCell>
                         <GlassTableCell>
                           {forum.originalUrl ? (
@@ -198,7 +199,7 @@ export default function SiteForumsPage() {
                               <>
                                 <Button
                                   size="sm"
-                                  variant="glass"
+                                  variant={ButtonVariant.GLASS}
                                   onClick={() => handleSyncThreads(forum.id!)}
                                   disabled={syncing === forum.id}
                                 >
@@ -234,7 +235,7 @@ export default function SiteForumsPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-6">
                   <Button
-                    variant="glass"
+                    variant={ButtonVariant.GLASS}
                     onClick={() => goToPage(Math.max(1, page - 1))}
                     disabled={page === 1}
                   >
@@ -244,7 +245,7 @@ export default function SiteForumsPage() {
                     Page {page} of {totalPages}
                   </span>
                   <Button
-                    variant="glass"
+                    variant={ButtonVariant.GLASS}
                     onClick={() => goToPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
                   >

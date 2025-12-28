@@ -1,5 +1,5 @@
 import { Column, Entity, Index } from 'typeorm';
-import { MediaTypeCode } from '../common/enums';
+import { MediaTypeCode } from '@xenforo-media-crawler/contracts';
 
 @Index('MediaType_pk_2', ['code'], { unique: true })
 @Entity('MediaType', {})

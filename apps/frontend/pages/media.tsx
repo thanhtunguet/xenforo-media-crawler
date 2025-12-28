@@ -13,7 +13,8 @@ import { Select } from '@/components/ui/select';
 import { StatCard } from '@/components/StatCard';
 import { useSettings } from '@/hooks/useSettings';
 import { mediaApi, MediaWithThread, MediaStatsDto, MediaFilters } from '@/lib/api';
-import { MediaSortBy, SortOrder } from '@/lib/enums';
+import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
+import { ButtonVariant } from '@/lib/enums';
 import Link from 'next/link';
 import {
   Image as ImageIcon,
@@ -364,7 +365,7 @@ export default function MediaPage() {
                 </div>
 
                 {/* Refresh Button */}
-                <Button variant="glass" size="sm" onClick={handleRefresh} className="gap-2">
+                <Button variant={ButtonVariant.GLASS} size="sm" onClick={handleRefresh} className="gap-2">
                   <RefreshCw className="h-4 w-4" />
                   Refresh
                 </Button>
@@ -544,7 +545,7 @@ export default function MediaPage() {
             <div className="absolute inset-0 w-full h-full">
               <div className="relative h-full w-full">
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="icon"
                   className="absolute top-4 right-4 z-10"
                   onClick={(e) => {
@@ -580,7 +581,7 @@ export default function MediaPage() {
                 {isImage(selectedMedia) && (
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -596,7 +597,7 @@ export default function MediaPage() {
                       <ZoomIn className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -612,7 +613,7 @@ export default function MediaPage() {
                       <ZoomOut className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -625,7 +626,7 @@ export default function MediaPage() {
                       <RotateCw className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -638,7 +639,7 @@ export default function MediaPage() {
                       <RotateCcw className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -651,7 +652,7 @@ export default function MediaPage() {
                       <FlipHorizontal className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -664,7 +665,7 @@ export default function MediaPage() {
                       <FlipVertical className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();

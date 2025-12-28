@@ -2,6 +2,7 @@ import React from 'react';
 import { GlassCard } from './ui/glass-card';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
+import { GlassCardVariant } from '../lib/enums';
 
 interface StatCardProps {
   title: string;
@@ -49,7 +50,7 @@ export function StatCard({
 
   const content = (
     <GlassCard
-      variant="hover-glow"
+      variant={GlassCardVariant.HOVER_GLOW}
       className={`${href ? 'cursor-pointer' : ''} ${
         loading ? 'animate-pulse' : ''
       }`}

@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/glass-card';
 import { Layout } from '@/components/layout';
 import { threadsApi, mediaApi, Thread, Media } from '@/lib/api';
+import { ButtonVariant } from '@/lib/enums';
 import {
   ArrowLeft,
   Image as ImageIcon,
@@ -173,7 +174,7 @@ export default function ThreadAlbumPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <Button
-            variant="glass"
+            variant={ButtonVariant.GLASS}
             size="sm"
             onClick={() => router.back()}
             className="gap-2"
@@ -338,7 +339,7 @@ export default function ThreadAlbumPage() {
             <div className="absolute inset-0 w-full h-full">
               <div className="relative h-full w-full">
                 <Button
-                  variant="glass"
+                  variant={ButtonVariant.GLASS}
                   size="icon"
                   className="absolute top-4 right-4 z-10"
                   onClick={(e) => {
@@ -374,7 +375,7 @@ export default function ThreadAlbumPage() {
                 {isImage(selectedMedia) && (
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -390,7 +391,7 @@ export default function ThreadAlbumPage() {
                       <ZoomIn className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -406,7 +407,7 @@ export default function ThreadAlbumPage() {
                       <ZoomOut className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -419,7 +420,7 @@ export default function ThreadAlbumPage() {
                       <RotateCw className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -432,7 +433,7 @@ export default function ThreadAlbumPage() {
                       <RotateCcw className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -445,7 +446,7 @@ export default function ThreadAlbumPage() {
                       <FlipHorizontal className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -458,7 +459,7 @@ export default function ThreadAlbumPage() {
                       <FlipVertical className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant="glass"
+                      variant={ButtonVariant.GLASS}
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();

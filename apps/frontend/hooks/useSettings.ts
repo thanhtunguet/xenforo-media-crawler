@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MediaSortBy, SortOrder } from '@/lib/enums';
+import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
 
 export interface AppSettings {
   version: string;

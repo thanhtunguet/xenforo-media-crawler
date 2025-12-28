@@ -16,7 +16,7 @@ import { MediaService, MediaWithThreadDto, MediaFilters } from './media.service'
 import { MediaResponseDto } from './dto/media-response.dto';
 import { MediaStatsDto } from './dto/media-stats.dto';
 import { PaginatedResponseDto, PaginationDto } from '../common/dto/pagination.dto';
-import { MediaSortBy, SortOrder } from '../common/enums';
+import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
 
 @ApiTags('Media')
 @Controller('/api/media')

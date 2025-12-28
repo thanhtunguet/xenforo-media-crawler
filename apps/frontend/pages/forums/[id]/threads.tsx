@@ -7,6 +7,7 @@ import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTable
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { threadsApi, Thread } from '@/lib/api';
+import { ButtonVariant, BadgeVariant } from '@/lib/enums';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, Eye, Download, Image as ImageIcon, Search } from 'lucide-react';
 
@@ -60,7 +61,7 @@ export default function ForumThreadsPage() {
     <Layout title="Threads">
       <div className="space-y-6">
         {/* Back Button */}
-        <Button variant="glass" onClick={() => router.back()}>
+        <Button variant={ButtonVariant.GLASS} onClick={() => router.back()}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Forums
         </Button>
@@ -78,7 +79,7 @@ export default function ForumThreadsPage() {
                   className="glass-input pl-10"
                 />
               </div>
-              <Button variant="glass" onClick={loadThreads} disabled={loading}>
+              <Button variant={ButtonVariant.GLASS} onClick={loadThreads} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
@@ -139,7 +140,7 @@ export default function ForumThreadsPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           {thread.originalId ? (
-                            <Badge variant="info">#{thread.originalId}</Badge>
+                            <Badge variant={BadgeVariant.INFO}>#{thread.originalId}</Badge>
                           ) : (
                             <span className="text-white/40">-</span>
                           )}
@@ -153,13 +154,13 @@ export default function ForumThreadsPage() {
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
                             <Link href={`/threads/${thread.id}`}>
-                              <Button size="sm" variant="glass">
+                              <Button size="sm" variant={ButtonVariant.GLASS}>
                                 <Eye className="w-4 h-4 mr-1" />
                                 View
                               </Button>
                             </Link>
                             <Link href={`/threads/${thread.id}/album`}>
-                              <Button size="sm" variant="glass">
+                              <Button size="sm" variant={ButtonVariant.GLASS}>
                                 <ImageIcon className="w-4 h-4" />
                               </Button>
                             </Link>
@@ -173,7 +174,7 @@ export default function ForumThreadsPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-6">
                   <Button
-                    variant="glass"
+                    variant={ButtonVariant.GLASS}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
@@ -183,7 +184,7 @@ export default function ForumThreadsPage() {
                     Page {page} of {totalPages}
                   </span>
                   <Button
-                    variant="glass"
+                    variant={ButtonVariant.GLASS}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
                   >

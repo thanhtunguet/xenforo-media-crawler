@@ -13,7 +13,7 @@ import { Response } from 'express';
 import { EventLogService } from '../event-log/event-log.service';
 import { JobService } from '../job/job.service';
 import { JobGateway } from '../job/job.gateway';
-import { JobType, JobStatus } from '../_entities/SyncJob';
+import { JobType, JobStatus } from '@xenforo-media-crawler/contracts';
 
 @Injectable()
 export class XenforoCrawlerService {
@@ -989,7 +989,7 @@ export class XenforoCrawlerService {
 
   public async downloadThreadMedia(
     threadId: number,
-    mediaTypeId: MediaTypeEnum = MediaTypeEnum.all,
+    mediaTypeId: MediaTypeEnum = MediaTypeEnum.ALL,
     req?: Request,
     jobId?: number,
   ): Promise<{
@@ -1063,7 +1063,7 @@ export class XenforoCrawlerService {
         .where('post.threadId = :threadId', { threadId: thread.id });
 
       // Filter by media type if specified
-      if (mediaTypeId !== MediaTypeEnum.all) {
+      if (mediaTypeId !== MediaTypeEnum.ALL) {
         mediaQuery = mediaQuery.andWhere('media.mediaTypeId = :mediaTypeId', {
           mediaTypeId,
         });
@@ -1083,7 +1083,7 @@ export class XenforoCrawlerService {
 
       // Skip external links (mediaTypeId=3) as they are not direct media files
       const filteredMedia = mediaItems.filter(
-        (media) => media.mediaTypeId !== MediaTypeEnum.link,
+        (media) => media.mediaTypeId !== MediaTypeEnum.LINK,
       );
 
       if (filteredMedia.length < mediaItems.length) {

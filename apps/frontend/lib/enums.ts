@@ -1,26 +1,7 @@
-// Job Status Enum
-export enum JobStatus {
-  PENDING = 'pending',
-  RUNNING = 'running',
-  PAUSED = 'paused',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-}
+// Re-export shared enums from contracts library
+export { JobStatus, MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
 
-// Media Sort By Enum
-export enum MediaSortBy {
-  CREATED_AT = 'createdAt',
-  UPDATED_AT = 'updatedAt',
-  FILENAME = 'filename',
-}
-
-// Sort Order Enum
-export enum SortOrder {
-  ASC = 'ASC',
-  DESC = 'DESC',
-}
-
+// Frontend-specific UI enums (not shared with backend)
 // Badge Variant Enum
 export enum BadgeVariant {
   SUCCESS = 'success',

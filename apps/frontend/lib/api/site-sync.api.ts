@@ -1,5 +1,5 @@
 import { apiRequest } from './utils';
-import type { Forum, JobResponse } from './types';
+import type { Forum, JobResponse } from '@xenforo-media-crawler/contracts';
 
 // Site Sync APIs
 export const siteSyncApi = {
