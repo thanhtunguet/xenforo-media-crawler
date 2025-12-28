@@ -130,7 +130,7 @@ export default function SettingsPage() {
         )}
 
         {/* Display Preferences */}
-        <GlassCard variant="hover-glow">
+        <GlassCard variant={GlassCardVariant.HOVER_GLOW}>
           <GlassCardHeader>
             <GlassCardTitle>Display Preferences</GlassCardTitle>
             <GlassCardDescription>
@@ -216,7 +216,7 @@ export default function SettingsPage() {
         </GlassCard>
 
         {/* Default Filters */}
-        <GlassCard variant="hover-glow">
+        <GlassCard variant={GlassCardVariant.HOVER_GLOW}>
           <GlassCardHeader>
             <GlassCardTitle>Default Filters</GlassCardTitle>
             <GlassCardDescription>
@@ -299,7 +299,7 @@ export default function SettingsPage() {
         </GlassCard>
 
         {/* API Configuration */}
-        <GlassCard variant="hover-glow">
+        <GlassCard variant={GlassCardVariant.HOVER_GLOW}>
           <GlassCardHeader>
             <GlassCardTitle>API Configuration</GlassCardTitle>
             <GlassCardDescription>
@@ -469,7 +469,7 @@ export default function SettingsPage() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <Button variant="glass-primary" onClick={handleSave} className="gap-2">
+          <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={handleSave} className="gap-2">
             <Save className="h-4 w-4" />
             Save Settings
           </Button>

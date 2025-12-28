@@ -11,7 +11,7 @@ import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, ButtonVariant, BadgeVariant } from '@/lib/enums';
+import { ToastType, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
 
 export default function SiteForumsPage() {
   const router = useRouter();
@@ -105,7 +105,7 @@ export default function SiteForumsPage() {
             Back to Sites
           </Button>
           <Button
-            variant="glass-primary"
+            variant={ButtonVariant.GLASS_PRIMARY}
             onClick={handleSyncAllForums}
             disabled={loading}
           >
@@ -126,7 +126,7 @@ export default function SiteForumsPage() {
               </div>
               <Button
                 variant={ButtonVariant.GLASS}
-                size="sm"
+                size={ButtonSize.SM}
                 onClick={loadForums}
                 disabled={loading}
               >
@@ -198,7 +198,7 @@ export default function SiteForumsPage() {
                             {forum.id ? (
                               <>
                                 <Button
-                                  size="sm"
+                                  size={ButtonSize.SM}
                                   variant={ButtonVariant.GLASS}
                                   onClick={() => handleSyncThreads(forum.id!)}
                                   disabled={syncing === forum.id}
@@ -216,7 +216,7 @@ export default function SiteForumsPage() {
                                   )}
                                 </Button>
                                 <Link href={`/forums/${forum.id}`}>
-                                  <Button size="sm" variant="glass-primary">
+                                  <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS_PRIMARY}>
                                     <MessageSquare className="w-4 h-4 mr-1" />
                                     Threads
                                   </Button>

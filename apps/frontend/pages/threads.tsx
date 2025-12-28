@@ -10,7 +10,7 @@ import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import Link from 'next/link';
 import { RefreshCw, Eye, Image as ImageIcon, Search, MessageSquare, Clock, RotateCw } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, GlassCardVariant, ButtonVariant, BadgeVariant } from '@/lib/enums';
+import { ToastType, GlassCardVariant, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
 
 export default function ThreadsPage() {
   const { addToast } = useToast();
@@ -197,7 +197,7 @@ export default function ThreadsPage() {
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
                             <Button
-                              size="sm"
+                              size={ButtonSize.SM}
                               variant={ButtonVariant.GLASS}
                               onClick={() => handleSyncPosts(thread.id)}
                               disabled={syncingThreadId === thread.id}
@@ -207,13 +207,13 @@ export default function ThreadsPage() {
                               Sync Posts
                             </Button>
                             <Link href={`/threads/${thread.id}`}>
-                              <Button size="sm" variant={ButtonVariant.GLASS} className="hover:shadow-glow">
+                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS} className="hover:shadow-glow">
                                 <Eye className="w-4 h-4 mr-1" />
                                 View
                               </Button>
                             </Link>
                             <Link href={`/threads/${thread.id}/album`}>
-                              <Button size="sm" variant={ButtonVariant.GLASS} className="hover:shadow-glow">
+                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS} className="hover:shadow-glow">
                                 <ImageIcon className="w-4 h-4" />
                               </Button>
                             </Link>

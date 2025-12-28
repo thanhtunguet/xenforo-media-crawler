@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle, LogIn, Key } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, ButtonVariant, BadgeVariant } from '@/lib/enums';
+import { ToastType, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
 
 export default function SitesPage() {
   const router = useRouter();
@@ -224,7 +224,7 @@ export default function SitesPage() {
             <p className="text-white/60 mt-1">Manage your XenForo sites and synchronize forums</p>
           </div>
           <Button
-            variant="glass-primary"
+            variant={ButtonVariant.GLASS_PRIMARY}
             onClick={() => setCreateDialogOpen(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -254,7 +254,7 @@ export default function SitesPage() {
                 className="flex-1 glass-input"
               />
               <Button
-                variant="glass-primary"
+                variant={ButtonVariant.GLASS_PRIMARY}
                 onClick={handleSearchThread}
                 disabled={searching}
               >
@@ -277,7 +277,7 @@ export default function SitesPage() {
               <GlassCardTitle className="text-lg">Sites</GlassCardTitle>
               <Button
                 variant={ButtonVariant.GLASS}
-                size="sm"
+                size={ButtonSize.SM}
                 onClick={loadSites}
                 disabled={loading}
               >
@@ -332,7 +332,7 @@ export default function SitesPage() {
                           </a>
                         </GlassTableCell>
                         <GlassTableCell>
-                          <Badge variant={site.loginAdapter ? "success" : "default"}>
+                          <Badge variant={site.loginAdapter ? BadgeVariant.SUCCESS : BadgeVariant.DEFAULT}>
                             {site.loginAdapter || 'xamvn-clone'}
                           </Badge>
                         </GlassTableCell>
@@ -349,7 +349,7 @@ export default function SitesPage() {
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
                             <Button
-                              size="sm"
+                              size={ButtonSize.SM}
                               variant={ButtonVariant.GLASS}
                               onClick={() => openLoginDialog(site)}
                               title="Login to site"
@@ -357,7 +357,7 @@ export default function SitesPage() {
                               <LogIn className="w-4 h-4" />
                             </Button>
                             <Button
-                              size="sm"
+                              size={ButtonSize.SM}
                               variant={ButtonVariant.GLASS}
                               onClick={() => handleSyncForums(site.id)}
                               disabled={syncing === site.id}
@@ -375,21 +375,21 @@ export default function SitesPage() {
                               )}
                             </Button>
                             <Link href={`/sites/${site.id}`}>
-                              <Button size="sm" variant={ButtonVariant.GLASS}>
+                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS}>
                                 <Folder className="w-4 h-4 mr-1" />
                                 Forums
                               </Button>
                             </Link>
                             <Button
-                              size="sm"
+                              size={ButtonSize.SM}
                               variant={ButtonVariant.GLASS}
                               onClick={() => openEditDialog(site)}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="glass-danger"
+                              size={ButtonSize.SM}
+                              variant={ButtonVariant.GLASS_DANGER}
                               onClick={() => openDeleteDialog(site)}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -482,7 +482,7 @@ export default function SitesPage() {
             <Button variant={ButtonVariant.GLASS} onClick={() => setCreateDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="glass-primary" onClick={handleCreate}>
+            <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={handleCreate}>
               Create
             </Button>
           </DialogFooter>
@@ -543,7 +543,7 @@ export default function SitesPage() {
             <Button variant={ButtonVariant.GLASS} onClick={() => setEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="glass-primary" onClick={handleUpdate}>
+            <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={handleUpdate}>
               Update
             </Button>
           </DialogFooter>
@@ -563,7 +563,7 @@ export default function SitesPage() {
             <Button variant={ButtonVariant.GLASS} onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="glass-danger" onClick={handleDelete}>
+            <Button variant={ButtonVariant.GLASS_DANGER} onClick={handleDelete}>
               Delete
             </Button>
           </DialogFooter>
@@ -621,7 +621,7 @@ export default function SitesPage() {
             </GlassTable>
           </div>
           <DialogFooter>
-            <Button variant="glass-primary" onClick={() => setForumsDialogOpen(false)}>
+            <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={() => setForumsDialogOpen(false)}>
               Close
             </Button>
           </DialogFooter>
@@ -680,7 +680,7 @@ export default function SitesPage() {
                   <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
                     <Key className="w-4 h-4 text-cyan-400" />
                     <span className="text-xs text-white/70">
-                      Using login adapter: <Badge variant="success" className="ml-1">{loginSite.loginAdapter || 'xamvn-clone'}</Badge>
+                      Using login adapter: <Badge variant={BadgeVariant.SUCCESS} className="ml-1">{loginSite.loginAdapter || 'xamvn-clone'}</Badge>
                     </span>
                   </div>
                 )}
@@ -750,7 +750,7 @@ export default function SitesPage() {
                   Cancel
                 </Button>
                 <Button
-                  variant="glass-primary"
+                  variant={ButtonVariant.GLASS_PRIMARY}
                   onClick={handleLogin}
                   disabled={loggingIn || !loginCredentials.username || !loginCredentials.password}
                 >
@@ -769,7 +769,7 @@ export default function SitesPage() {
               </>
             ) : (
               <Button
-                variant="glass-primary"
+                variant={ButtonVariant.GLASS_PRIMARY}
                 onClick={() => {
                   setLoginDialogOpen(false);
                   setLoginCredentials({ username: '', password: '' });

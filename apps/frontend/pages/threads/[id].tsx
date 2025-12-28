@@ -15,7 +15,7 @@ import { Layout } from '@/components/layout';
 import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
 import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, GlassCardVariant, ButtonVariant } from '@/lib/enums';
+import { ToastType, GlassCardVariant, ButtonVariant, ButtonSize } from '@/lib/enums';
 import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import {
@@ -205,7 +205,7 @@ export default function ThreadPage() {
         <div className="flex items-center justify-between">
           <Button
             variant={ButtonVariant.GLASS}
-            size="sm"
+            size={ButtonSize.SM}
             onClick={() => router.back()}
             className="gap-2"
           >
@@ -286,7 +286,7 @@ export default function ThreadPage() {
           <GlassCardContent className="space-y-4">
             <div className="flex flex-wrap gap-3">
               <Button
-                variant="glass-primary"
+                variant={ButtonVariant.GLASS_PRIMARY}
                 onClick={handleSyncPosts}
                 disabled={syncing}
                 className="gap-2"
@@ -390,7 +390,7 @@ export default function ThreadPage() {
                   <div className="flex items-center justify-between pt-4 border-t border-white/10">
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={() => goToPage(Math.max(1, page - 1))}
                       disabled={page === 1}
                     >
@@ -401,7 +401,7 @@ export default function ThreadPage() {
                     </span>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={() => goToPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages}
                     >
@@ -438,7 +438,7 @@ export default function ThreadPage() {
               {/* Close Button */}
               <Button
                 variant={ButtonVariant.GLASS}
-                size="icon"
+                size={ButtonSize.ICON}
                 className="absolute top-4 right-4 z-10"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -462,7 +462,7 @@ export default function ThreadPage() {
                 onClick={(e) => e.stopPropagation()}
                 className="absolute top-4 left-4 z-10"
               >
-                <Button variant="glass-primary" size="sm" className="gap-2">
+                <Button variant={ButtonVariant.GLASS_PRIMARY} size={ButtonSize.SM} className="gap-2">
                   <Download className="w-4 h-4" />
                   Download
                 </Button>
@@ -472,7 +472,7 @@ export default function ThreadPage() {
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="sm"
+                  size={ButtonSize.SM}
                   onClick={(e) => {
                     e.stopPropagation();
                     const newZoom = Math.min(imageZoom + 0.25, 5);
@@ -487,7 +487,7 @@ export default function ThreadPage() {
                 </Button>
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="sm"
+                  size={ButtonSize.SM}
                   onClick={(e) => {
                     e.stopPropagation();
                     const newZoom = Math.max(imageZoom - 0.25, 0.25);
@@ -502,7 +502,7 @@ export default function ThreadPage() {
                 </Button>
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="sm"
+                  size={ButtonSize.SM}
                   onClick={(e) => {
                     e.stopPropagation();
                     setImageZoom(1);
@@ -515,7 +515,7 @@ export default function ThreadPage() {
                 </Button>
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="sm"
+                  size={ButtonSize.SM}
                   onClick={(e) => {
                     e.stopPropagation();
                     setImageZoom(1);
@@ -528,7 +528,7 @@ export default function ThreadPage() {
                 </Button>
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="sm"
+                  size={ButtonSize.SM}
                   onClick={(e) => {
                     e.stopPropagation();
                     setImageZoom(1);
@@ -541,7 +541,7 @@ export default function ThreadPage() {
                 </Button>
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="sm"
+                  size={ButtonSize.SM}
                   onClick={(e) => {
                     e.stopPropagation();
                     setImageZoom(1);
@@ -554,7 +554,7 @@ export default function ThreadPage() {
                 </Button>
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="sm"
+                  size={ButtonSize.SM}
                   onClick={(e) => {
                     e.stopPropagation();
                     setImageZoom(1);

@@ -7,7 +7,7 @@ import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTable
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { threadsApi, Thread } from '@/lib/api';
-import { ButtonVariant, BadgeVariant } from '@/lib/enums';
+import { ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
 import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, Eye, Download, Image as ImageIcon, Search } from 'lucide-react';
@@ -155,13 +155,13 @@ export default function ForumThreadsPage() {
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
                             <Link href={`/threads/${thread.id}`}>
-                              <Button size="sm" variant={ButtonVariant.GLASS}>
+                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS}>
                                 <Eye className="w-4 h-4 mr-1" />
                                 View
                               </Button>
                             </Link>
                             <Link href={`/threads/${thread.id}/album`}>
-                              <Button size="sm" variant={ButtonVariant.GLASS}>
+                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS}>
                                 <ImageIcon className="w-4 h-4" />
                               </Button>
                             </Link>

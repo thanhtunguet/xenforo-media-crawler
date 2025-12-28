@@ -10,7 +10,7 @@ import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import Link from 'next/link';
 import { RefreshCw, Eye, Search, Folder, Clock, Server, RotateCw } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, GlassCardVariant, ButtonVariant, BadgeVariant } from '@/lib/enums';
+import { ToastType, GlassCardVariant, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
 
 interface ForumWithSite extends Forum {
   site?: Site;
@@ -274,7 +274,7 @@ export default function ForumsPage() {
                             {forum.siteId && forum.id && (
                               <>
                                 <Button
-                                  size="sm"
+                                  size={ButtonSize.SM}
                                   variant={ButtonVariant.GLASS}
                                   onClick={() => handleSyncThreads(forum)}
                                   disabled={syncingForumId === forum.id}
@@ -284,7 +284,7 @@ export default function ForumsPage() {
                                   Sync Threads
                                 </Button>
                                 <Link href={`/forums/${forum.id}`}>
-                                  <Button size="sm" variant="glass" className="hover:shadow-glow">
+                                  <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS} className="hover:shadow-glow">
                                     <Eye className="w-4 h-4 mr-1" />
                                     View Threads
                                   </Button>

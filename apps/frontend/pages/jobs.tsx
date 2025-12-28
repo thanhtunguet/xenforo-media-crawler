@@ -10,7 +10,7 @@ import { jobsApi, Job } from '@/lib/api';
 import { useJobProgress } from '@/hooks/useJobProgress';
 import { useToast } from '@/contexts/ToastContext';
 import { JobStatus } from '@xenforo-media-crawler/contracts';
-import { ToastType, BadgeVariant, ButtonVariant } from '@/lib/enums';
+import { ToastType, BadgeVariant, ButtonVariant, ButtonSize, ProgressStatus } from '@/lib/enums';
 import {
   Play,
   Pause,
@@ -158,7 +158,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
             <div className="space-y-2 mb-2">
               <Progress
                 value={displayProgress}
-                status={displayStatus === JobStatus.RUNNING ? 'syncing' : 'syncing'}
+                status={ProgressStatus.SYNCING}
               />
               <div className="flex items-center justify-between text-xs text-white/60">
                 <span>
@@ -188,8 +188,8 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
         <div className="flex items-center gap-2 flex-shrink-0">
           {displayStatus === JobStatus.PENDING && (
             <Button
-              variant="glass-primary"
-              size="sm"
+              variant={ButtonVariant.GLASS_PRIMARY}
+              size={ButtonSize.SM}
               onClick={() => handleAction('start', 'started')}
               disabled={actionLoading !== null}
             >
@@ -206,7 +206,7 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
             <>
               <Button
                 variant={ButtonVariant.GLASS}
-                size="sm"
+                size={ButtonSize.SM}
                 onClick={() => handleAction('pause', 'paused')}
                 disabled={actionLoading !== null}
               >
@@ -218,8 +218,8 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
                 Pause
               </Button>
               <Button
-                variant="glass-danger"
-                size="sm"
+                variant={ButtonVariant.GLASS_DANGER}
+                size={ButtonSize.SM}
                 onClick={() => handleAction('cancel', 'cancelled')}
                 disabled={actionLoading !== null}
               >
@@ -236,8 +236,8 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
           {displayStatus === JobStatus.PAUSED && (
             <>
               <Button
-                variant="glass-primary"
-                size="sm"
+                variant={ButtonVariant.GLASS_PRIMARY}
+                size={ButtonSize.SM}
                 onClick={() => handleAction('resume', 'resumed')}
                 disabled={actionLoading !== null}
               >
@@ -249,8 +249,8 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
                 Resume
               </Button>
               <Button
-                variant="glass-danger"
-                size="sm"
+                variant={ButtonVariant.GLASS_DANGER}
+                size={ButtonSize.SM}
                 onClick={() => handleAction('cancel', 'cancelled')}
                 disabled={actionLoading !== null}
               >

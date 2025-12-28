@@ -14,7 +14,7 @@ import { StatCard } from '@/components/StatCard';
 import { useSettings } from '@/hooks/useSettings';
 import { mediaApi, MediaWithThread, MediaStatsDto, MediaFilters } from '@/lib/api';
 import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
-import { ButtonVariant } from '@/lib/enums';
+import { ButtonVariant, ButtonSize } from '@/lib/enums';
 import Link from 'next/link';
 import {
   Image as ImageIcon,
@@ -287,8 +287,8 @@ export default function MediaPage() {
                   return (
                     <Button
                       key={filter.id}
-                      variant={isActive ? 'glass-primary' : 'glass'}
-                      size="sm"
+                      variant={isActive ? ButtonVariant.GLASS_PRIMARY : ButtonVariant.GLASS}
+                      size={ButtonSize.SM}
                       onClick={() => {
                         setFilters((prev) => ({
                           ...prev,
@@ -365,7 +365,7 @@ export default function MediaPage() {
                 </div>
 
                 {/* Refresh Button */}
-                <Button variant={ButtonVariant.GLASS} size="sm" onClick={handleRefresh} className="gap-2">
+                <Button variant={ButtonVariant.GLASS} size={ButtonSize.SM} onClick={handleRefresh} className="gap-2">
                   <RefreshCw className="h-4 w-4" />
                   Refresh
                 </Button>
@@ -515,8 +515,8 @@ export default function MediaPage() {
       {/* Scroll to Top Button */}
       {showScrollTop && (
         <Button
-          variant="glass-primary"
-          size="icon"
+          variant={ButtonVariant.GLASS_PRIMARY}
+          size={ButtonSize.ICON}
           className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full shadow-glow animate-fade-in"
           onClick={scrollToTop}
           aria-label="Scroll to top"
@@ -546,7 +546,7 @@ export default function MediaPage() {
               <div className="relative h-full w-full">
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="icon"
+                  size={ButtonSize.ICON}
                   className="absolute top-4 right-4 z-10"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -570,7 +570,7 @@ export default function MediaPage() {
                     onClick={(e) => e.stopPropagation()}
                     className="absolute top-4 left-4 z-10"
                   >
-                    <Button variant="glass-primary" size="sm" className="gap-2">
+                    <Button variant={ButtonVariant.GLASS_PRIMARY} size={ButtonSize.SM} className="gap-2">
                       <Download className="w-4 h-4" />
                       Download
                     </Button>
@@ -582,7 +582,7 @@ export default function MediaPage() {
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         const newZoom = Math.min(imageZoom + 0.25, 5);
@@ -598,7 +598,7 @@ export default function MediaPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         const newZoom = Math.max(imageZoom - 0.25, 0.25);
@@ -614,7 +614,7 @@ export default function MediaPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -627,7 +627,7 @@ export default function MediaPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -640,7 +640,7 @@ export default function MediaPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -653,7 +653,7 @@ export default function MediaPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -666,7 +666,7 @@ export default function MediaPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);

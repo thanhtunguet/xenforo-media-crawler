@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Layout } from '@/components/layout';
 import { authApi, sitesApi } from '@/lib/api';
+import { ButtonVariant } from '@/lib/enums';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
@@ -154,7 +155,7 @@ export default function LoginPage() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={ButtonVariant.OUTLINE}
                   onClick={handleLoginWithCookie}
                   disabled={loading}
                 >
