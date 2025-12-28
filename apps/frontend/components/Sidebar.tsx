@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Briefcase,
 } from 'lucide-react';
 
 interface NavItem {
@@ -25,6 +26,7 @@ const navItems: NavItem[] = [
   { name: 'Forums', href: '/forums', icon: Folder },
   { name: 'Threads', href: '/threads', icon: MessageSquare },
   { name: 'Media', href: '/media', icon: Image },
+  { name: 'Jobs', href: '/jobs', icon: Briefcase },
   { name: 'Recent Activities', href: '/activity', icon: Clock },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

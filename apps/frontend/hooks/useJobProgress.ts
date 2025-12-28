@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 
 export interface JobProgress {
   jobId: number;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  status: 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
   progress: number;
   totalItems?: number;
   processedItems?: number;

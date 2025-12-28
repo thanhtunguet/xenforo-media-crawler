@@ -340,6 +340,60 @@ export const crawlerApi = {
   },
 };
 
+// Job interfaces
+export interface Job {
+  id: number;
+  jobType: string;
+  status: 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+  siteId: number | null;
+  forumId: number | null;
+  threadId: number | null;
+  entityName: string | null;
+  progress: number;
+  totalItems: number | null;
+  processedItems: number;
+  currentStep: string | null;
+  errorMessage: string | null;
+  metadata: Record<string, any> | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  completedAt: string | null;
+}
+
+// Jobs APIs
+export const jobsApi = {
+  getAll: async (limit?: number, status?: string): Promise<Job[]> => {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+    if (status) params.append('status', status);
+    const query = params.toString();
+    return apiRequest<Job[]>(`/api/jobs${query ? `?${query}` : ''}`);
+  },
+  getById: async (id: number): Promise<Job> => {
+    return apiRequest<Job>(`/api/jobs/${id}`);
+  },
+  start: async (id: number): Promise<Job> => {
+    return apiRequest<Job>(`/api/jobs/${id}/start`, {
+      method: 'POST',
+    });
+  },
+  pause: async (id: number): Promise<Job> => {
+    return apiRequest<Job>(`/api/jobs/${id}/pause`, {
+      method: 'PATCH',
+    });
+  },
+  resume: async (id: number): Promise<Job> => {
+    return apiRequest<Job>(`/api/jobs/${id}/resume`, {
+      method: 'PATCH',
+    });
+  },
+  cancel: async (id: number): Promise<Job> => {
+    return apiRequest<Job>(`/api/jobs/${id}/cancel`, {
+      method: 'PATCH',
+    });
+  },
+};
+
 // Media APIs
 export const mediaApi = {
   getThreadMedia: async (

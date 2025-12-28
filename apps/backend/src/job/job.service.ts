@@ -107,6 +107,36 @@ export class JobService {
     return this.jobRepository.save(job);
   }
 
+  async pause(id: number): Promise<SyncJob> {
+    const job = await this.findOne(id);
+    if (!job) {
+      throw new Error(`Job with ID ${id} not found`);
+    }
+
+    if (job.status !== JobStatus.RUNNING) {
+      throw new Error(`Job with ID ${id} is not running and cannot be paused`);
+    }
+
+    job.status = JobStatus.PAUSED;
+    job.updatedAt = new Date();
+    return this.jobRepository.save(job);
+  }
+
+  async resume(id: number): Promise<SyncJob> {
+    const job = await this.findOne(id);
+    if (!job) {
+      throw new Error(`Job with ID ${id} not found`);
+    }
+
+    if (job.status !== JobStatus.PAUSED) {
+      throw new Error(`Job with ID ${id} is not paused and cannot be resumed`);
+    }
+
+    job.status = JobStatus.RUNNING;
+    job.updatedAt = new Date();
+    return this.jobRepository.save(job);
+  }
+
   async findAll(
     limit = 50,
     status?: JobStatus,

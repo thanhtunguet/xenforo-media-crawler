@@ -1,12 +1,16 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JobService } from './job.service';
+import { JobGateway } from './job.gateway';
 import { SyncJob, JobStatus } from '../_entities/SyncJob';
 
 @ApiTags('Jobs')
 @Controller('/api/jobs')
 export class JobController {
-  constructor(private readonly jobService: JobService) {}
+  constructor(
+    private readonly jobService: JobService,
+    private readonly jobGateway: JobGateway,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -61,6 +65,122 @@ export class JobController {
   })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<SyncJob | null> {
     return this.jobService.findOne(id);
+  }
+
+  @Post(':id/start')
+  @ApiOperation({
+    summary: 'Start a job',
+    description: 'Starts a pending job',
+    operationId: 'startJob',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the job to start',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Job started successfully',
+    type: SyncJob,
+  })
+  async start(@Param('id', ParseIntPipe) id: number): Promise<SyncJob> {
+    const job = await this.jobService.start(id);
+    this.jobGateway.emitJobUpdate({
+      jobId: job.id,
+      status: job.status,
+      progress: job.progress,
+      totalItems: job.totalItems,
+      processedItems: job.processedItems,
+      currentStep: job.currentStep,
+    });
+    return job;
+  }
+
+  @Patch(':id/pause')
+  @ApiOperation({
+    summary: 'Pause a job',
+    description: 'Pauses a running job',
+    operationId: 'pauseJob',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the job to pause',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Job paused successfully',
+    type: SyncJob,
+  })
+  async pause(@Param('id', ParseIntPipe) id: number): Promise<SyncJob> {
+    const job = await this.jobService.pause(id);
+    this.jobGateway.emitJobUpdate({
+      jobId: job.id,
+      status: job.status,
+      progress: job.progress,
+      totalItems: job.totalItems,
+      processedItems: job.processedItems,
+      currentStep: job.currentStep,
+    });
+    return job;
+  }
+
+  @Patch(':id/resume')
+  @ApiOperation({
+    summary: 'Resume a job',
+    description: 'Resumes a paused job',
+    operationId: 'resumeJob',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the job to resume',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Job resumed successfully',
+    type: SyncJob,
+  })
+  async resume(@Param('id', ParseIntPipe) id: number): Promise<SyncJob> {
+    const job = await this.jobService.resume(id);
+    this.jobGateway.emitJobUpdate({
+      jobId: job.id,
+      status: job.status,
+      progress: job.progress,
+      totalItems: job.totalItems,
+      processedItems: job.processedItems,
+      currentStep: job.currentStep,
+    });
+    return job;
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({
+    summary: 'Cancel a job',
+    description: 'Cancels a job',
+    operationId: 'cancelJob',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the job to cancel',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Job cancelled successfully',
+    type: SyncJob,
+  })
+  async cancel(@Param('id', ParseIntPipe) id: number): Promise<SyncJob> {
+    const job = await this.jobService.cancel(id);
+    this.jobGateway.emitJobUpdate({
+      jobId: job.id,
+      status: job.status,
+      progress: job.progress,
+      totalItems: job.totalItems,
+      processedItems: job.processedItems,
+      currentStep: job.currentStep,
+    });
+    return job;
   }
 }
 
