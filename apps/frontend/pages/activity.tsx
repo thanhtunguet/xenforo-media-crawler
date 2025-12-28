@@ -195,7 +195,7 @@ export default function ActivityPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">recent activities</h1>
+            <h1 className="text-3xl font-bold gradient-text">Recent Activities</h1>
             <p className="text-white/60 mt-1">
               View all recent events and actions in the system
             </p>

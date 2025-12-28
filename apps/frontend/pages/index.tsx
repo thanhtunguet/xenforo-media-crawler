@@ -124,10 +124,10 @@ export default function Dashboard() {
           </GlassCardContent>
         </GlassCard>
 
-        {/* recent activities */}
+        {/* Recent Activities */}
         <GlassCard>
           <GlassCardHeader>
-            <GlassCardTitle className="text-xl">recent activities</GlassCardTitle>
+            <GlassCardTitle className="text-xl">Recent Activities</GlassCardTitle>
           </GlassCardHeader>
           <GlassCardContent>
             <div className="text-center py-8 text-white/50">
