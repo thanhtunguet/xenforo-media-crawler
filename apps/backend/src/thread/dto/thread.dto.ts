@@ -4,6 +4,7 @@ export class ThreadDto {
   content: string;
   createdAt: Date;
   updatedAt: Date;
+  lastSyncAt?: Date | null;
   originalId?: string | null;
 }
 

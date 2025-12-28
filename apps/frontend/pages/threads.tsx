@@ -149,7 +149,7 @@ export default function ThreadsPage() {
                       <GlassTableHead>
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
-                          Updated
+                          Last sync
                         </div>
                       </GlassTableHead>
                       <GlassTableHead className="text-right">Actions</GlassTableHead>
@@ -187,12 +187,18 @@ export default function ThreadsPage() {
                           </div>
                         </GlassTableCell>
                         <GlassTableCell>
-                          <div className="text-white/70">
-                            {new Date(thread.updatedAt).toLocaleDateString()}
-                          </div>
-                          <div className="text-white/40 text-xs">
-                            {new Date(thread.updatedAt).toLocaleTimeString()}
-                          </div>
+                          {thread.lastSyncAt ? (
+                            <>
+                              <div className="text-white/70">
+                                {new Date(thread.lastSyncAt).toLocaleDateString()}
+                              </div>
+                              <div className="text-white/40 text-xs">
+                                {new Date(thread.lastSyncAt).toLocaleTimeString()}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-white/40">Never</span>
+                          )}
                         </GlassTableCell>
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">

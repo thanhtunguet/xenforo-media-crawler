@@ -57,6 +57,13 @@ export class Thread {
   })
   updatedAt: Date | null;
 
+  @Column('datetime', {
+    name: 'lastSyncAt',
+    nullable: true,
+    comment: 'Last time posts were synced for this thread',
+  })
+  lastSyncAt: Date | null;
+
   @Column('datetime', { name: 'deletedAt', nullable: true })
   deletedAt?: Date | null;
 

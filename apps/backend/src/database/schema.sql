@@ -49,6 +49,7 @@ create table Thread
     description varchar(1024)                      null,
     createdAt   datetime default CURRENT_TIMESTAMP null,
     updatedAt   datetime default CURRENT_TIMESTAMP null,
+    lastSyncAt  datetime                           null,
     deletedAt   datetime                           null,
     constraint Thread_pk_2
         unique (forumId, originalId),

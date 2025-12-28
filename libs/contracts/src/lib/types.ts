@@ -41,6 +41,7 @@ export interface Thread {
   content: string;
   createdAt: string;
   updatedAt: string;
+  lastSyncAt?: string | null;
   originalId?: string | null;
 }
 

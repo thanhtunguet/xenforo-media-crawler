@@ -202,6 +202,7 @@ export class XenforoCrawlerService {
                 originalUrl: threadUrl,
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                lastSyncAt: null,
                 lastMessage: '',
               });
             }
@@ -949,6 +950,16 @@ export class XenforoCrawlerService {
         }
 
         console.log(`Completed sync for thread originalId: ${thread.originalId}`);
+        
+        // Update thread's lastSyncAt timestamp
+        try {
+          thread.lastSyncAt = new Date();
+          await this.threadRepository.save(thread);
+          console.log(`Updated lastSyncAt for thread ${threadId} to ${thread.lastSyncAt}`);
+        } catch (error) {
+          console.error(`Failed to update lastSyncAt for thread ${threadId}:`, error);
+          // Continue even if update fails - don't break the sync process
+        }
         
         // Log post sync completion
         await this.eventLogService.logPostSync(

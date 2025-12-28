@@ -85,6 +85,7 @@ export class ThreadService {
       description: createThreadDto.content,
       createdAt: new Date(),
       updatedAt: new Date(),
+      lastSyncAt: null,
     });
 
     const savedThread = await this.threadRepository.save(thread);
@@ -155,6 +156,7 @@ export class ThreadService {
     threadDto.content = thread.description || '';
     threadDto.createdAt = thread.createdAt;
     threadDto.updatedAt = thread.updatedAt;
+    threadDto.lastSyncAt = thread.lastSyncAt;
     threadDto.originalId = thread.originalId;
     return threadDto;
   }

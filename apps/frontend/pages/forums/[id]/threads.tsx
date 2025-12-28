@@ -123,7 +123,7 @@ export default function ForumThreadsPage() {
                       <GlassTableHead>Title</GlassTableHead>
                       <GlassTableHead>Original ID</GlassTableHead>
                       <GlassTableHead>Created</GlassTableHead>
-                      <GlassTableHead>Updated</GlassTableHead>
+                      <GlassTableHead>Last sync</GlassTableHead>
                       <GlassTableHead className="text-right">Actions</GlassTableHead>
                     </GlassTableRow>
                   </GlassTableHeader>
@@ -149,7 +149,11 @@ export default function ForumThreadsPage() {
                           {new Date(thread.createdAt).toLocaleDateString()}
                         </GlassTableCell>
                         <GlassTableCell>
-                          {new Date(thread.updatedAt).toLocaleDateString()}
+                          {thread.lastSyncAt ? (
+                            new Date(thread.lastSyncAt).toLocaleDateString()
+                          ) : (
+                            <span className="text-white/40">Never</span>
+                          )}
                         </GlassTableCell>
                         <GlassTableCell>
                           <div className="flex gap-2 justify-end">
