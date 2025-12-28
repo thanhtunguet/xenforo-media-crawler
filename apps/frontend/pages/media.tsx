@@ -387,14 +387,7 @@ export default function MediaPage() {
         </GlassCard>
 
         {/* Media Grid */}
-        {loading ? (
-          <GlassCard>
-            <div className="flex items-center justify-center py-12">
-              <RefreshCw className="h-6 w-6 animate-spin text-blue-400" />
-              <span className="ml-2 text-white/60">Loading media...</span>
-            </div>
-          </GlassCard>
-        ) : media.length === 0 ? (
+        {media.length === 0 && !loadingMore ? (
           <GlassCard>
             <div className="text-center py-12">
               <Grid3x3 className="h-12 w-12 text-white/20 mx-auto mb-3" />
@@ -495,7 +488,7 @@ export default function MediaPage() {
                 {loadingMore && (
                   <div className="flex items-center gap-2 text-white/60">
                     <RefreshCw className="h-5 w-5 animate-spin" />
-                    <span>Loading more...</span>
+                    <span>{page === 1 ? 'Loading...' : 'Loading more...'}</span>
                   </div>
                 )}
               </div>

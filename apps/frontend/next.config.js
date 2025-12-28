@@ -26,6 +26,8 @@ const nextConfig = {
     }
     return [];
   },
+  // Transpile the contracts package from source
+  transpilePackages: ['@xenforo-media-crawler/contracts'],
 };
 
 const plugins = [

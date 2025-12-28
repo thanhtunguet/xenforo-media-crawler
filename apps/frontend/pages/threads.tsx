@@ -16,7 +16,7 @@ export default function ThreadsPage() {
   const { addToast } = useToast();
   const { page, goToPage } = usePagination();
   const [threads, setThreads] = useState<Thread[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -115,10 +115,10 @@ export default function ThreadsPage() {
             </div>
           </GlassCardHeader>
           <GlassCardContent>
-            {loading ? (
+            {loading && page === 2 ? (
               <div className="text-center py-12">
                 <RefreshCw className="w-8 h-8 animate-spin mx-auto text-white/40" />
-                <p className="text-white/60 mt-4">Loading threads...</p>
+                <p className="text-white/60 mt-4">Loading...</p>
               </div>
             ) : filteredThreads.length === 0 ? (
               <div className="text-center py-12">
