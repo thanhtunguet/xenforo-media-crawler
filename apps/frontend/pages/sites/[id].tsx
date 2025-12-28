@@ -6,22 +6,27 @@ import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/
 import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
 import { sitesApi, siteSyncApi, Forum } from '@/lib/api';
+import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 
-export default function ForumsPage() {
+export default function SiteForumsPage() {
   const router = useRouter();
   const { id } = router.query;
   const siteId = id ? Number(id) : null;
   const { addToast } = useToast();
+  const { page, goToPage } = usePagination();
 
   const [forums, setForums] = useState<Forum[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [syncing, setSyncing] = useState<number | null>(null);
+  const [syncJobId, setSyncJobId] = useState<number | null>(null);
+  const [showSyncProgress, setShowSyncProgress] = useState(false);
+  const [syncAllJobId, setSyncAllJobId] = useState<number | null>(null);
+  const [showSyncAllProgress, setShowSyncAllProgress] = useState(false);
 
   useEffect(() => {
     if (siteId) {
@@ -42,11 +47,6 @@ export default function ForumsPage() {
       setLoading(false);
     }
   };
-
-  const [syncJobId, setSyncJobId] = useState<number | null>(null);
-  const [showSyncProgress, setShowSyncProgress] = useState(false);
-  const [syncAllJobId, setSyncAllJobId] = useState<number | null>(null);
-  const [showSyncAllProgress, setShowSyncAllProgress] = useState(false);
 
   const handleSyncThreads = async (forumId: number) => {
     if (!siteId) return;
@@ -235,7 +235,7 @@ export default function ForumsPage() {
                 <div className="flex items-center justify-between mt-6">
                   <Button
                     variant="glass"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    onClick={() => goToPage(Math.max(1, page - 1))}
                     disabled={page === 1}
                   >
                     Previous
@@ -245,7 +245,7 @@ export default function ForumsPage() {
                   </span>
                   <Button
                     variant="glass"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    onClick={() => goToPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
                   >
                     Next
@@ -281,3 +281,4 @@ export default function ForumsPage() {
     </Layout>
   );
 }
+

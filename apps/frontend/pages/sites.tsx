@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
 import { sitesApi, siteSyncApi, Site, Forum, threadsApi, crawlerApi, LoginAdapter, authApi } from '@/lib/api';
+import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle, LogIn, Key } from 'lucide-react';
@@ -18,9 +19,9 @@ import { useToast } from '@/contexts/ToastContext';
 export default function SitesPage() {
   const router = useRouter();
   const { addToast } = useToast();
+  const { page, goToPage } = usePagination();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -366,7 +367,7 @@ export default function SitesPage() {
                                 </>
                               )}
                             </Button>
-                            <Link href={`/sites/${site.id}/forums`}>
+                            <Link href={`/sites/${site.id}`}>
                               <Button size="sm" variant="glass">
                                 <Folder className="w-4 h-4 mr-1" />
                                 Forums
@@ -397,7 +398,7 @@ export default function SitesPage() {
                 <div className="flex items-center justify-between mt-6">
                   <Button
                     variant="glass"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    onClick={() => goToPage(Math.max(1, page - 1))}
                     disabled={page === 1}
                   >
                     Previous
@@ -407,7 +408,7 @@ export default function SitesPage() {
                   </span>
                   <Button
                     variant="glass"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    onClick={() => goToPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
                   >
                     Next

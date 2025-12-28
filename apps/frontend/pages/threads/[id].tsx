@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout';
 import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
+import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import { useToast } from '@/contexts/ToastContext';
 import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
@@ -39,11 +40,11 @@ export default function ThreadPage() {
   const threadId = id ? Number(id) : null;
   const { addToast } = useToast();
 
+  const { page, goToPage } = usePagination();
   const [thread, setThread] = useState<Thread | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalPosts, setTotalPosts] = useState(0);
   const [syncing, setSyncing] = useState(false);
@@ -389,7 +390,7 @@ export default function ThreadPage() {
                     <Button
                       variant="glass"
                       size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      onClick={() => goToPage(Math.max(1, page - 1))}
                       disabled={page === 1}
                     >
                       Previous
@@ -400,7 +401,7 @@ export default function ThreadPage() {
                     <Button
                       variant="glass"
                       size="sm"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      onClick={() => goToPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages}
                     >
                       Next

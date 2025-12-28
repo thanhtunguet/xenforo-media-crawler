@@ -6,15 +6,16 @@ import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTable
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { threadsApi, crawlerApi, Thread } from '@/lib/api';
+import { usePagination, buildPaginatedPath } from '@/lib/pagination';
 import Link from 'next/link';
 import { RefreshCw, Eye, Image as ImageIcon, Search, MessageSquare, Clock, RotateCw } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 
 export default function ThreadsPage() {
   const { addToast } = useToast();
+  const { page, goToPage } = usePagination();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -227,7 +228,7 @@ export default function ThreadsPage() {
                   <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
                     <Button
                       variant="glass"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      onClick={() => goToPage(Math.max(1, page - 1))}
                       disabled={page === 1 || loading}
                     >
                       Previous
@@ -237,7 +238,7 @@ export default function ThreadsPage() {
                     </span>
                     <Button
                       variant="glass"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      onClick={() => goToPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages || loading}
                     >
                       Next
