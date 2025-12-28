@@ -10,6 +10,7 @@ import { MediaTypeEnum } from 'src/types/media_type';
 import type { EntityManager, Repository } from 'typeorm';
 import { XenforoClientService } from './xenforo_client.service';
 import { Response } from 'express';
+import { EventLogService } from '../event-log/event-log.service';
 
 @Injectable()
 export class XenforoCrawlerService {
@@ -23,6 +24,7 @@ export class XenforoCrawlerService {
     private readonly threadRepository: Repository<Entities.Thread>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
+    private readonly eventLogService: EventLogService,
   ) {}
 
   public async login(
@@ -93,11 +95,55 @@ export class XenforoCrawlerService {
           }
         },
       );
-      await this.forumRepository
-        .upsert(forums, ['originalId', 'siteId'])
-        .then(() => {
-          console.log('Forums upserted successfully');
+      // Check which forums already exist before upsert
+      const existingForumMap = new Map<string, Entities.Forum>();
+      for (const forum of forums) {
+        const existingForum = await this.forumRepository.findOne({
+          where: {
+            originalId: forum.originalId,
+            siteId: forum.siteId,
+          },
         });
+        if (existingForum) {
+          const key = `${forum.siteId}-${forum.originalId}`;
+          existingForumMap.set(key, existingForum);
+        }
+      }
+
+      await this.forumRepository.upsert(forums, ['originalId', 'siteId']);
+      console.log('Forums upserted successfully');
+
+      // Log forum creation/update for each forum
+      for (const forum of forums) {
+        const key = `${forum.siteId}-${forum.originalId}`;
+        const existingForum = existingForumMap.get(key);
+
+        // Fetch the forum after upsert to get the ID
+        const savedForum = await this.forumRepository.findOne({
+          where: {
+            originalId: forum.originalId,
+            siteId: forum.siteId,
+          },
+        });
+
+        if (savedForum) {
+          if (existingForum) {
+            // Forum was updated
+            await this.eventLogService.logForumUpdated(
+              savedForum.id,
+              forum.name || 'Unknown Forum',
+            );
+          } else {
+            // Forum was created
+            await this.eventLogService.logForumCreated(
+              savedForum.id,
+              forum.name || 'Unknown Forum',
+              siteId,
+            );
+          }
+        }
+      }
+
       return forums;
     } catch (error) {
       console.error('Error fetching forums:', error);
@@ -706,19 +752,36 @@ export class XenforoCrawlerService {
         `Starting sync for thread: ${thread.name} (originalId: ${thread.originalId})`,
       );
 
+      // Log thread sync start
+      await this.eventLogService.logThreadSync(
+        threadId,
+        thread.name || 'Unknown Thread',
+        siteId,
+        Number(thread.forumId),
+      );
+
       // Use originalId for all API operations
       const pageCount = await this.countPostPages(siteId, threadId);
       console.log(`Thread has ${pageCount} pages to sync`);
 
+      let totalPosts = 0;
       for (let page = 1; page <= pageCount; page++) {
         console.log(`Syncing page ${page} of ${pageCount}`);
         const posts = await this.getThreadPosts(siteId, threadId, page, req);
         console.log(`Synced ${posts.length} posts from page ${page}`);
+        totalPosts += posts.length;
 
         await new Promise((resolve) => setTimeout(resolve, 75));
       }
 
       console.log(`Completed sync for thread originalId: ${thread.originalId}`);
+      
+      // Log post sync completion
+      await this.eventLogService.logPostSync(
+        threadId,
+        thread.name || 'Unknown Thread',
+        totalPosts,
+      );
     } catch (error) {
       console.error(`Error syncing thread ${threadId}:`, error);
       throw error;
@@ -1065,6 +1128,14 @@ export class XenforoCrawlerService {
       }
 
       console.log(`Download complete for thread ${thread.id}. Stats:`, stats);
+      
+      // Log media download completion
+      await this.eventLogService.logMediaDownload(
+        threadId,
+        thread.name || 'Unknown Thread',
+        stats,
+      );
+      
       return stats;
     } catch (error) {
       console.error(`Error downloading media for thread ${threadId}:`, error);

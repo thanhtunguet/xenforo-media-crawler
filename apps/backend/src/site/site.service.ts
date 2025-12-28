@@ -11,6 +11,7 @@ import { CreateSiteDto } from './dto/create-site.dto';
 import { ForumResponseDto } from './dto/forum-response.dto';
 import { SiteResponseDto } from './dto/site-response.dto';
 import { UpdateSiteDto } from './dto/update-site.dto';
+import { EventLogService } from '../event-log/event-log.service';
 
 @Injectable()
 export class SiteService {
@@ -19,6 +20,7 @@ export class SiteService {
     private siteRepository: Repository<Site>,
     @InjectRepository(Forum)
     private forumRepository: Repository<Forum>,
+    private eventLogService: EventLogService,
   ) { }
 
   async create(createSiteDto: CreateSiteDto): Promise<SiteResponseDto> {
@@ -26,6 +28,13 @@ export class SiteService {
     const savedSite = await this.siteRepository.save(site);
     const siteDto = new SiteResponseDto(savedSite);
     siteDto.forumCount = 0; // New site has no forums
+    
+    // Log site creation
+    await this.eventLogService.logSiteCreated(
+      savedSite.id,
+      savedSite.name || savedSite.url,
+    );
+    
     return siteDto;
   }
 
@@ -118,12 +127,26 @@ export class SiteService {
     });
     const siteDto = new SiteResponseDto(updatedSite);
     siteDto.forumCount = forumCount;
+    
+    // Log site update
+    await this.eventLogService.logSiteUpdated(
+      updatedSite.id,
+      updatedSite.name || updatedSite.url,
+      updateSiteDto,
+    );
+    
     return siteDto;
   }
 
   async remove(id: number): Promise<void> {
-    await this.findOne(id);
+    const site = await this.findOne(id);
     await this.siteRepository.softDelete(id);
+    
+    // Log site deletion
+    await this.eventLogService.logSiteDeleted(
+      id,
+      site.name || site.url,
+    );
   }
 
   async getForumsBySiteId(

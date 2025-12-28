@@ -1,3 +1,5 @@
+export { EventLog } from './EventLog';
+
 export { Forum } from './Forum';
 
 export { Media } from './Media';

@@ -3,6 +3,7 @@ import { ApiParam, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { XenforoCrawlerService } from 'src/xenforo_crawler/xenforo_crawler.service';
 import { ForumResponseDto } from './dto/forum-response.dto';
 import { SiteService } from './site.service';
+import { EventLogService } from '../event-log/event-log.service';
 
 @ApiTags('Site sync')
 @Controller('/api/sites')
@@ -10,6 +11,7 @@ export class SiteSyncController {
   constructor(
     private readonly siteService: SiteService,
     private readonly xenforoCrawlerService: XenforoCrawlerService,
+    private readonly eventLogService: EventLogService,
   ) {}
 
   @Post(':id/sync')
@@ -24,9 +26,17 @@ export class SiteSyncController {
     required: true,
     type: Number,
   })
-  syncForums(
+  async syncForums(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ForumResponseDto[]> {
+    const site = await this.siteService.findOne(id);
+    
+    // Log sites sync
+    await this.eventLogService.logSitesSync(
+      id,
+      site.name || site.url,
+    );
+    
     return this.xenforoCrawlerService.listForums(id);
   }
 

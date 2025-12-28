@@ -160,3 +160,4 @@ For production deployments:
 6. **Set up database backups**
 7. **Use specific image tags** instead of `latest`
 
+
