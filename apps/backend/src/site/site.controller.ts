@@ -132,6 +132,28 @@ export class SiteController {
     return this.siteService.count();
   }
 
+  @Get('forums/count')
+  @ApiOperation({
+    summary: 'Get forum count',
+    description: 'Returns the total number of forums in the system',
+    operationId: 'getForumCount',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Total forum count',
+    schema: {
+      properties: {
+        count: {
+          type: 'number',
+          description: 'Total number of forums',
+        },
+      },
+    },
+  })
+  countForums(): Promise<{ count: number }> {
+    return this.siteService.countForums();
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get site by ID',

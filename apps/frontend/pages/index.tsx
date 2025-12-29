@@ -114,15 +114,16 @@ export default function Dashboard() {
     try {
       setLoading(true);
       // Fetch stats from API
-      const [sitesCount, threadsCount, mediaCount] = await Promise.all([
+      const [sitesCount, forumsCount, threadsCount, mediaCount] = await Promise.all([
         sitesApi.getAll(1, 1).then((res) => res.meta.totalItems),
+        sitesApi.getForumCount().then((res) => res.count),
         threadsApi.getAll(1, 1).then((res) => res.meta.totalItems),
         mediaApi.getCount().then((res) => res.count),
       ]);
 
       setStats({
         sites: sitesCount,
-        forums: 0, // Will be implemented later
+        forums: forumsCount,
         threads: threadsCount,
         media: mediaCount,
       });

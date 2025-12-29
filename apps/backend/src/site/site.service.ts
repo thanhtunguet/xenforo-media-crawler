@@ -181,4 +181,11 @@ export class SiteService {
       },
     };
   }
+
+  async countForums(): Promise<{ count: number }> {
+    const count = await this.forumRepository.count({
+      where: { deletedAt: null },
+    });
+    return { count };
+  }
 }

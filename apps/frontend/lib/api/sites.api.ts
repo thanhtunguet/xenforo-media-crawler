@@ -37,5 +37,8 @@ export const sitesApi = {
       `/api/sites/${siteId}/forums?page=${page}&limit=${limit}`
     );
   },
+  getForumCount: async (): Promise<{ count: number }> => {
+    return apiRequest<{ count: number }>('/api/sites/forums/count');
+  },
 };
 
