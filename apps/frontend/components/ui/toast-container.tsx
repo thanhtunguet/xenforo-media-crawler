@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useToast, Toast } from '@/contexts/ToastContext';
-import { CheckCircle, XCircle, Info, AlertTriangle, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Toast, useToast } from '../../contexts/ToastContext';
+import { AlertTriangle, CheckCircle, Info, X, XCircle } from 'lucide-react';
 
 const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   toast,

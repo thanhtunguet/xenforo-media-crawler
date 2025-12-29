@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
-import { Layout } from '@/components/layout';
-import { authApi, sitesApi } from '@/lib/api';
-import { ButtonVariant } from '@/lib/enums';
+import { useEffect, useState } from 'react';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Select } from '../components/ui/select';
+import { Layout } from '../components/layout';
+import { authApi } from '../lib/api/auth.api';
+import { sitesApi } from '../lib/api/sites.api';
+import { ButtonVariant } from '../lib/enums';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -101,7 +101,9 @@ export default function LoginPage() {
                 <Select
                   id="site"
                   value={siteId}
-                  onChange={(e) => setSiteId(e.target.value ? Number(e.target.value) : '')}
+                  onChange={(e) =>
+                    setSiteId(e.target.value ? Number(e.target.value) : '')
+                  }
                   required
                 >
                   <option value="">Select a site</option>
@@ -169,4 +171,3 @@ export default function LoginPage() {
     </Layout>
   );
 }
-

@@ -1,27 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Layout } from '@/components/layout';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
+import {
+  GlassCard,
+  GlassCardContent,
+  GlassCardHeader,
+  GlassCardTitle,
+} from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { jobsApi, Job } from '@/lib/api';
+import { Job, jobsApi } from '@/lib/api';
 import { useJobProgress } from '@/hooks/useJobProgress';
 import { useToast } from '@/contexts/ToastContext';
 import { JobStatus } from '@xenforo-media-crawler/contracts';
-import { ToastType, BadgeVariant, ButtonVariant, ButtonSize, ProgressStatus } from '@/lib/enums';
 import {
-  Play,
+  BadgeVariant,
+  ButtonSize,
+  ButtonVariant,
+  ProgressStatus,
+  ToastType,
+} from '@/lib/enums';
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Loader2,
   Pause,
+  Play,
+  RefreshCw,
   RotateCw,
   X,
-  RefreshCw,
-  Clock,
-  CheckCircle,
   XCircle,
-  AlertCircle,
-  Loader2,
 } from 'lucide-react';
 
 type JobStatusFilter = JobStatus | 'all';
@@ -42,7 +53,10 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
 
   // Subscribe to real-time updates for running/paused jobs
   const { progress: realtimeProgress } = useJobProgress({
-    jobId: job.status === JobStatus.RUNNING || job.status === JobStatus.PAUSED ? job.id : null,
+    jobId:
+      job.status === JobStatus.RUNNING || job.status === JobStatus.PAUSED
+        ? job.id
+        : null,
     onProgress: (data) => {
       // Update will be handled by parent refresh
       onUpdate();
@@ -53,10 +67,14 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
   const displayProgress = realtimeProgress?.progress ?? job.progress;
   const displayStatus = realtimeProgress?.status ?? job.status;
   const displayStep = realtimeProgress?.currentStep ?? job.currentStep;
-  const displayProcessed = realtimeProgress?.processedItems ?? job.processedItems;
+  const displayProcessed =
+    realtimeProgress?.processedItems ?? job.processedItems;
   const displayTotal = realtimeProgress?.totalItems ?? job.totalItems;
 
-  const handleAction = async (action: 'start' | 'pause' | 'resume' | 'cancel', actionName: string) => {
+  const handleAction = async (
+    action: 'start' | 'pause' | 'resume' | 'cancel',
+    actionName: string,
+  ) => {
     try {
       setActionLoading(action);
       switch (action) {
@@ -143,18 +161,23 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
           <div className="flex items-center gap-2 mb-2">
             {getStatusIcon()}
             {getStatusBadge()}
-            <span className="text-sm text-white/60">{formatJobType(job.jobType)}</span>
+            <span className="text-sm text-white/60">
+              {formatJobType(job.jobType)}
+            </span>
           </div>
 
           {job.entityName && (
-            <p className="text-white/90 font-medium mb-1 truncate">{job.entityName}</p>
+            <p className="text-white/90 font-medium mb-1 truncate">
+              {job.entityName}
+            </p>
           )}
 
           {displayStep && (
             <p className="text-sm text-white/70 mb-2">{displayStep}</p>
           )}
 
-          {(displayStatus === JobStatus.RUNNING || displayStatus === JobStatus.PAUSED) && (
+          {(displayStatus === JobStatus.RUNNING ||
+            displayStatus === JobStatus.PAUSED) && (
             <div className="space-y-2 mb-2">
               <Progress
                 value={displayProgress}
@@ -181,7 +204,9 @@ function JobItem({ job, onUpdate }: { job: Job; onUpdate: () => void }) {
 
           <div className="flex items-center gap-4 mt-2 text-xs text-white/50">
             <span>Created: {formatDate(job.createdAt)}</span>
-            {job.completedAt && <span>Completed: {formatDate(job.completedAt)}</span>}
+            {job.completedAt && (
+              <span>Completed: {formatDate(job.completedAt)}</span>
+            )}
           </div>
         </div>
 
@@ -348,9 +373,7 @@ export default function JobsPage() {
         {/* Jobs List */}
         <GlassCard>
           <GlassCardHeader>
-            <GlassCardTitle>
-              Jobs ({jobs.length})
-            </GlassCardTitle>
+            <GlassCardTitle>Jobs ({jobs.length})</GlassCardTitle>
           </GlassCardHeader>
           <GlassCardContent>
             {loading && jobs.length === 0 ? (
@@ -364,7 +387,9 @@ export default function JobsPage() {
                   <Clock className="w-12 h-12 text-white/40 mx-auto mb-4" />
                   <p className="text-white/60">No jobs found</p>
                   <p className="text-sm text-white/40 mt-2">
-                    {statusFilter !== 'all' ? `No jobs with status "${statusFilter}"` : 'No jobs available'}
+                    {statusFilter !== 'all'
+                      ? `No jobs with status "${statusFilter}"`
+                      : 'No jobs available'}
                   </p>
                 </div>
               </div>
@@ -381,4 +406,3 @@ export default function JobsPage() {
     </Layout>
   );
 }
-

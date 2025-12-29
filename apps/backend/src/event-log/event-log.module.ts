@@ -11,4 +11,3 @@ import { EventLogController } from './event-log.controller';
   exports: [EventLogService],
 })
 export class EventLogModule {}
-

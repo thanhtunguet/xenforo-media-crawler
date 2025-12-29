@@ -7,84 +7,87 @@ import { BaseLoginAdapter } from './base-login-adapter';
  * Implements the specific login flow for xamvn.com site
  */
 export class XamVNComLoginAdapter extends BaseLoginAdapter {
-    getName(): string {
-        return 'XamVNComLoginAdapter';
+  getName(): string {
+    return 'XamVNComLoginAdapter';
+  }
+
+  async login(
+    username: string,
+    password: string,
+    axiosInstance: AxiosInstance,
+    siteUrl: string,
+    expressResponse?: Response,
+  ): Promise<AxiosResponse> {
+    // Step 1: Access the homepage to get initial cookies
+    const homepageResponse = await axiosInstance.get('/', {
+      baseURL: siteUrl,
+    });
+
+    this.setCookiesFromResponse(expressResponse, homepageResponse);
+
+    // Step 2: Get the login page to retrieve CSRF token
+    const loginPageResponse = await axiosInstance.get('/login/', {
+      baseURL: siteUrl,
+    });
+
+    this.setCookiesFromResponse(expressResponse, loginPageResponse);
+    const csrfToken = this.extractCsrfToken(loginPageResponse);
+
+    if (!csrfToken) {
+      throw new Error('Failed to extract CSRF token from login page');
     }
 
-    async login(
-        username: string,
-        password: string,
-        axiosInstance: AxiosInstance,
-        siteUrl: string,
-        expressResponse?: Response,
-    ): Promise<AxiosResponse> {
-        // Step 1: Access the homepage to get initial cookies
-        const homepageResponse = await axiosInstance.get('/', {
-            baseURL: siteUrl,
-        });
+    // Step 3: Prepare login payload (xamvn.com uses standard XenForo login)
+    const payload = new URLSearchParams({
+      _xfToken: csrfToken,
+      login: username,
+      password,
+      remember: '1',
+      _xfRedirect: siteUrl,
+    }).toString();
 
-        this.setCookiesFromResponse(expressResponse, homepageResponse);
+    // Step 4: Submit login form
+    const loginResponse = await axiosInstance.post('/login/login', payload, {
+      baseURL: siteUrl,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest',
+        Origin: siteUrl,
+        Referer: `${siteUrl}/login/`,
+      },
+      maxRedirects: 0,
+      validateStatus: (status) => status === 303 || status === 200,
+    });
 
-        // Step 2: Get the login page to retrieve CSRF token
-        const loginPageResponse = await axiosInstance.get('/login/', {
-            baseURL: siteUrl,
-        });
+    // Step 5: Save cookies from login response
+    this.setCookiesFromResponse(expressResponse, loginResponse);
 
-        this.setCookiesFromResponse(expressResponse, loginPageResponse);
-        const csrfToken = this.extractCsrfToken(loginPageResponse);
-
-        if (!csrfToken) {
-            throw new Error('Failed to extract CSRF token from login page');
+    // Step 6: Follow redirect if needed to complete login
+    if (loginResponse.status === 303) {
+      const redirectUrl = loginResponse.headers['location'];
+      if (redirectUrl) {
+        // Resolve the redirect URL properly
+        let finalUrl: string;
+        if (
+          redirectUrl.startsWith('http://') ||
+          redirectUrl.startsWith('https://')
+        ) {
+          // Absolute URL - use as is
+          finalUrl = redirectUrl;
+        } else if (redirectUrl.startsWith('/')) {
+          // Relative URL starting with / - append to base URL
+          finalUrl = `${siteUrl}${redirectUrl}`;
+        } else {
+          // Relative URL without leading / - append with /
+          finalUrl = `${siteUrl}/${redirectUrl}`;
         }
 
-        // Step 3: Prepare login payload (xamvn.com uses standard XenForo login)
-        const payload = new URLSearchParams({
-            _xfToken: csrfToken,
-            login: username,
-            password,
-            remember: '1',
-            _xfRedirect: siteUrl,
-        }).toString();
-
-        // Step 4: Submit login form
-        const loginResponse = await axiosInstance.post('/login/login', payload, {
-            baseURL: siteUrl,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest',
-                Origin: siteUrl,
-                Referer: `${siteUrl}/login/`,
-            },
-            maxRedirects: 0,
-            validateStatus: (status) => status === 303 || status === 200,
-        });
-
-        // Step 5: Save cookies from login response
-        this.setCookiesFromResponse(expressResponse, loginResponse);
-
-        // Step 6: Follow redirect if needed to complete login
-        if (loginResponse.status === 303) {
-            const redirectUrl = loginResponse.headers['location'];
-            if (redirectUrl) {
-                // Resolve the redirect URL properly
-                let finalUrl: string;
-                if (redirectUrl.startsWith('http://') || redirectUrl.startsWith('https://')) {
-                    // Absolute URL - use as is
-                    finalUrl = redirectUrl;
-                } else if (redirectUrl.startsWith('/')) {
-                    // Relative URL starting with / - append to base URL
-                    finalUrl = `${siteUrl}${redirectUrl}`;
-                } else {
-                    // Relative URL without leading / - append with /
-                    finalUrl = `${siteUrl}/${redirectUrl}`;
-                }
-
-                const finalResponse = await axiosInstance.get(finalUrl);
-                this.setCookiesFromResponse(expressResponse, finalResponse);
-                return finalResponse;
-            }
-        }
-
-        return loginResponse;
+        const finalResponse = await axiosInstance.get(finalUrl);
+        this.setCookiesFromResponse(expressResponse, finalResponse);
+        return finalResponse;
+      }
     }
+
+    return loginResponse;
+  }
 }

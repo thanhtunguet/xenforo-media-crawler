@@ -12,20 +12,20 @@ export { XamVNComLoginAdapter } from './xamvn-com-login.adapter';
  * Enum for available login adapter types
  */
 export enum LoginAdapterType {
-    XAMVN_CLONE = 'xamvn-clone',
-    XAMVN_COM = 'xamvn-com',
+  XAMVN_CLONE = 'xamvn-clone',
+  XAMVN_COM = 'xamvn-com',
 }
 
 /**
  * Get a login adapter instance by type
  */
 export function getLoginAdapter(type: LoginAdapterType): ILoginAdapter {
-    switch (type) {
-        case LoginAdapterType.XAMVN_CLONE:
-            return new XamvnCloneLoginAdapter();
-        case LoginAdapterType.XAMVN_COM:
-            return new XamVNComLoginAdapter();
-        default:
-            throw new Error(`Unknown login adapter type: ${type}`);
-    }
+  switch (type) {
+    case LoginAdapterType.XAMVN_CLONE:
+      return new XamvnCloneLoginAdapter();
+    case LoginAdapterType.XAMVN_COM:
+      return new XamVNComLoginAdapter();
+    default:
+      throw new Error(`Unknown login adapter type: ${type}`);
+  }
 }

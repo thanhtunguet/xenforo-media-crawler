@@ -1,11 +1,17 @@
 import { apiRequest } from './utils';
-import type { Site, CreateSiteDto, UpdateSiteDto, PaginatedResponse, Forum } from '@xenforo-media-crawler/contracts';
+import type {
+  CreateSiteDto,
+  Forum,
+  PaginatedResponse,
+  Site,
+  UpdateSiteDto,
+} from '@xenforo-media-crawler/contracts'; // Sites APIs
 
 // Sites APIs
 export const sitesApi = {
   getAll: async (page = 1, limit = 10): Promise<PaginatedResponse<Site>> => {
     return apiRequest<PaginatedResponse<Site>>(
-      `/api/sites?page=${page}&limit=${limit}`
+      `/api/sites?page=${page}&limit=${limit}`,
     );
   },
   getById: async (id: number): Promise<Site> => {
@@ -31,14 +37,13 @@ export const sitesApi = {
   getForums: async (
     siteId: number,
     page = 1,
-    limit = 10
+    limit = 10,
   ): Promise<PaginatedResponse<Forum>> => {
     return apiRequest<PaginatedResponse<Forum>>(
-      `/api/sites/${siteId}/forums?page=${page}&limit=${limit}`
+      `/api/sites/${siteId}/forums?page=${page}&limit=${limit}`,
     );
   },
   getForumCount: async (): Promise<{ count: number }> => {
     return apiRequest<{ count: number }>('/api/sites/forums/count');
   },
 };
-

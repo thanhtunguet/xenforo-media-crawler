@@ -12,4 +12,3 @@ import { JobGateway } from './job.gateway';
   exports: [JobService, JobGateway],
 })
 export class JobModule {}
-

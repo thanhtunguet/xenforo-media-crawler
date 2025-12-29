@@ -165,5 +165,3 @@ export interface LoginAdapter {
 export interface LoginAdaptersResponse {
   adapters: LoginAdapter[];
 }
-
-

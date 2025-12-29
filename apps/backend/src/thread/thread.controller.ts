@@ -13,8 +13,8 @@ import {
 import { ThreadService } from './thread.service';
 import {
   CreateThreadDto,
-  ThreadDto,
   ThreadCountDto,
+  ThreadDto,
   UpdateThreadDto,
 } from './dto/thread.dto';
 import { PostDto } from './dto/post.dto';
@@ -120,7 +120,8 @@ export class ThreadController {
   @Get('search/original-id')
   @ApiOperation({
     summary: 'Search thread by original ID',
-    description: 'Searches for a thread by its original ID from the XenForo site',
+    description:
+      'Searches for a thread by its original ID from the XenForo site',
     operationId: 'searchThreadByOriginalId',
   })
   @ApiQuery({
@@ -138,7 +139,9 @@ export class ThreadController {
     status: 404,
     description: 'Thread not found',
   })
-  async findByOriginalId(@Query('originalId') originalId: string): Promise<ThreadDto> {
+  async findByOriginalId(
+    @Query('originalId') originalId: string,
+  ): Promise<ThreadDto> {
     return this.threadService.findByOriginalId(originalId);
   }
 

@@ -1,24 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
+import {
+  GlassCard,
+  GlassCardContent,
+  GlassCardHeader,
+  GlassCardTitle,
+} from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { eventLogsApi, EventLog } from '@/lib/api';
-import { 
-  Server, 
-  Folder, 
-  MessageSquare, 
-  Image, 
-  RefreshCw, 
+import { EventLog, eventLogsApi } from '@/lib/api';
+import {
+  Clock,
   Download,
-  Plus,
   Edit,
-  Trash2,
+  Plus,
+  RefreshCw,
   RotateCw,
-  Clock
+  Trash2,
 } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, ButtonVariant } from '@/lib/enums';
+import { ButtonVariant, ToastType } from '@/lib/enums';
 // Simple time formatter (replacing date-fns dependency)
 const formatTimeAgo = (dateString: string | null): string => {
   if (!dateString) return 'Unknown time';
@@ -26,11 +27,14 @@ const formatTimeAgo = (dateString: string | null): string => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)} days ago`;
     return `${Math.floor(diffInSeconds / 604800)} weeks ago`;
   } catch {
     return dateString;
@@ -78,7 +82,9 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 
 function ActivityItem({ eventLog }: { eventLog: EventLog }) {
   const Icon = EVENT_TYPE_ICONS[eventLog.eventType] || Clock;
-  const colorClass = EVENT_TYPE_COLORS[eventLog.eventType] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  const colorClass =
+    EVENT_TYPE_COLORS[eventLog.eventType] ||
+    'bg-gray-500/20 text-gray-400 border-gray-500/30';
   const label = EVENT_TYPE_LABELS[eventLog.eventType] || eventLog.eventType;
 
   const formatTime = (dateString: string | null) => {
@@ -94,7 +100,9 @@ function ActivityItem({ eventLog }: { eventLog: EventLog }) {
         <div className="mt-2 text-xs text-white/60 space-y-1">
           <div className="flex gap-4">
             <span>Total: {stats.total}</span>
-            <span className="text-green-400">Downloaded: {stats.downloaded}</span>
+            <span className="text-green-400">
+              Downloaded: {stats.downloaded}
+            </span>
             <span className="text-red-400">Failed: {stats.failed}</span>
             <span className="text-yellow-400">Skipped: {stats.skipped}</span>
           </div>
@@ -113,7 +121,9 @@ function ActivityItem({ eventLog }: { eventLog: EventLog }) {
     if (eventLog.metadata.changes) {
       return (
         <div className="mt-2 text-xs text-white/60">
-          <span>Changes: {Object.keys(eventLog.metadata.changes).join(', ')}</span>
+          <span>
+            Changes: {Object.keys(eventLog.metadata.changes).join(', ')}
+          </span>
         </div>
       );
     }
@@ -129,9 +139,13 @@ function ActivityItem({ eventLog }: { eventLog: EventLog }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <Badge className={colorClass}>{label}</Badge>
-          <span className="text-xs text-white/40">{formatTime(eventLog.createdAt)}</span>
+          <span className="text-xs text-white/40">
+            {formatTime(eventLog.createdAt)}
+          </span>
         </div>
-        <p className="text-sm text-white/90">{eventLog.description || eventLog.eventType}</p>
+        <p className="text-sm text-white/90">
+          {eventLog.description || eventLog.eventType}
+        </p>
         {eventLog.entityName && (
           <p className="text-xs text-white/60 mt-1">
             {eventLog.entityType}: {eventLog.entityName}
@@ -196,7 +210,9 @@ export default function ActivityPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Recent Activities</h1>
+            <h1 className="text-3xl font-bold gradient-text">
+              Recent Activities
+            </h1>
             <p className="text-white/60 mt-1">
               View all recent events and actions in the system
             </p>
@@ -206,7 +222,9 @@ export default function ActivityPage() {
             disabled={loading}
             className="glass-card border-white/10"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+            />
             Refresh
           </Button>
         </div>
@@ -255,4 +273,3 @@ export default function ActivityPage() {
     </Layout>
   );
 }
-

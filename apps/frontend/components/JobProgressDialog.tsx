@@ -1,9 +1,9 @@
 import React from 'react';
-import { X, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { useJobProgress, JobProgress } from '../hooks/useJobProgress';
+import { CheckCircle, Loader2, X, XCircle } from 'lucide-react';
+import { useJobProgress } from '../hooks/useJobProgress';
 import { Progress } from './ui/progress';
 import { Button } from './ui/button';
-import { ButtonVariant, ButtonSize } from '../lib/enums';
+import { ButtonSize, ButtonVariant } from '../lib/enums';
 
 interface JobProgressDialogProps {
   jobId: number | null;
@@ -98,11 +98,12 @@ export function JobProgressDialog({
                   <Progress value={progress.progress} className="h-2" />
                   <div className="flex items-center justify-between mt-1 text-xs text-gray-400">
                     <span>{progress.progress}%</span>
-                    {progress.totalItems && progress.processedItems !== undefined && (
-                      <span>
-                        {progress.processedItems} / {progress.totalItems}
-                      </span>
-                    )}
+                    {progress.totalItems &&
+                      progress.processedItems !== undefined && (
+                        <span>
+                          {progress.processedItems} / {progress.totalItems}
+                        </span>
+                      )}
                   </div>
                 </div>
               )}
@@ -125,16 +126,23 @@ export function JobProgressDialog({
             <div className="text-xs text-gray-400 space-y-1">
               {Object.entries(progress.metadata).map(([key, value]) => (
                 <div key={key} className="flex justify-between">
-                  <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                  <span className="capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                  </span>
                   <span className="text-white">{String(value)}</span>
                 </div>
               ))}
             </div>
           )}
 
-          {(progress?.status === 'completed' || progress?.status === 'failed') && (
+          {(progress?.status === 'completed' ||
+            progress?.status === 'failed') && (
             <div className="flex justify-end">
-              <Button onClick={onClose} variant={ButtonVariant.OUTLINE} size={ButtonSize.SM}>
+              <Button
+                onClick={onClose}
+                variant={ButtonVariant.OUTLINE}
+                size={ButtonSize.SM}
+              >
                 Close
               </Button>
             </div>
@@ -144,4 +152,3 @@ export function JobProgressDialog({
     </div>
   );
 }
-

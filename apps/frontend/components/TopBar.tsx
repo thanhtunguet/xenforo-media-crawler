@@ -41,10 +41,14 @@ export function TopBar({ title }: TopBarProps) {
   const breadcrumbs = generateBreadcrumbs();
 
   // Get page title from breadcrumbs or prop
-  const pageTitle = title || breadcrumbs[breadcrumbs.length - 1]?.name || 'Dashboard';
+  const pageTitle =
+    title || breadcrumbs[breadcrumbs.length - 1]?.name || 'Dashboard';
 
   return (
-    <div className="glass-card border-b border-white/10 sticky top-4 z-40" style={{ borderRadius: '0.75rem 0.75rem 0 0' }}>
+    <div
+      className="glass-card border-b border-white/10 sticky top-4 z-40"
+      style={{ borderRadius: '0.75rem 0.75rem 0 0' }}
+    >
       <div className="flex items-center justify-between px-8 py-4">
         <div>
           <h1 className="text-2xl font-semibold text-white">{pageTitle}</h1>
@@ -78,7 +82,11 @@ export function TopBar({ title }: TopBarProps) {
             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white transition-all"
             aria-label="Toggle theme"
           >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {isDark ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
           </button>
 
           {/* User Avatar Placeholder */}

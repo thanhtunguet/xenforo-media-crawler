@@ -9,10 +9,10 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
-  ApiOperation,
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import * as Entities from 'src/_entities';
@@ -35,12 +35,13 @@ export class XenforoCrawlerController {
   constructor(
     private readonly xenforoCrawlerService: XenforoCrawlerService,
     private readonly jobService: JobService,
-  ) { }
+  ) {}
 
   @Get('/login-adapters')
   @ApiOperation({
     summary: 'List available login adapters',
-    description: 'Returns a list of all available login adapters for XenForo sites',
+    description:
+      'Returns a list of all available login adapters for XenForo sites',
     operationId: 'xenforoListLoginAdapters',
   })
   @ApiResponse({
@@ -53,12 +54,14 @@ export class XenforoCrawlerController {
         {
           key: 'xamvn-clone',
           name: 'XamVN Clone (Standard XenForo)',
-          description: 'Works with standard XenForo installations and most clones',
+          description:
+            'Works with standard XenForo installations and most clones',
         },
         {
           key: 'xamvn-com',
           name: 'XamVN.com',
-          description: 'Specific adapter for xamvn.com site with custom login flow',
+          description:
+            'Specific adapter for xamvn.com site with custom login flow',
         },
       ],
     };
@@ -93,11 +96,12 @@ export class XenforoCrawlerController {
       res.status(200).json(response.data);
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error?.response?.data || error?.message || 'Login failed';
+      const errorMessage =
+        error?.response?.data || error?.message || 'Login failed';
       res.status(500).json({
         error: errorMessage,
         code: error?.code,
-        message: 'Failed to login to the site'
+        message: 'Failed to login to the site',
       });
     }
   }
@@ -130,11 +134,12 @@ export class XenforoCrawlerController {
       res.status(200).json(response.data);
     } catch (error) {
       console.error('Login with cookie error:', error);
-      const errorMessage = error?.response?.data || error?.message || 'Login with cookie failed';
+      const errorMessage =
+        error?.response?.data || error?.message || 'Login with cookie failed';
       res.status(500).json({
         error: errorMessage,
         code: error?.code,
-        message: 'Failed to login with cookie'
+        message: 'Failed to login with cookie',
       });
     }
   }
@@ -189,7 +194,9 @@ export class XenforoCrawlerController {
     });
 
     if (!forum || !forum.originalId) {
-      throw new Error(`Forum with ID ${forumId} not found or has no originalId`);
+      throw new Error(
+        `Forum with ID ${forumId} not found or has no originalId`,
+      );
     }
 
     return this.xenforoCrawlerService.listThreads(
@@ -222,10 +229,15 @@ export class XenforoCrawlerController {
     });
 
     if (!forum || !forum.originalId) {
-      throw new Error(`Forum with ID ${forumId} not found or has no originalId`);
+      throw new Error(
+        `Forum with ID ${forumId} not found or has no originalId`,
+      );
     }
 
-    return this.xenforoCrawlerService.countThreadPages(siteId, Number(forum.originalId));
+    return this.xenforoCrawlerService.countThreadPages(
+      siteId,
+      Number(forum.originalId),
+    );
   }
 
   @ApiQuery({
@@ -326,7 +338,8 @@ export class XenforoCrawlerController {
   })
   @ApiOperation({
     summary: 'Sync thread posts',
-    description: 'Synchronizes all posts from a thread. Site is automatically determined from the thread.',
+    description:
+      'Synchronizes all posts from a thread. Site is automatically determined from the thread.',
     operationId: 'xenforoSyncThreadPosts',
   })
   @ApiResponse({
@@ -342,17 +355,17 @@ export class XenforoCrawlerController {
     try {
       // Get thread with forum relation to get siteId and name
       const thread = await this.xenforoCrawlerService.getThreadById(threadId);
-      
+
       if (!thread.forum) {
         throw new Error('Thread has no associated forum');
       }
-      
+
       const siteId = thread.forum.siteId;
-      
+
       if (!siteId) {
         throw new Error('Thread has no associated site');
       }
-      
+
       // Create job and run sync asynchronously
       const job = await this.jobService.create({
         jobType: JobType.SYNC_THREAD_POSTS,
@@ -360,9 +373,9 @@ export class XenforoCrawlerController {
         threadId,
         entityName: thread.name || 'Unknown Thread',
       });
-      
+
       void this.xenforoCrawlerService.syncAllThreadPosts(threadId, req, job.id);
-      
+
       res.status(200).json({
         jobId: job.id,
         message: `Syncing thread with ID: ${threadId}`,
@@ -387,7 +400,8 @@ export class XenforoCrawlerController {
   })
   @ApiOperation({
     summary: 'Download thread media',
-    description: 'Downloads media files from a thread. Site is automatically determined from the thread.',
+    description:
+      'Downloads media files from a thread. Site is automatically determined from the thread.',
     operationId: 'xenforoDownloadThreadMedia',
   })
   @ApiResponse({
@@ -405,11 +419,11 @@ export class XenforoCrawlerController {
       // Get thread to get siteId and name
       const thread = await this.xenforoCrawlerService.getThread(0, threadId);
       const siteId = thread.forum?.siteId;
-      
+
       if (!siteId) {
         throw new Error('Thread has no associated site');
       }
-      
+
       // Create job and run download asynchronously
       const job = await this.jobService.create({
         jobType: JobType.DOWNLOAD_THREAD_MEDIA,
@@ -418,7 +432,7 @@ export class XenforoCrawlerController {
         entityName: thread.name || 'Unknown Thread',
         metadata: { mediaTypeId },
       });
-      
+
       void this.xenforoCrawlerService
         .downloadThreadMedia(threadId, mediaTypeId, req, job.id)
         .then((stats) => {

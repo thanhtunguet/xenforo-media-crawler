@@ -13,4 +13,3 @@ export class MediaResponseDto {
   createdAt: Date | null;
   updatedAt: Date | null;
 }
-

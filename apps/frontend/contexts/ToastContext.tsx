@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { ToastType } from '@/lib/enums';
+import React, { createContext, useCallback, useContext, useState } from 'react';
+import { ToastType } from '../lib/enums';
 
 export interface Toast {
   id: string;
@@ -24,21 +24,26 @@ export const useToast = () => {
   return context;
 };
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((message: string, type: ToastType = ToastType.INFO, duration = 5000) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    const newToast: Toast = { id, message, type, duration };
+  const addToast = useCallback(
+    (message: string, type: ToastType = ToastType.INFO, duration = 5000) => {
+      const id = Math.random().toString(36).substring(2, 9);
+      const newToast: Toast = { id, message, type, duration };
 
-    setToasts((prev) => [...prev, newToast]);
+      setToasts((prev) => [...prev, newToast]);
 
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, duration);
-    }
-  }, []);
+      if (duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+        }, duration);
+      }
+    },
+    [],
+  );
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));

@@ -1,21 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
-import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
+import {
+  GlassCard,
+  GlassCardContent,
+  GlassCardHeader,
+  GlassCardTitle,
+} from '@/components/ui/glass-card';
+import {
+  GlassTable,
+  GlassTableBody,
+  GlassTableCell,
+  GlassTableHead,
+  GlassTableHeader,
+  GlassTableRow,
+} from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
-import { sitesApi, siteSyncApi, Site, Forum, threadsApi, crawlerApi, LoginAdapter, authApi } from '@/lib/api';
-import { usePagination, buildPaginatedPath } from '@/lib/pagination';
+import {
+  authApi,
+  crawlerApi,
+  Forum,
+  LoginAdapter,
+  Site,
+  sitesApi,
+  siteSyncApi,
+  threadsApi,
+} from '@/lib/api';
+import { usePagination } from '@/lib/pagination';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Plus, RefreshCw, Edit, Trash2, Folder, Search, ExternalLink, CheckCircle, LogIn, Key } from 'lucide-react';
+import {
+  CheckCircle,
+  Edit,
+  ExternalLink,
+  Folder,
+  Key,
+  LogIn,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+} from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
+import {
+  BadgeVariant,
+  ButtonSize,
+  ButtonVariant,
+  ToastType,
+} from '@/lib/enums';
 
 export default function SitesPage() {
   const router = useRouter();
@@ -28,7 +71,11 @@ export default function SitesPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
-  const [formData, setFormData] = useState({ name: '', url: '', loginAdapter: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    url: '',
+    loginAdapter: '',
+  });
   const [forums, setForums] = useState<Forum[]>([]);
   const [loginAdapters, setLoginAdapters] = useState<LoginAdapter[]>([]);
   const [forumsDialogOpen, setForumsDialogOpen] = useState(false);
@@ -38,7 +85,10 @@ export default function SitesPage() {
   const [searchError, setSearchError] = useState('');
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [loginSite, setLoginSite] = useState<Site | null>(null);
-  const [loginCredentials, setLoginCredentials] = useState({ username: '', password: '' });
+  const [loginCredentials, setLoginCredentials] = useState({
+    username: '',
+    password: '',
+  });
   const [loggingIn, setLoggingIn] = useState(false);
   const [loginResult, setLoginResult] = useState<any>(null);
   const [loginError, setLoginError] = useState('');
@@ -148,7 +198,7 @@ export default function SitesPage() {
     setFormData({
       name: site.name || '',
       url: site.url,
-      loginAdapter: site.loginAdapter || ''
+      loginAdapter: site.loginAdapter || '',
     });
     setEditDialogOpen(true);
   };
@@ -167,7 +217,11 @@ export default function SitesPage() {
   };
 
   const handleLogin = async () => {
-    if (!loginSite || !loginCredentials.username || !loginCredentials.password) {
+    if (
+      !loginSite ||
+      !loginCredentials.username ||
+      !loginCredentials.password
+    ) {
       setLoginError('Please enter both username and password');
       return;
     }
@@ -180,7 +234,7 @@ export default function SitesPage() {
       const result = await authApi.login(
         loginCredentials.username,
         loginCredentials.password,
-        loginSite.id
+        loginSite.id,
       );
       setLoginResult(result);
       addToast('Login successful!', ToastType.SUCCESS);
@@ -206,7 +260,9 @@ export default function SitesPage() {
     setSearchError('');
 
     try {
-      const thread = await threadsApi.searchByOriginalId(searchOriginalId.trim());
+      const thread = await threadsApi.searchByOriginalId(
+        searchOriginalId.trim(),
+      );
       router.push(`/threads/${thread.id}`);
     } catch (err: any) {
       setSearchError(err.message || 'Thread not found');
@@ -221,7 +277,9 @@ export default function SitesPage() {
         {/* Header Actions */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-white/60 mt-1">Manage your XenForo sites and synchronize forums</p>
+            <p className="text-white/60 mt-1">
+              Manage your XenForo sites and synchronize forums
+            </p>
           </div>
           <Button
             variant={ButtonVariant.GLASS_PRIMARY}
@@ -235,7 +293,9 @@ export default function SitesPage() {
         {/* Thread Search */}
         <GlassCard>
           <GlassCardHeader>
-            <GlassCardTitle className="text-lg">Quick Thread Search</GlassCardTitle>
+            <GlassCardTitle className="text-lg">
+              Quick Thread Search
+            </GlassCardTitle>
           </GlassCardHeader>
           <GlassCardContent>
             <div className="flex gap-2">
@@ -281,7 +341,9 @@ export default function SitesPage() {
                 onClick={loadSites}
                 disabled={loading}
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+                />
                 Refresh
               </Button>
             </div>
@@ -295,7 +357,9 @@ export default function SitesPage() {
             ) : sites.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-white/60">No sites found</p>
-                <p className="text-white/40 text-sm mt-2">Click "Add Site" to get started</p>
+                <p className="text-white/40 text-sm mt-2">
+                  Click "Add Site" to get started
+                </p>
               </div>
             ) : (
               <>
@@ -308,7 +372,9 @@ export default function SitesPage() {
                       <GlassTableHead>Login Adapter</GlassTableHead>
                       <GlassTableHead>Forums</GlassTableHead>
                       <GlassTableHead>Created</GlassTableHead>
-                      <GlassTableHead className="text-right">Actions</GlassTableHead>
+                      <GlassTableHead className="text-right">
+                        Actions
+                      </GlassTableHead>
                     </GlassTableRow>
                   </GlassTableHeader>
                   <GlassTableBody>
@@ -318,7 +384,9 @@ export default function SitesPage() {
                           #{site.id}
                         </GlassTableCell>
                         <GlassTableCell>
-                          {site.name || <span className="text-white/40">-</span>}
+                          {site.name || (
+                            <span className="text-white/40">-</span>
+                          )}
                         </GlassTableCell>
                         <GlassTableCell>
                           <a
@@ -332,13 +400,21 @@ export default function SitesPage() {
                           </a>
                         </GlassTableCell>
                         <GlassTableCell>
-                          <Badge variant={site.loginAdapter ? BadgeVariant.SUCCESS : BadgeVariant.DEFAULT}>
+                          <Badge
+                            variant={
+                              site.loginAdapter
+                                ? BadgeVariant.SUCCESS
+                                : BadgeVariant.DEFAULT
+                            }
+                          >
                             {site.loginAdapter || 'xamvn-clone'}
                           </Badge>
                         </GlassTableCell>
                         <GlassTableCell>
                           <Badge variant={BadgeVariant.INFO}>
-                            {site.forumCount !== undefined ? site.forumCount : '-'}
+                            {site.forumCount !== undefined
+                              ? site.forumCount
+                              : '-'}
                           </Badge>
                         </GlassTableCell>
                         <GlassTableCell>
@@ -375,7 +451,10 @@ export default function SitesPage() {
                               )}
                             </Button>
                             <Link href={`/sites/${site.id}`}>
-                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS}>
+                              <Button
+                                size={ButtonSize.SM}
+                                variant={ButtonVariant.GLASS}
+                              >
                                 <Folder className="w-4 h-4 mr-1" />
                                 Forums
                               </Button>
@@ -438,40 +517,53 @@ export default function SitesPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-white/90">Name (optional)</Label>
+              <Label htmlFor="name" className="text-white/90">
+                Name (optional)
+              </Label>
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder="Site name"
                 className="glass-input"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="url" className="text-white/90">URL *</Label>
+              <Label htmlFor="url" className="text-white/90">
+                URL *
+              </Label>
               <Input
                 id="url"
                 value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, url: e.target.value })
+                }
                 placeholder="https://example.com"
                 required
                 className="glass-input"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="loginAdapter" className="text-white/90">Login Adapter (optional)</Label>
+              <Label htmlFor="loginAdapter" className="text-white/90">
+                Login Adapter (optional)
+              </Label>
               <Select
                 id="loginAdapter"
                 value={formData.loginAdapter}
-                onChange={(e) => setFormData({ ...formData, loginAdapter: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, loginAdapter: e.target.value })
+                }
                 className="glass-input"
               >
                 <option value="">Default (xamvn-clone)</option>
-                {Array.isArray(loginAdapters) && loginAdapters.map((adapter) => (
-                  <option key={adapter.key} value={adapter.key}>
-                    {adapter.name}
-                  </option>
-                ))}
+                {Array.isArray(loginAdapters) &&
+                  loginAdapters.map((adapter) => (
+                    <option key={adapter.key} value={adapter.key}>
+                      {adapter.name}
+                    </option>
+                  ))}
               </Select>
               <p className="text-xs text-white/50">
                 Select the login method for this XenForo site
@@ -479,10 +571,16 @@ export default function SitesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant={ButtonVariant.GLASS} onClick={() => setCreateDialogOpen(false)}>
+            <Button
+              variant={ButtonVariant.GLASS}
+              onClick={() => setCreateDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={handleCreate}>
+            <Button
+              variant={ButtonVariant.GLASS_PRIMARY}
+              onClick={handleCreate}
+            >
               Create
             </Button>
           </DialogFooter>
@@ -500,39 +598,52 @@ export default function SitesPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name" className="text-white/90">Name (optional)</Label>
+              <Label htmlFor="edit-name" className="text-white/90">
+                Name (optional)
+              </Label>
               <Input
                 id="edit-name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder="Site name"
                 className="glass-input"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-url" className="text-white/90">URL</Label>
+              <Label htmlFor="edit-url" className="text-white/90">
+                URL
+              </Label>
               <Input
                 id="edit-url"
                 value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, url: e.target.value })
+                }
                 placeholder="https://example.com"
                 className="glass-input"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-loginAdapter" className="text-white/90">Login Adapter (optional)</Label>
+              <Label htmlFor="edit-loginAdapter" className="text-white/90">
+                Login Adapter (optional)
+              </Label>
               <Select
                 id="edit-loginAdapter"
                 value={formData.loginAdapter}
-                onChange={(e) => setFormData({ ...formData, loginAdapter: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, loginAdapter: e.target.value })
+                }
                 className="glass-input"
               >
                 <option value="">Default (xamvn-clone)</option>
-                {Array.isArray(loginAdapters) && loginAdapters.map((adapter) => (
-                  <option key={adapter.key} value={adapter.key}>
-                    {adapter.name}
-                  </option>
-                ))}
+                {Array.isArray(loginAdapters) &&
+                  loginAdapters.map((adapter) => (
+                    <option key={adapter.key} value={adapter.key}>
+                      {adapter.name}
+                    </option>
+                  ))}
               </Select>
               <p className="text-xs text-white/50">
                 Select the login method for this XenForo site
@@ -540,10 +651,16 @@ export default function SitesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant={ButtonVariant.GLASS} onClick={() => setEditDialogOpen(false)}>
+            <Button
+              variant={ButtonVariant.GLASS}
+              onClick={() => setEditDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={handleUpdate}>
+            <Button
+              variant={ButtonVariant.GLASS_PRIMARY}
+              onClick={handleUpdate}
+            >
               Update
             </Button>
           </DialogFooter>
@@ -556,11 +673,15 @@ export default function SitesPage() {
           <DialogHeader>
             <DialogTitle className="text-white">Delete Site</DialogTitle>
             <DialogDescription className="text-white/60">
-              Are you sure you want to delete this site? This action cannot be undone.
+              Are you sure you want to delete this site? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant={ButtonVariant.GLASS} onClick={() => setDeleteDialogOpen(false)}>
+            <Button
+              variant={ButtonVariant.GLASS}
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button variant={ButtonVariant.GLASS_DANGER} onClick={handleDelete}>
@@ -598,7 +719,9 @@ export default function SitesPage() {
                   <GlassTableRow key={forum.id || idx}>
                     <GlassTableCell>{forum.name || '-'}</GlassTableCell>
                     <GlassTableCell>
-                      <Badge variant={BadgeVariant.INFO}>#{forum.originalId || '-'}</Badge>
+                      <Badge variant={BadgeVariant.INFO}>
+                        #{forum.originalId || '-'}
+                      </Badge>
                     </GlassTableCell>
                     <GlassTableCell>
                       {forum.originalUrl ? (
@@ -621,7 +744,10 @@ export default function SitesPage() {
             </GlassTable>
           </div>
           <DialogFooter>
-            <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={() => setForumsDialogOpen(false)}>
+            <Button
+              variant={ButtonVariant.GLASS_PRIMARY}
+              onClick={() => setForumsDialogOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>
@@ -646,11 +772,18 @@ export default function SitesPage() {
             {!loginResult && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="login-username" className="text-white/90">Username</Label>
+                  <Label htmlFor="login-username" className="text-white/90">
+                    Username
+                  </Label>
                   <Input
                     id="login-username"
                     value={loginCredentials.username}
-                    onChange={(e) => setLoginCredentials({ ...loginCredentials, username: e.target.value })}
+                    onChange={(e) =>
+                      setLoginCredentials({
+                        ...loginCredentials,
+                        username: e.target.value,
+                      })
+                    }
                     placeholder="Enter your username"
                     className="glass-input"
                     onKeyDown={(e) => {
@@ -661,12 +794,19 @@ export default function SitesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password" className="text-white/90">Password</Label>
+                  <Label htmlFor="login-password" className="text-white/90">
+                    Password
+                  </Label>
                   <Input
                     id="login-password"
                     type="password"
                     value={loginCredentials.password}
-                    onChange={(e) => setLoginCredentials({ ...loginCredentials, password: e.target.value })}
+                    onChange={(e) =>
+                      setLoginCredentials({
+                        ...loginCredentials,
+                        password: e.target.value,
+                      })
+                    }
                     placeholder="Enter your password"
                     className="glass-input"
                     onKeyDown={(e) => {
@@ -680,7 +820,10 @@ export default function SitesPage() {
                   <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
                     <Key className="w-4 h-4 text-cyan-400" />
                     <span className="text-xs text-white/70">
-                      Using login adapter: <Badge variant={BadgeVariant.SUCCESS} className="ml-1">{loginSite.loginAdapter || 'xamvn-clone'}</Badge>
+                      Using login adapter:{' '}
+                      <Badge variant={BadgeVariant.SUCCESS} className="ml-1">
+                        {loginSite.loginAdapter || 'xamvn-clone'}
+                      </Badge>
                     </span>
                   </div>
                 )}
@@ -699,12 +842,16 @@ export default function SitesPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 p-3 bg-emerald-500/20 border border-emerald-500/30 rounded-lg">
                   <CheckCircle className="w-5 h-5 text-emerald-400" />
-                  <span className="text-emerald-300 font-medium">Login Successful!</span>
+                  <span className="text-emerald-300 font-medium">
+                    Login Successful!
+                  </span>
                 </div>
 
                 {loginResult.message && (
                   <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                    <p className="text-white/80 text-sm">{loginResult.message}</p>
+                    <p className="text-white/80 text-sm">
+                      {loginResult.message}
+                    </p>
                   </div>
                 )}
 
@@ -721,13 +868,25 @@ export default function SitesPage() {
 
                 {loginResult.user && (
                   <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                    <Label className="text-white/90 block mb-2">User Information</Label>
+                    <Label className="text-white/90 block mb-2">
+                      User Information
+                    </Label>
                     <div className="space-y-1 text-sm text-white/70">
                       {loginResult.user.username && (
-                        <div>Username: <span className="text-cyan-400">{loginResult.user.username}</span></div>
+                        <div>
+                          Username:{' '}
+                          <span className="text-cyan-400">
+                            {loginResult.user.username}
+                          </span>
+                        </div>
                       )}
                       {loginResult.user.userId && (
-                        <div>User ID: <span className="text-cyan-400">{loginResult.user.userId}</span></div>
+                        <div>
+                          User ID:{' '}
+                          <span className="text-cyan-400">
+                            {loginResult.user.userId}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -752,7 +911,11 @@ export default function SitesPage() {
                 <Button
                   variant={ButtonVariant.GLASS_PRIMARY}
                   onClick={handleLogin}
-                  disabled={loggingIn || !loginCredentials.username || !loginCredentials.password}
+                  disabled={
+                    loggingIn ||
+                    !loginCredentials.username ||
+                    !loginCredentials.password
+                  }
                 >
                   {loggingIn ? (
                     <>

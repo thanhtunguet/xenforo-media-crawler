@@ -9,11 +9,11 @@ export const authApi = {
     });
   },
   loginWithCookie: async (siteId: number) => {
-    return apiRequest<any>(`/api/xenforo-crawler/login-with-cookie?siteId=${siteId}`, {
-      method: 'POST',
-    });
+    return apiRequest<any>(
+      `/api/xenforo-crawler/login-with-cookie?siteId=${siteId}`,
+      {
+        method: 'POST',
+      },
+    );
   },
 };
-
-
-

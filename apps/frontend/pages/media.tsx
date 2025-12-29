@@ -1,38 +1,34 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Layout } from '@/components/layout';
-import {
-  GlassCard,
-  GlassCardHeader,
-  GlassCardTitle,
-  GlassCardDescription,
-  GlassCardContent,
-} from '@/components/ui/glass-card';
+import { GlassCard, GlassCardContent } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
-import { StatCard } from '@/components/StatCard';
 import { useSettings } from '@/hooks/useSettings';
-import { mediaApi, MediaWithThread, MediaStatsDto, MediaFilters } from '@/lib/api';
-import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
-import { ButtonVariant, ButtonSize } from '@/lib/enums';
-import Link from 'next/link';
 import {
-  Image as ImageIcon,
-  Video,
-  Link as LinkIcon,
-  Grid3x3,
-  RefreshCw,
-  Search,
+  mediaApi,
+  MediaFilters,
+  MediaStatsDto,
+  MediaWithThread,
+} from '@/lib/api';
+import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
+import { ButtonSize, ButtonVariant } from '@/lib/enums';
+import {
+  ArrowUp,
   Download,
-  X,
-  ExternalLink,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
   FlipHorizontal,
   FlipVertical,
+  Grid3x3,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  RefreshCw,
   RotateCcw,
-  ArrowUp,
+  RotateCw,
+  Search,
+  Video,
+  X,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 
 const mediaTypeFilters = [
@@ -56,19 +52,21 @@ export default function MediaPage() {
   const [hasMore, setHasMore] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
-  const [selectedMedia, setSelectedMedia] = useState<MediaWithThread | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<MediaWithThread | null>(
+    null,
+  );
   const [imageZoom, setImageZoom] = useState(1);
   const [imageRotation, setImageRotation] = useState(0);
   const [imageFlipH, setImageFlipH] = useState(1);
   const [imageFlipV, setImageFlipV] = useState(1);
   const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ 
-    x: number; 
-    y: number; 
-    screenX?: number; 
-    screenY?: number; 
-    containerCenterX?: number; 
+  const [dragStart, setDragStart] = useState<{
+    x: number;
+    y: number;
+    screenX?: number;
+    screenY?: number;
+    containerCenterX?: number;
     containerCenterY?: number;
   }>({ x: 0, y: 0 });
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null);
@@ -77,16 +75,29 @@ export default function MediaPage() {
   const getInitialFilters = (): MediaFilters => {
     if (settings.filters.rememberLastFilters && settings.filters.lastFilters) {
       return {
-        mediaTypeId: settings.filters.lastFilters.mediaTypeId ? Number(settings.filters.lastFilters.mediaTypeId) : undefined,
-        isDownloaded: settings.filters.lastFilters.isDownloaded === 'true' ? true : settings.filters.lastFilters.isDownloaded === 'false' ? false : undefined,
+        mediaTypeId: settings.filters.lastFilters.mediaTypeId
+          ? Number(settings.filters.lastFilters.mediaTypeId)
+          : undefined,
+        isDownloaded:
+          settings.filters.lastFilters.isDownloaded === 'true'
+            ? true
+            : settings.filters.lastFilters.isDownloaded === 'false'
+              ? false
+              : undefined,
         search: settings.filters.lastFilters.search || '',
-        sortBy: (settings.filters.lastFilters.sortBy as MediaSortBy) || settings.filters.defaultSort,
-        sortOrder: (settings.filters.lastFilters.sortOrder as SortOrder) || settings.filters.defaultSortOrder,
+        sortBy:
+          (settings.filters.lastFilters.sortBy as MediaSortBy) ||
+          settings.filters.defaultSort,
+        sortOrder:
+          (settings.filters.lastFilters.sortOrder as SortOrder) ||
+          settings.filters.defaultSortOrder,
       };
     }
 
     return {
-      mediaTypeId: settings.filters.defaultMediaType ? Number(settings.filters.defaultMediaType) : undefined,
+      mediaTypeId: settings.filters.defaultMediaType
+        ? Number(settings.filters.defaultMediaType)
+        : undefined,
       sortBy: settings.filters.defaultSort,
       sortOrder: settings.filters.defaultSortOrder,
       search: '',
@@ -122,7 +133,7 @@ export default function MediaPage() {
           loadMedia(false);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const currentTarget = observerTarget.current;
@@ -179,7 +190,7 @@ export default function MediaPage() {
       const response = await mediaApi.getAll(
         currentPage,
         settings.display.itemsPerPage,
-        filters
+        filters,
       );
 
       if (reset) {
@@ -287,12 +298,18 @@ export default function MediaPage() {
                   return (
                     <Button
                       key={filter.id}
-                      variant={isActive ? ButtonVariant.GLASS_PRIMARY : ButtonVariant.GLASS}
+                      variant={
+                        isActive
+                          ? ButtonVariant.GLASS_PRIMARY
+                          : ButtonVariant.GLASS
+                      }
                       size={ButtonSize.SM}
                       onClick={() => {
                         setFilters((prev) => ({
                           ...prev,
-                          mediaTypeId: filter.id ? Number(filter.id) : undefined,
+                          mediaTypeId: filter.id
+                            ? Number(filter.id)
+                            : undefined,
                         }));
                       }}
                       className="gap-2"
@@ -307,7 +324,10 @@ export default function MediaPage() {
 
                 {/* Download Status Filter */}
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="download-status" className="text-white/60 text-sm">
+                  <Label
+                    htmlFor="download-status"
+                    className="text-white/60 text-sm"
+                  >
                     Status:
                   </Label>
                   <Select
@@ -316,8 +336,8 @@ export default function MediaPage() {
                       filters.isDownloaded === undefined
                         ? 'all'
                         : filters.isDownloaded
-                        ? 'downloaded'
-                        : 'not-downloaded'
+                          ? 'downloaded'
+                          : 'not-downloaded'
                     }
                     onChange={(e) => {
                       const value = e.target.value;
@@ -327,8 +347,8 @@ export default function MediaPage() {
                           value === 'all'
                             ? undefined
                             : value === 'downloaded'
-                            ? true
-                            : false,
+                              ? true
+                              : false,
                       }));
                     }}
                     className="glass-input"
@@ -365,7 +385,12 @@ export default function MediaPage() {
                 </div>
 
                 {/* Refresh Button */}
-                <Button variant={ButtonVariant.GLASS} size={ButtonSize.SM} onClick={handleRefresh} className="gap-2">
+                <Button
+                  variant={ButtonVariant.GLASS}
+                  size={ButtonSize.SM}
+                  onClick={handleRefresh}
+                  className="gap-2"
+                >
                   <RefreshCw className="h-4 w-4" />
                   Refresh
                 </Button>
@@ -374,7 +399,9 @@ export default function MediaPage() {
               {/* Results Info */}
               <div className="flex items-center justify-between text-sm text-white/60">
                 <span>
-                  {totalItems > 0 ? `Loaded ${media.length} of ${totalItems} items` : 'No results'}
+                  {totalItems > 0
+                    ? `Loaded ${media.length} of ${totalItems} items`
+                    : 'No results'}
                 </span>
                 {hasMore && totalItems > 0 && (
                   <span className="text-white/40">
@@ -415,7 +442,9 @@ export default function MediaPage() {
                       thumbnailUrl ? (
                         <img
                           src={thumbnailUrl}
-                          alt={mediaItem.caption || mediaItem.filename || 'Image'}
+                          alt={
+                            mediaItem.caption || mediaItem.filename || 'Image'
+                          }
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
@@ -502,7 +531,6 @@ export default function MediaPage() {
             )}
           </>
         )}
-
       </div>
 
       {/* Scroll to Top Button */}
@@ -520,350 +548,365 @@ export default function MediaPage() {
 
       {/* Lightbox Modal */}
       {selectedMedia && (
-          <div
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md animate-fade-in"
-            onClick={() => {
-              // Prevent dismissal when zoomed in
-              if (imageZoom > 1) {
-                return;
-              }
-              setSelectedMedia(null);
-              // Reset image transforms when closing
-              setImageZoom(1);
-              setImageRotation(0);
-              setImageFlipH(1);
-              setImageFlipV(1);
-            }}
-          >
-            <div className="absolute inset-0 w-full h-full">
-              <div className="relative h-full w-full">
-                <Button
-                  variant={ButtonVariant.GLASS}
-                  size={ButtonSize.ICON}
-                  className="absolute top-4 right-4 z-10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedMedia(null);
-                    // Reset image transforms when closing
-                    setImageZoom(1);
-                    setImageRotation(0);
-                    setImageFlipH(1);
-                    setImageFlipV(1);
-                    setImagePan({ x: 0, y: 0 });
-                  }}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md animate-fade-in"
+          onClick={() => {
+            // Prevent dismissal when zoomed in
+            if (imageZoom > 1) {
+              return;
+            }
+            setSelectedMedia(null);
+            // Reset image transforms when closing
+            setImageZoom(1);
+            setImageRotation(0);
+            setImageFlipH(1);
+            setImageFlipV(1);
+          }}
+        >
+          <div className="absolute inset-0 w-full h-full">
+            <div className="relative h-full w-full">
+              <Button
+                variant={ButtonVariant.GLASS}
+                size={ButtonSize.ICON}
+                className="absolute top-4 right-4 z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedMedia(null);
+                  // Reset image transforms when closing
+                  setImageZoom(1);
+                  setImageRotation(0);
+                  setImageFlipH(1);
+                  setImageFlipV(1);
+                  setImagePan({ x: 0, y: 0 });
+                }}
+              >
+                <X className="w-5 h-5" />
+              </Button>
 
-                {selectedMedia.url && (
-                  <a
-                    href={getMediaUrl(selectedMedia)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute top-4 left-4 z-10"
+              {selectedMedia.url && (
+                <a
+                  href={getMediaUrl(selectedMedia)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute top-4 left-4 z-10"
+                >
+                  <Button
+                    variant={ButtonVariant.GLASS_PRIMARY}
+                    size={ButtonSize.SM}
+                    className="gap-2"
                   >
-                    <Button variant={ButtonVariant.GLASS_PRIMARY} size={ButtonSize.SM} className="gap-2">
-                      <Download className="w-4 h-4" />
-                      Download
-                    </Button>
-                  </a>
-                )}
+                    <Download className="w-4 h-4" />
+                    Download
+                  </Button>
+                </a>
+              )}
 
-                {/* Image Controls - Only show for images */}
-                {isImage(selectedMedia) && (
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
-                    <Button
-                      variant={ButtonVariant.GLASS}
-                      size={ButtonSize.SM}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const newZoom = Math.min(imageZoom + 0.25, 5);
-                        setImageZoom(newZoom);
-                        // Reset pan when zooming out to 1x or less
-                        if (newZoom <= 1) {
-                          setImagePan({ x: 0, y: 0 });
-                        }
-                      }}
-                      className="gap-2"
-                    >
-                      <ZoomIn className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={ButtonVariant.GLASS}
-                      size={ButtonSize.SM}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const newZoom = Math.max(imageZoom - 0.25, 0.25);
-                        setImageZoom(newZoom);
-                        // Reset pan when zooming out to 1x or less
-                        if (newZoom <= 1) {
-                          setImagePan({ x: 0, y: 0 });
-                        }
-                      }}
-                      className="gap-2"
-                    >
-                      <ZoomOut className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={ButtonVariant.GLASS}
-                      size={ButtonSize.SM}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageZoom(1);
-                        setImagePan({ x: 0, y: 0 });
-                        setImageRotation((prev) => (prev + 90) % 360);
-                      }}
-                      className="gap-2"
-                    >
-                      <RotateCw className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={ButtonVariant.GLASS}
-                      size={ButtonSize.SM}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageZoom(1);
-                        setImagePan({ x: 0, y: 0 });
-                        setImageRotation((prev) => (prev - 90) % 360);
-                      }}
-                      className="gap-2"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={ButtonVariant.GLASS}
-                      size={ButtonSize.SM}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageZoom(1);
-                        setImagePan({ x: 0, y: 0 });
-                        setImageFlipH((prev) => prev * -1);
-                      }}
-                      className="gap-2"
-                    >
-                      <FlipHorizontal className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={ButtonVariant.GLASS}
-                      size={ButtonSize.SM}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageZoom(1);
-                        setImagePan({ x: 0, y: 0 });
-                        setImageFlipV((prev) => prev * -1);
-                      }}
-                      className="gap-2"
-                    >
-                      <FlipVertical className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={ButtonVariant.GLASS}
-                      size={ButtonSize.SM}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageZoom(1);
-                        setImageRotation(0);
-                        setImageFlipH(1);
-                        setImageFlipV(1);
-                        setImagePan({ x: 0, y: 0 });
-                      }}
-                      className="gap-2"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-
-                <div 
-                  className="h-full w-full overflow-hidden flex items-center justify-center"
-                  onMouseDown={(e) => {
-                    if (isImage(selectedMedia) && imageZoom > 1 && imageRef) {
+              {/* Image Controls - Only show for images */}
+              {isImage(selectedMedia) && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+                  <Button
+                    variant={ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
+                    onClick={(e) => {
                       e.stopPropagation();
-                      setIsDragging(true);
-                      
-                      // Lấy vị trí container (center của viewport)
-                      const container = e.currentTarget;
-                      const containerRect = container.getBoundingClientRect();
-                      const containerCenterX = containerRect.left + containerRect.width / 2;
-                      const containerCenterY = containerRect.top + containerRect.height / 2;
-                      
-                      // Vị trí click relative to container center
-                      const clickX = e.clientX - containerCenterX;
-                      const clickY = e.clientY - containerCenterY;
-                      
-                      // Tính vị trí pixel trên ảnh (accounting for current pan, zoom, rotation, flip)
-                      // Đảo ngược transform để lấy tọa độ trên ảnh gốc
-                      const imagePixelX = (clickX - imagePan.x) / imageZoom;
-                      const imagePixelY = (clickY - imagePan.y) / imageZoom;
-                      
-                      // Lưu vị trí pixel trên ảnh và vị trí click trên màn hình
-                      setDragStart({ 
-                        x: imagePixelX, 
-                        y: imagePixelY,
-                        screenX: e.clientX,
-                        screenY: e.clientY,
-                        containerCenterX,
-                        containerCenterY
-                      });
-                    }
-                  }}
-                  onMouseMove={(e) => {
-                    if (isDragging && imageZoom > 1) {
+                      const newZoom = Math.min(imageZoom + 0.25, 5);
+                      setImageZoom(newZoom);
+                      // Reset pan when zooming out to 1x or less
+                      if (newZoom <= 1) {
+                        setImagePan({ x: 0, y: 0 });
+                      }
+                    }}
+                    className="gap-2"
+                  >
+                    <ZoomIn className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
+                    onClick={(e) => {
                       e.stopPropagation();
-                      
-                      // Tính vị trí mới của pixel ảnh trên màn hình
-                      const newScreenX = e.clientX;
-                      const newScreenY = e.clientY;
-                      
-                      // Vị trí relative to container center
-                      const relativeX = newScreenX - dragStart.containerCenterX!;
-                      const relativeY = newScreenY - dragStart.containerCenterY!;
-                      
-                      // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
-                      const newPanX = relativeX - dragStart.x * imageZoom;
-                      const newPanY = relativeY - dragStart.y * imageZoom;
-                      
-                      setImagePan({
-                        x: newPanX,
-                        y: newPanY,
-                      });
-                    }
-                  }}
-                  onMouseUp={() => {
-                    setIsDragging(false);
-                  }}
-                  onMouseLeave={() => {
-                    setIsDragging(false);
-                  }}
-                  onTouchStart={(e) => {
-                    if (isImage(selectedMedia) && imageZoom > 1 && e.touches.length === 1 && imageRef) {
+                      const newZoom = Math.max(imageZoom - 0.25, 0.25);
+                      setImageZoom(newZoom);
+                      // Reset pan when zooming out to 1x or less
+                      if (newZoom <= 1) {
+                        setImagePan({ x: 0, y: 0 });
+                      }
+                    }}
+                    className="gap-2"
+                  >
+                    <ZoomOut className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
+                    onClick={(e) => {
                       e.stopPropagation();
-                      const touch = e.touches[0];
-                      setIsDragging(true);
-                      
-                      // Lấy vị trí container (center của viewport)
-                      const container = e.currentTarget;
-                      const containerRect = container.getBoundingClientRect();
-                      const containerCenterX = containerRect.left + containerRect.width / 2;
-                      const containerCenterY = containerRect.top + containerRect.height / 2;
-                      
-                      // Vị trí touch relative to container center
-                      const touchX = touch.clientX - containerCenterX;
-                      const touchY = touch.clientY - containerCenterY;
-                      
-                      // Tính vị trí pixel trên ảnh
-                      const imagePixelX = (touchX - imagePan.x) / imageZoom;
-                      const imagePixelY = (touchY - imagePan.y) / imageZoom;
-                      
-                      // Lưu vị trí pixel trên ảnh và vị trí touch trên màn hình
-                      setDragStart({ 
-                        x: imagePixelX, 
-                        y: imagePixelY,
-                        screenX: touch.clientX,
-                        screenY: touch.clientY,
-                        containerCenterX,
-                        containerCenterY
-                      });
-                    }
-                  }}
-                  onTouchMove={(e) => {
-                    if (isDragging && imageZoom > 1 && e.touches.length === 1) {
+                      setImageZoom(1);
+                      setImagePan({ x: 0, y: 0 });
+                      setImageRotation((prev) => (prev + 90) % 360);
+                    }}
+                    className="gap-2"
+                  >
+                    <RotateCw className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
+                    onClick={(e) => {
                       e.stopPropagation();
-                      const touch = e.touches[0];
-                      
-                      // Tính vị trí mới của pixel ảnh trên màn hình
-                      const newScreenX = touch.clientX;
-                      const newScreenY = touch.clientY;
-                      
-                      // Vị trí relative to container center
-                      const relativeX = newScreenX - dragStart.containerCenterX!;
-                      const relativeY = newScreenY - dragStart.containerCenterY!;
-                      
-                      // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
-                      const newPanX = relativeX - dragStart.x * imageZoom;
-                      const newPanY = relativeY - dragStart.y * imageZoom;
-                      
-                      setImagePan({
-                        x: newPanX,
-                        y: newPanY,
-                      });
-                    }
-                  }}
-                  onTouchEnd={() => {
-                    setIsDragging(false);
-                  }}
-                >
-                  {isImage(selectedMedia) ? (
-                    <img
-                      ref={setImageRef}
-                      src={getMediaUrl(selectedMedia)}
-                      alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
-                      className={`max-w-full max-h-full mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''}`}
-                      style={{
-                        transform: `translate(${imagePan.x}px, ${imagePan.y}px) scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,
-                        transformOrigin: 'center center',
-                      }}
-                      loading="eager"
-                      onClick={(e) => {
-                        if (imageZoom <= 1) {
-                          e.stopPropagation();
-                        }
-                      }}
-                      onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        if (imageZoom <= 1) {
-                          // Zoom in to 2x on double click
-                          setImageZoom(2);
-                        } else {
-                          // Reset zoom if already zoomed
-                          setImageZoom(1);
-                          setImagePan({ x: 0, y: 0 });
-                        }
-                      }}
-                      draggable={false}
-                    />
-                  ) : isVideo(selectedMedia) ? (
-                    <video
-                      src={getMediaUrl(selectedMedia)}
-                      controls
-                      className="max-w-full max-h-full mx-auto rounded-lg shadow-glow-lg"
-                      preload="auto"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <source
-                        src={getMediaUrl(selectedMedia)}
-                        type={selectedMedia.mimeType || 'video/mp4'}
-                      />
-                    </video>
-                  ) : (
-                    <GlassCard
-                      className="max-w-md"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <GlassCardContent className="p-8 text-center">
-                        <LinkIcon className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-                        <p className="text-white/80 mb-4">
-                          {selectedMedia.caption || 'External Link'}
-                        </p>
-                        {selectedMedia.url && (
-                          <a
-                            href={selectedMedia.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 hover:underline break-all"
-                          >
-                            {selectedMedia.url}
-                          </a>
-                        )}
-                      </GlassCardContent>
-                    </GlassCard>
-                  )}
+                      setImageZoom(1);
+                      setImagePan({ x: 0, y: 0 });
+                      setImageRotation((prev) => (prev - 90) % 360);
+                    }}
+                    className="gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImageZoom(1);
+                      setImagePan({ x: 0, y: 0 });
+                      setImageFlipH((prev) => prev * -1);
+                    }}
+                    className="gap-2"
+                  >
+                    <FlipHorizontal className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImageZoom(1);
+                      setImagePan({ x: 0, y: 0 });
+                      setImageFlipV((prev) => prev * -1);
+                    }}
+                    className="gap-2"
+                  >
+                    <FlipVertical className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImageZoom(1);
+                      setImageRotation(0);
+                      setImageFlipH(1);
+                      setImageFlipV(1);
+                      setImagePan({ x: 0, y: 0 });
+                    }}
+                    className="gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
                 </div>
+              )}
+
+              <div
+                className="h-full w-full overflow-hidden flex items-center justify-center"
+                onMouseDown={(e) => {
+                  if (isImage(selectedMedia) && imageZoom > 1 && imageRef) {
+                    e.stopPropagation();
+                    setIsDragging(true);
+
+                    // Lấy vị trí container (center của viewport)
+                    const container = e.currentTarget;
+                    const containerRect = container.getBoundingClientRect();
+                    const containerCenterX =
+                      containerRect.left + containerRect.width / 2;
+                    const containerCenterY =
+                      containerRect.top + containerRect.height / 2;
+
+                    // Vị trí click relative to container center
+                    const clickX = e.clientX - containerCenterX;
+                    const clickY = e.clientY - containerCenterY;
+
+                    // Tính vị trí pixel trên ảnh (accounting for current pan, zoom, rotation, flip)
+                    // Đảo ngược transform để lấy tọa độ trên ảnh gốc
+                    const imagePixelX = (clickX - imagePan.x) / imageZoom;
+                    const imagePixelY = (clickY - imagePan.y) / imageZoom;
+
+                    // Lưu vị trí pixel trên ảnh và vị trí click trên màn hình
+                    setDragStart({
+                      x: imagePixelX,
+                      y: imagePixelY,
+                      screenX: e.clientX,
+                      screenY: e.clientY,
+                      containerCenterX,
+                      containerCenterY,
+                    });
+                  }
+                }}
+                onMouseMove={(e) => {
+                  if (isDragging && imageZoom > 1) {
+                    e.stopPropagation();
+
+                    // Tính vị trí mới của pixel ảnh trên màn hình
+                    const newScreenX = e.clientX;
+                    const newScreenY = e.clientY;
+
+                    // Vị trí relative to container center
+                    const relativeX = newScreenX - dragStart.containerCenterX!;
+                    const relativeY = newScreenY - dragStart.containerCenterY!;
+
+                    // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
+                    const newPanX = relativeX - dragStart.x * imageZoom;
+                    const newPanY = relativeY - dragStart.y * imageZoom;
+
+                    setImagePan({
+                      x: newPanX,
+                      y: newPanY,
+                    });
+                  }
+                }}
+                onMouseUp={() => {
+                  setIsDragging(false);
+                }}
+                onMouseLeave={() => {
+                  setIsDragging(false);
+                }}
+                onTouchStart={(e) => {
+                  if (
+                    isImage(selectedMedia) &&
+                    imageZoom > 1 &&
+                    e.touches.length === 1 &&
+                    imageRef
+                  ) {
+                    e.stopPropagation();
+                    const touch = e.touches[0];
+                    setIsDragging(true);
+
+                    // Lấy vị trí container (center của viewport)
+                    const container = e.currentTarget;
+                    const containerRect = container.getBoundingClientRect();
+                    const containerCenterX =
+                      containerRect.left + containerRect.width / 2;
+                    const containerCenterY =
+                      containerRect.top + containerRect.height / 2;
+
+                    // Vị trí touch relative to container center
+                    const touchX = touch.clientX - containerCenterX;
+                    const touchY = touch.clientY - containerCenterY;
+
+                    // Tính vị trí pixel trên ảnh
+                    const imagePixelX = (touchX - imagePan.x) / imageZoom;
+                    const imagePixelY = (touchY - imagePan.y) / imageZoom;
+
+                    // Lưu vị trí pixel trên ảnh và vị trí touch trên màn hình
+                    setDragStart({
+                      x: imagePixelX,
+                      y: imagePixelY,
+                      screenX: touch.clientX,
+                      screenY: touch.clientY,
+                      containerCenterX,
+                      containerCenterY,
+                    });
+                  }
+                }}
+                onTouchMove={(e) => {
+                  if (isDragging && imageZoom > 1 && e.touches.length === 1) {
+                    e.stopPropagation();
+                    const touch = e.touches[0];
+
+                    // Tính vị trí mới của pixel ảnh trên màn hình
+                    const newScreenX = touch.clientX;
+                    const newScreenY = touch.clientY;
+
+                    // Vị trí relative to container center
+                    const relativeX = newScreenX - dragStart.containerCenterX!;
+                    const relativeY = newScreenY - dragStart.containerCenterY!;
+
+                    // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
+                    const newPanX = relativeX - dragStart.x * imageZoom;
+                    const newPanY = relativeY - dragStart.y * imageZoom;
+
+                    setImagePan({
+                      x: newPanX,
+                      y: newPanY,
+                    });
+                  }
+                }}
+                onTouchEnd={() => {
+                  setIsDragging(false);
+                }}
+              >
+                {isImage(selectedMedia) ? (
+                  <img
+                    ref={setImageRef}
+                    src={getMediaUrl(selectedMedia)}
+                    alt={
+                      selectedMedia.caption || selectedMedia.filename || 'Image'
+                    }
+                    className={`max-w-full max-h-full mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''}`}
+                    style={{
+                      transform: `translate(${imagePan.x}px, ${imagePan.y}px) scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,
+                      transformOrigin: 'center center',
+                    }}
+                    loading="eager"
+                    onClick={(e) => {
+                      if (imageZoom <= 1) {
+                        e.stopPropagation();
+                      }
+                    }}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      if (imageZoom <= 1) {
+                        // Zoom in to 2x on double click
+                        setImageZoom(2);
+                      } else {
+                        // Reset zoom if already zoomed
+                        setImageZoom(1);
+                        setImagePan({ x: 0, y: 0 });
+                      }
+                    }}
+                    draggable={false}
+                  />
+                ) : isVideo(selectedMedia) ? (
+                  <video
+                    src={getMediaUrl(selectedMedia)}
+                    controls
+                    className="max-w-full max-h-full mx-auto rounded-lg shadow-glow-lg"
+                    preload="auto"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <source
+                      src={getMediaUrl(selectedMedia)}
+                      type={selectedMedia.mimeType || 'video/mp4'}
+                    />
+                  </video>
+                ) : (
+                  <GlassCard
+                    className="max-w-md"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <GlassCardContent className="p-8 text-center">
+                      <LinkIcon className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+                      <p className="text-white/80 mb-4">
+                        {selectedMedia.caption || 'External Link'}
+                      </p>
+                      {selectedMedia.url && (
+                        <a
+                          href={selectedMedia.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 hover:underline break-all"
+                        >
+                          {selectedMedia.url}
+                        </a>
+                      )}
+                    </GlassCardContent>
+                  </GlassCard>
+                )}
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </Layout>
   );
 }

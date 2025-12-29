@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import 'src/_config/dotenv';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Thread, Post, Media, Site } from 'src/_entities';
+import { Media, Post, Site, Thread } from 'src/_entities';
 
 @Module({
   imports: [

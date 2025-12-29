@@ -1,30 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Layout } from '@/components/layout';
-import {
-  GlassCard,
-  GlassCardHeader,
-  GlassCardTitle,
-  GlassCardDescription,
-  GlassCardContent,
-} from '@/components/ui/glass-card';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
-import { useSettings } from '@/hooks/useSettings';
-import { systemApi } from '@/lib/api';
+import { useEffect, useState } from 'react';
+import { Layout } from '../components/layout';
+import { GlassCard, GlassCardContent, GlassCardDescription, GlassCardHeader, GlassCardTitle } from '../components/ui/glass-card';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
+import { Select } from '../components/ui/select';
+import { useSettings } from '../hooks/useSettings';
+import { systemApi } from '../lib/api/system.api';
 import { MediaSortBy } from '@xenforo-media-crawler/contracts';
-import { GlassCardVariant, ButtonVariant } from '@/lib/enums';
-import {
-  Settings as SettingsIcon,
-  Save,
-  RotateCcw,
-  CheckCircle,
-  XCircle,
-  Loader2,
-} from 'lucide-react';
+import { ButtonVariant, GlassCardVariant } from '../lib/enums';
+import { CheckCircle, Loader2, RotateCcw, Save, XCircle } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { settings, updateSettings, resetSettings, loading: settingsLoading } = useSettings();
+  const {
+    settings,
+    updateSettings,
+    resetSettings,
+    loading: settingsLoading,
+  } = useSettings();
   const [localSettings, setLocalSettings] = useState(settings);
   const [backendStatus, setBackendStatus] = useState<{
     status: string;
@@ -33,7 +25,9 @@ export default function SettingsPage() {
   } | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionResult, setConnectionResult] = useState<'success' | 'error' | null>(null);
+  const [connectionResult, setConnectionResult] = useState<
+    'success' | 'error' | null
+  >(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -116,7 +110,9 @@ export default function SettingsPage() {
         {/* Header */}
         <div>
           <h1 className="text-4xl font-bold gradient-text mb-2">Settings</h1>
-          <p className="text-white/60">Configure your preferences and view system information</p>
+          <p className="text-white/60">
+            Configure your preferences and view system information
+          </p>
         </div>
 
         {/* Save Message */}
@@ -151,7 +147,11 @@ export default function SettingsPage() {
                       ...localSettings,
                       display: {
                         ...localSettings.display,
-                        itemsPerPage: Number(e.target.value) as 12 | 24 | 48 | 96,
+                        itemsPerPage: Number(e.target.value) as
+                          | 12
+                          | 24
+                          | 48
+                          | 96,
                       },
                     })
                   }
@@ -208,7 +208,10 @@ export default function SettingsPage() {
                 }
                 className="w-4 h-4 rounded border-white/20 bg-white/10 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
               />
-              <Label htmlFor="enable-animations" className="text-white/80 cursor-pointer">
+              <Label
+                htmlFor="enable-animations"
+                className="text-white/80 cursor-pointer"
+              >
                 Enable animations (counter effects, transitions)
               </Label>
             </div>
@@ -237,7 +240,11 @@ export default function SettingsPage() {
                       ...localSettings,
                       filters: {
                         ...localSettings.filters,
-                        defaultMediaType: e.target.value as '' | '1' | '2' | '3',
+                        defaultMediaType: e.target.value as
+                          | ''
+                          | '1'
+                          | '2'
+                          | '3',
                       },
                     })
                   }
@@ -291,7 +298,10 @@ export default function SettingsPage() {
                 }
                 className="w-4 h-4 rounded border-white/20 bg-white/10 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
               />
-              <Label htmlFor="remember-filters" className="text-white/80 cursor-pointer">
+              <Label
+                htmlFor="remember-filters"
+                className="text-white/80 cursor-pointer"
+              >
                 Remember last used filters
               </Label>
             </div>
@@ -431,7 +441,9 @@ export default function SettingsPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5">
                   <span className="text-white/60">App Version</span>
-                  <span className="text-white font-mono">v{settings.version}</span>
+                  <span className="text-white font-mono">
+                    v{settings.version}
+                  </span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5">
@@ -439,7 +451,9 @@ export default function SettingsPage() {
                   {backendStatus ? (
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-emerald-400 font-medium">Online</span>
+                      <span className="text-emerald-400 font-medium">
+                        Online
+                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -453,12 +467,16 @@ export default function SettingsPage() {
                   <>
                     <div className="flex justify-between items-center p-3 rounded-lg bg-white/5">
                       <span className="text-white/60">Backend Version</span>
-                      <span className="text-white font-mono">v{backendStatus.version}</span>
+                      <span className="text-white font-mono">
+                        v{backendStatus.version}
+                      </span>
                     </div>
 
                     <div className="flex justify-between items-center p-3 rounded-lg bg-white/5">
                       <span className="text-white/60">Uptime</span>
-                      <span className="text-white">{formatUptime(backendStatus.uptime)}</span>
+                      <span className="text-white">
+                        {formatUptime(backendStatus.uptime)}
+                      </span>
                     </div>
                   </>
                 )}
@@ -469,12 +487,20 @@ export default function SettingsPage() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <Button variant={ButtonVariant.GLASS_PRIMARY} onClick={handleSave} className="gap-2">
+          <Button
+            variant={ButtonVariant.GLASS_PRIMARY}
+            onClick={handleSave}
+            className="gap-2"
+          >
             <Save className="h-4 w-4" />
             Save Settings
           </Button>
 
-          <Button variant={ButtonVariant.GLASS} onClick={handleReset} className="gap-2">
+          <Button
+            variant={ButtonVariant.GLASS}
+            onClick={handleReset}
+            className="gap-2"
+          >
             <RotateCcw className="h-4 w-4" />
             Reset to Defaults
           </Button>

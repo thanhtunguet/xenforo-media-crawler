@@ -18,15 +18,13 @@ export class EventLogService {
   async findAll(
     pagination: PaginationDto = new PaginationDto(),
   ): Promise<PaginatedResponseDto<EventLog>> {
-    const [eventLogs, totalItems] = await this.eventLogRepository.findAndCount(
-      {
-        skip: pagination.skip,
-        take: pagination.limit,
-        order: {
-          createdAt: 'DESC',
-        },
+    const [eventLogs, totalItems] = await this.eventLogRepository.findAndCount({
+      skip: pagination.skip,
+      take: pagination.limit,
+      order: {
+        createdAt: 'DESC',
       },
-    );
+    });
 
     const totalPages = Math.ceil(totalItems / pagination.limit);
 
@@ -130,10 +128,7 @@ export class EventLogService {
     });
   }
 
-  async logForumDeleted(
-    forumId: number,
-    forumName: string,
-  ): Promise<EventLog> {
+  async logForumDeleted(forumId: number, forumName: string): Promise<EventLog> {
     return this.logEvent(EventType.FORUM_DELETED, {
       entityType: 'Forum',
       entityId: forumId,
@@ -190,4 +185,3 @@ export class EventLogService {
     });
   }
 }
-

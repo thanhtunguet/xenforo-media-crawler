@@ -1,5 +1,19 @@
-import { Controller, Get, Post, Patch, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JobService } from './job.service';
 import { JobGateway } from './job.gateway';
 import { SyncJob } from '../_entities/SyncJob';
@@ -64,7 +78,9 @@ export class JobController {
     status: 404,
     description: 'Job not found',
   })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<SyncJob | null> {
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<SyncJob | null> {
     return this.jobService.findOne(id);
   }
 
@@ -184,4 +200,3 @@ export class JobController {
     return job;
   }
 }
-

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { load } from 'cheerio';
 import type { Request } from 'express';
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Entities from 'src/_entities';
@@ -9,11 +10,10 @@ import type { ForumResponseDto } from 'src/site/dto/forum-response.dto';
 import { MediaTypeEnum } from 'src/types/media_type';
 import type { EntityManager, Repository } from 'typeorm';
 import { XenforoClientService } from './xenforo_client.service';
-import { Response } from 'express';
 import { EventLogService } from '../event-log/event-log.service';
 import { JobService } from '../job/job.service';
 import { JobGateway } from '../job/job.gateway';
-import { JobType, JobStatus } from '@xenforo-media-crawler/contracts';
+import { JobStatus, JobType } from '@xenforo-media-crawler/contracts';
 
 @Injectable()
 export class XenforoCrawlerService {
@@ -282,7 +282,7 @@ export class XenforoCrawlerService {
     // Use originalId for API calls, system id for database
     const forumOriginalId = Number(forum.originalId);
     const count = await this.countThreadPages(siteId, forumOriginalId);
-    
+
     if (jobId) {
       await this.jobService.updateProgress(jobId, {
         totalItems: count,
@@ -292,7 +292,7 @@ export class XenforoCrawlerService {
 
     for (let i = 1; i <= count; i++) {
       await this.listThreads(siteId, Number(forumId), forumOriginalId, i);
-      
+
       if (jobId) {
         await this.jobService.updateProgress(jobId, {
           processedItems: i,
@@ -311,7 +311,10 @@ export class XenforoCrawlerService {
     }
   }
 
-  public async syncAllForumsAndThreads(siteId: number, jobId?: number): Promise<void> {
+  public async syncAllForumsAndThreads(
+    siteId: number,
+    jobId?: number,
+  ): Promise<void> {
     const site = await this.siteRepository.findOne({
       where: { id: Number(siteId) },
     });
@@ -350,13 +353,15 @@ export class XenforoCrawlerService {
       let processedForums = 0;
       for (const forum of forums) {
         if (!forum.id) {
-          console.log(`Skipping forum ${forum.name} - not saved to database yet`);
+          console.log(
+            `Skipping forum ${forum.name} - not saved to database yet`,
+          );
           continue;
         }
         console.log(
           `Syncing threads for forum: ${forum.name} (System ID: ${forum.id}, Original ID: ${forum.originalId})`,
         );
-        
+
         await this.jobService.updateProgress(job.id, {
           currentStep: `Syncing threads for forum: ${forum.name}`,
         });
@@ -400,7 +405,8 @@ export class XenforoCrawlerService {
         currentStep: 'Sync completed successfully',
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       console.error(`Error syncing site ${siteId}:`, error);
       await this.jobService.fail(job.id, errorMessage);
       this.jobGateway.emitProgress({
@@ -502,9 +508,7 @@ export class XenforoCrawlerService {
     return thread;
   }
 
-  public async getThreadById(
-    threadId: number,
-  ): Promise<Entities.Thread> {
+  public async getThreadById(threadId: number): Promise<Entities.Thread> {
     // First try to find by database ID with forum relation
     let thread = await this.threadRepository.findOne({
       where: { id: Number(threadId) },
@@ -927,7 +931,7 @@ export class XenforoCrawlerService {
         let totalPosts = 0;
         for (let page = 1; page <= pageCount; page++) {
           console.log(`Syncing page ${page} of ${pageCount}`);
-          
+
           await this.jobService.updateProgress(job.id, {
             processedItems: page - 1,
             progress: Math.round(((page - 1) / pageCount) * 100),
@@ -949,18 +953,25 @@ export class XenforoCrawlerService {
           await new Promise((resolve) => setTimeout(resolve, 75));
         }
 
-        console.log(`Completed sync for thread originalId: ${thread.originalId}`);
-        
+        console.log(
+          `Completed sync for thread originalId: ${thread.originalId}`,
+        );
+
         // Update thread's lastSyncAt timestamp
         try {
           thread.lastSyncAt = new Date();
           await this.threadRepository.save(thread);
-          console.log(`Updated lastSyncAt for thread ${threadId} to ${thread.lastSyncAt}`);
+          console.log(
+            `Updated lastSyncAt for thread ${threadId} to ${thread.lastSyncAt}`,
+          );
         } catch (error) {
-          console.error(`Failed to update lastSyncAt for thread ${threadId}:`, error);
+          console.error(
+            `Failed to update lastSyncAt for thread ${threadId}:`,
+            error,
+          );
           // Continue even if update fails - don't break the sync process
         }
-        
+
         // Log post sync completion
         await this.eventLogService.logPostSync(
           threadId,
@@ -981,7 +992,8 @@ export class XenforoCrawlerService {
           currentStep: `Sync completed: ${totalPosts} posts synced`,
         });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         console.error(`Error syncing thread ${threadId}:`, error);
         await this.jobService.fail(job.id, errorMessage);
         this.jobGateway.emitProgress({
@@ -1051,182 +1063,327 @@ export class XenforoCrawlerService {
           `Starting media download for thread: ${thread.name} (ID: ${thread.id})`,
         );
 
-      // Create download directories
-      const downloadDir = path.resolve(
-        `./downloads/thread-${thread.originalId}`,
-      );
-      const thumbnailDir = path.resolve(
-        `./downloads/thread-${thread.originalId}/thumbnails`,
-      );
-
-      if (!fs.existsSync(downloadDir)) {
-        fs.mkdirSync(downloadDir, { recursive: true });
-      }
-
-      if (!fs.existsSync(thumbnailDir)) {
-        fs.mkdirSync(thumbnailDir, { recursive: true });
-      }
-
-      // Find all media for this thread's posts
-      let mediaQuery = this.entityManager
-        .createQueryBuilder(Entities.Media, 'media')
-        .innerJoin('media.post', 'post')
-        .where('post.threadId = :threadId', { threadId: thread.id });
-
-      // Filter by media type if specified
-      if (mediaTypeId !== MediaTypeEnum.ALL) {
-        mediaQuery = mediaQuery.andWhere('media.mediaTypeId = :mediaTypeId', {
-          mediaTypeId,
-        });
-      }
-
-      const mediaItems = await mediaQuery.getMany();
-
-      console.log(`Found ${mediaItems.length} media items to process`);
-
-      // Download stats
-      const stats = {
-        total: mediaItems.length,
-        downloaded: 0,
-        failed: 0,
-        skipped: 0,
-      };
-
-      // Skip external links (mediaTypeId=3) as they are not direct media files
-      const filteredMedia = mediaItems.filter(
-        (media) => media.mediaTypeId !== MediaTypeEnum.LINK,
-      );
-
-      if (filteredMedia.length < mediaItems.length) {
-        stats.skipped += mediaItems.length - filteredMedia.length;
-        console.log(
-          `Skipping ${mediaItems.length - filteredMedia.length} external links`,
+        // Create download directories
+        const downloadDir = path.resolve(
+          `./downloads/thread-${thread.originalId}`,
         );
-      }
+        const thumbnailDir = path.resolve(
+          `./downloads/thread-${thread.originalId}/thumbnails`,
+        );
 
-      // Get unique media URLs to avoid duplicate downloads
-      const uniqueMediaUrls = [
-        ...new Set(filteredMedia.map((media) => media.url)),
-      ];
-      console.log(
-        `Found ${uniqueMediaUrls.length} unique media items to download`,
-      );
+        if (!fs.existsSync(downloadDir)) {
+          fs.mkdirSync(downloadDir, { recursive: true });
+        }
 
-      stats.total = uniqueMediaUrls.length;
+        if (!fs.existsSync(thumbnailDir)) {
+          fs.mkdirSync(thumbnailDir, { recursive: true });
+        }
 
-      await this.jobService.updateProgress(job.id, {
-        totalItems: uniqueMediaUrls.length,
-        currentStep: `Found ${uniqueMediaUrls.length} unique media items to download`,
-      });
-      this.jobGateway.emitProgress({
-        jobId: job.id,
-        status: JobStatus.RUNNING,
-        progress: 0,
-        totalItems: uniqueMediaUrls.length,
-        processedItems: 0,
-        currentStep: `Found ${uniqueMediaUrls.length} unique media items to download`,
-      });
+        // Find all media for this thread's posts
+        let mediaQuery = this.entityManager
+          .createQueryBuilder(Entities.Media, 'media')
+          .innerJoin('media.post', 'post')
+          .where('post.threadId = :threadId', { threadId: thread.id });
 
-      // Get site URL for config
-      const site = await this.siteRepository.findOne({
-        where: { id: Number(siteId) },
-      });
-      const siteUrl = site?.url;
+        // Filter by media type if specified
+        if (mediaTypeId !== MediaTypeEnum.ALL) {
+          mediaQuery = mediaQuery.andWhere('media.mediaTypeId = :mediaTypeId', {
+            mediaTypeId,
+          });
+        }
 
-      // Set request config with cookies if available
-      const config: any = {
-        baseURL: siteUrl,
-        responseType: 'stream',
-      };
+        const mediaItems = await mediaQuery.getMany();
 
-      config.headers = {
-        ...(config.headers ?? {}),
-        Referer: siteUrl,
-      };
+        console.log(`Found ${mediaItems.length} media items to process`);
 
-      // Pass cookies from request object if provided
-      if (req && req.headers.cookie) {
-        config.headers = {
-          Cookie: req.headers.cookie,
+        // Download stats
+        const stats = {
+          total: mediaItems.length,
+          downloaded: 0,
+          failed: 0,
+          skipped: 0,
         };
-        console.log('Using authentication cookies from request');
-      }
 
-      // Download each unique media file
-      let processedCount = 0;
-      for (const mediaUrl of uniqueMediaUrls) {
-        // Find all media items with this URL to update them all
-        const mediaItemsWithUrl = filteredMedia.filter(
-          (m) => m.url === mediaUrl,
+        // Skip external links (mediaTypeId=3) as they are not direct media files
+        const filteredMedia = mediaItems.filter(
+          (media) => media.mediaTypeId !== MediaTypeEnum.LINK,
         );
-        if (mediaItemsWithUrl.length === 0) continue;
 
-        // Use the first media item for the download process
-        const media = mediaItemsWithUrl[0];
+        if (filteredMedia.length < mediaItems.length) {
+          stats.skipped += mediaItems.length - filteredMedia.length;
+          console.log(
+            `Skipping ${mediaItems.length - filteredMedia.length} external links`,
+          );
+        }
 
-        try {
-          // Check if media is already downloaded and file exists on disk
-          if (media.isDownloaded && media.localPath) {
-            const fileExists = fs.existsSync(media.localPath);
-            if (fileExists) {
+        // Get unique media URLs to avoid duplicate downloads
+        const uniqueMediaUrls = [
+          ...new Set(filteredMedia.map((media) => media.url)),
+        ];
+        console.log(
+          `Found ${uniqueMediaUrls.length} unique media items to download`,
+        );
+
+        stats.total = uniqueMediaUrls.length;
+
+        await this.jobService.updateProgress(job.id, {
+          totalItems: uniqueMediaUrls.length,
+          currentStep: `Found ${uniqueMediaUrls.length} unique media items to download`,
+        });
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: JobStatus.RUNNING,
+          progress: 0,
+          totalItems: uniqueMediaUrls.length,
+          processedItems: 0,
+          currentStep: `Found ${uniqueMediaUrls.length} unique media items to download`,
+        });
+
+        // Get site URL for config
+        const site = await this.siteRepository.findOne({
+          where: { id: Number(siteId) },
+        });
+        const siteUrl = site?.url;
+
+        // Set request config with cookies if available
+        const config: any = {
+          baseURL: siteUrl,
+          responseType: 'stream',
+        };
+
+        config.headers = {
+          ...(config.headers ?? {}),
+          Referer: siteUrl,
+        };
+
+        // Pass cookies from request object if provided
+        if (req && req.headers.cookie) {
+          config.headers = {
+            Cookie: req.headers.cookie,
+          };
+          console.log('Using authentication cookies from request');
+        }
+
+        // Download each unique media file
+        let processedCount = 0;
+        for (const mediaUrl of uniqueMediaUrls) {
+          // Find all media items with this URL to update them all
+          const mediaItemsWithUrl = filteredMedia.filter(
+            (m) => m.url === mediaUrl,
+          );
+          if (mediaItemsWithUrl.length === 0) continue;
+
+          // Use the first media item for the download process
+          const media = mediaItemsWithUrl[0];
+
+          try {
+            // Check if media is already downloaded and file exists on disk
+            if (media.isDownloaded && media.localPath) {
+              const fileExists = fs.existsSync(media.localPath);
+              if (fileExists) {
+                console.log(
+                  `Media ${media.id} already downloaded to ${media.localPath}, skipping`,
+                );
+                stats.skipped++;
+                continue;
+              } else {
+                // File was deleted but database still says downloaded - reset status
+                console.log(
+                  `Media ${media.id} marked as downloaded but file missing at ${media.localPath}, will re-download`,
+                );
+                await this.entityManager.update(
+                  Entities.Media,
+                  { id: media.id },
+                  {
+                    isDownloaded: false,
+                    localPath: null,
+                    updatedAt: new Date(),
+                  },
+                );
+              }
+            }
+
+            // Get filename from URL if not present
+            const filename =
+              media.filename ||
+              media.url.split('/').pop()?.split('?')[0] ||
+              `media_${media.id}_${Date.now()}`;
+
+            const filePath = path.join(downloadDir, filename);
+
+            // Use the full URL for download
+            const fullMediaUrl = media.url.startsWith('http')
+              ? media.url
+              : new URL(media.url, siteUrl).href;
+
+            console.log(
+              `Downloading media ${fullMediaUrl} with site URL ${siteUrl}`,
+            );
+
+            // Download the media file using the xenforoClientService
+            const response = await this.xenforoClientService.get(fullMediaUrl, {
+              ...config,
+              validateStatus: (status) => status === 200,
+            });
+
+            // Check content type to ensure it's media
+            const contentType = response.headers['content-type'];
+            const isValidMedia =
+              contentType &&
+              (contentType.startsWith('image/') ||
+                contentType.startsWith('video/') ||
+                contentType.startsWith('audio/'));
+
+            if (!isValidMedia) {
               console.log(
-                `Media ${media.id} already downloaded to ${media.localPath}, skipping`,
+                `Skipping ${media.url} - not a valid media file (${contentType})`,
               );
-              stats.skipped++;
-              continue;
-            } else {
-              // File was deleted but database still says downloaded - reset status
-              console.log(
-                `Media ${media.id} marked as downloaded but file missing at ${media.localPath}, will re-download`,
-              );
+              // Update all media records with this URL to mark as invalid/not downloadable
               await this.entityManager.update(
                 Entities.Media,
-                { id: media.id },
+                { url: media.url },
                 {
                   isDownloaded: false,
                   localPath: null,
                   updatedAt: new Date(),
                 },
               );
+              stats.failed++;
+              continue;
             }
-          }
 
-          // Get filename from URL if not present
-          const filename =
-            media.filename ||
-            media.url.split('/').pop()?.split('?')[0] ||
-            `media_${media.id}_${Date.now()}`;
+            // Save the media file
+            const writer = fs.createWriteStream(filePath);
+            response.data.pipe(writer);
 
-          const filePath = path.join(downloadDir, filename);
+            await new Promise<void>((resolve, reject) => {
+              writer.on('finish', () => resolve());
+              writer.on('error', (err) => reject(err));
+            });
 
-          // Use the full URL for download
-          const fullMediaUrl = media.url.startsWith('http')
-            ? media.url
-            : new URL(media.url, siteUrl).href;
+            // Verify file was written successfully
+            if (!fs.existsSync(filePath)) {
+              throw new Error('File was not created after download');
+            }
 
-          console.log(
-            `Downloading media ${fullMediaUrl} with site URL ${siteUrl}`,
-          );
+            // Verify file has content (not empty)
+            const fileStats = fs.statSync(filePath);
+            if (fileStats.size === 0) {
+              fs.unlinkSync(filePath); // Remove empty file
+              throw new Error('Downloaded file is empty');
+            }
 
-          // Download the media file using the xenforoClientService
-          const response = await this.xenforoClientService.get(fullMediaUrl, {
-            ...config,
-            validateStatus: (status) => status === 200,
-          });
-
-          // Check content type to ensure it's media
-          const contentType = response.headers['content-type'];
-          const isValidMedia =
-            contentType &&
-            (contentType.startsWith('image/') ||
-              contentType.startsWith('video/') ||
-              contentType.startsWith('audio/'));
-
-          if (!isValidMedia) {
-            console.log(
-              `Skipping ${media.url} - not a valid media file (${contentType})`,
+            // Validate and fix filename to ensure it has proper extension
+            const contentDisposition = response.headers['content-disposition'];
+            const validatedFilename = this.validateAndFixFilename(
+              filename,
+              contentDisposition,
+              contentType,
             );
-            // Update all media records with this URL to mark as invalid/not downloadable
+
+            // If validated filename is different, rename the file
+            let finalFilePath = filePath;
+            if (validatedFilename !== filename) {
+              finalFilePath = path.join(downloadDir, validatedFilename);
+              fs.renameSync(filePath, finalFilePath);
+              console.log(
+                `Renamed file from "${filename}" to "${validatedFilename}"`,
+              );
+            }
+
+            // If there's a thumbnail, download it too
+            if (media.thumbnailUrl && media.thumbnailUrl !== media.url) {
+              try {
+                const thumbnailFilename = `thumb_${validatedFilename}`;
+                const thumbnailPath = path.join(
+                  thumbnailDir,
+                  thumbnailFilename,
+                );
+
+                // Use the full thumbnail URL
+                const thumbnailUrl = media.thumbnailUrl.startsWith('http')
+                  ? media.thumbnailUrl
+                  : new URL(media.thumbnailUrl, siteUrl).href;
+
+                const thumbnailResponse = await this.xenforoClientService.get(
+                  thumbnailUrl,
+                  config,
+                );
+
+                const thumbnailWriter = fs.createWriteStream(thumbnailPath);
+                thumbnailResponse.data.pipe(thumbnailWriter);
+
+                await new Promise<void>((resolve, reject) => {
+                  thumbnailWriter.on('finish', () => resolve());
+                  thumbnailWriter.on('error', (err) => reject(err));
+                });
+
+                console.log(`Downloaded thumbnail to ${thumbnailPath}`);
+              } catch (thumbnailError) {
+                console.error(
+                  `Failed to download thumbnail for media ${media.id}:`,
+                  thumbnailError.message,
+                );
+                // Thumbnail failure doesn't affect main download status
+              }
+            }
+
+            // Update all media records with this URL in the database
+            // This ensures all instances of the same media URL are marked as downloaded
+            await this.entityManager.update(
+              Entities.Media,
+              { url: media.url },
+              {
+                isDownloaded: true,
+                localPath: finalFilePath,
+                mimeType: contentType,
+                updatedAt: new Date(),
+              },
+            );
+
+            console.log(
+              `Downloaded media with URL ${media.url} to ${finalFilePath} (updated ${mediaItemsWithUrl.length} records)`,
+            );
+            stats.downloaded++;
+            processedCount++;
+
+            // Update progress
+            const progress = Math.round(
+              (processedCount / uniqueMediaUrls.length) * 100,
+            );
+            await this.jobService.updateProgress(job.id, {
+              processedItems: processedCount,
+              progress,
+              currentStep: `Downloaded ${stats.downloaded} of ${uniqueMediaUrls.length} items`,
+            });
+            this.jobGateway.emitProgress({
+              jobId: job.id,
+              status: JobStatus.RUNNING,
+              progress,
+              totalItems: uniqueMediaUrls.length,
+              processedItems: processedCount,
+              currentStep: `Downloaded ${stats.downloaded} of ${uniqueMediaUrls.length} items`,
+              metadata: {
+                downloaded: stats.downloaded,
+                failed: stats.failed,
+                skipped: stats.skipped,
+              },
+            });
+
+            // Add a delay to avoid rate limiting (429 errors)
+            const delayTime = 200 + Math.floor(Math.random() * 150);
+            console.log(`Waiting ${delayTime}ms before next download...`);
+            await new Promise<void>((resolve) =>
+              setTimeout(() => resolve(), delayTime),
+            );
+          } catch (error) {
+            console.error(
+              `Failed to download media with URL ${media.url}:`,
+              error.message,
+            );
+
+            // Update all media records with this URL to mark download as failed
+            // Keep isDownloaded as false/null but update timestamp to track attempt
             await this.entityManager.update(
               Entities.Media,
               { url: media.url },
@@ -1236,210 +1393,73 @@ export class XenforoCrawlerService {
                 updatedAt: new Date(),
               },
             );
-            stats.failed++;
-            continue;
-          }
 
-          // Save the media file
-          const writer = fs.createWriteStream(filePath);
-          response.data.pipe(writer);
+            // If we hit a rate limit, wait longer before continuing
+            if (error.response && error.response.status === 429) {
+              const retryAfter = error.response.headers['retry-after']
+                ? parseInt(error.response.headers['retry-after'], 10) * 1000
+                : 60000; // Default to 60 seconds if no retry-after header
 
-          await new Promise<void>((resolve, reject) => {
-            writer.on('finish', () => resolve());
-            writer.on('error', (err) => reject(err));
-          });
-
-          // Verify file was written successfully
-          if (!fs.existsSync(filePath)) {
-            throw new Error('File was not created after download');
-          }
-
-          // Verify file has content (not empty)
-          const fileStats = fs.statSync(filePath);
-          if (fileStats.size === 0) {
-            fs.unlinkSync(filePath); // Remove empty file
-            throw new Error('Downloaded file is empty');
-          }
-
-          // Validate and fix filename to ensure it has proper extension
-          const contentDisposition = response.headers['content-disposition'];
-          const validatedFilename = this.validateAndFixFilename(
-            filename,
-            contentDisposition,
-            contentType,
-          );
-
-          // If validated filename is different, rename the file
-          let finalFilePath = filePath;
-          if (validatedFilename !== filename) {
-            finalFilePath = path.join(downloadDir, validatedFilename);
-            fs.renameSync(filePath, finalFilePath);
-            console.log(
-              `Renamed file from "${filename}" to "${validatedFilename}"`,
-            );
-          }
-
-          // If there's a thumbnail, download it too
-          if (media.thumbnailUrl && media.thumbnailUrl !== media.url) {
-            try {
-              const thumbnailFilename = `thumb_${validatedFilename}`;
-              const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
-
-              // Use the full thumbnail URL
-              const thumbnailUrl = media.thumbnailUrl.startsWith('http')
-                ? media.thumbnailUrl
-                : new URL(media.thumbnailUrl, siteUrl).href;
-
-              const thumbnailResponse = await this.xenforoClientService.get(
-                thumbnailUrl,
-                config,
+              console.log(
+                `Rate limited (429). Pausing for ${retryAfter / 1000} seconds...`,
               );
-
-              const thumbnailWriter = fs.createWriteStream(thumbnailPath);
-              thumbnailResponse.data.pipe(thumbnailWriter);
-
-              await new Promise<void>((resolve, reject) => {
-                thumbnailWriter.on('finish', () => resolve());
-                thumbnailWriter.on('error', (err) => reject(err));
-              });
-
-              console.log(`Downloaded thumbnail to ${thumbnailPath}`);
-            } catch (thumbnailError) {
-              console.error(
-                `Failed to download thumbnail for media ${media.id}:`,
-                thumbnailError.message,
+              await new Promise<void>((resolve) =>
+                setTimeout(() => resolve(), retryAfter),
               );
-              // Thumbnail failure doesn't affect main download status
             }
-          }
 
-          // Update all media records with this URL in the database
-          // This ensures all instances of the same media URL are marked as downloaded
-          await this.entityManager.update(
-            Entities.Media,
-            { url: media.url },
-            {
-              isDownloaded: true,
-              localPath: finalFilePath,
-              mimeType: contentType,
-              updatedAt: new Date(),
-            },
-          );
+            stats.failed++;
+            processedCount++;
 
-          console.log(
-            `Downloaded media with URL ${media.url} to ${finalFilePath} (updated ${mediaItemsWithUrl.length} records)`,
-          );
-          stats.downloaded++;
-          processedCount++;
-
-          // Update progress
-          const progress = Math.round((processedCount / uniqueMediaUrls.length) * 100);
-          await this.jobService.updateProgress(job.id, {
-            processedItems: processedCount,
-            progress,
-            currentStep: `Downloaded ${stats.downloaded} of ${uniqueMediaUrls.length} items`,
-          });
-          this.jobGateway.emitProgress({
-            jobId: job.id,
-            status: JobStatus.RUNNING,
-            progress,
-            totalItems: uniqueMediaUrls.length,
-            processedItems: processedCount,
-            currentStep: `Downloaded ${stats.downloaded} of ${uniqueMediaUrls.length} items`,
-            metadata: {
-              downloaded: stats.downloaded,
-              failed: stats.failed,
-              skipped: stats.skipped,
-            },
-          });
-
-          // Add a delay to avoid rate limiting (429 errors)
-          const delayTime = 200 + Math.floor(Math.random() * 150);
-          console.log(`Waiting ${delayTime}ms before next download...`);
-          await new Promise<void>((resolve) =>
-            setTimeout(() => resolve(), delayTime),
-          );
-        } catch (error) {
-          console.error(
-            `Failed to download media with URL ${media.url}:`,
-            error.message,
-          );
-
-          // Update all media records with this URL to mark download as failed
-          // Keep isDownloaded as false/null but update timestamp to track attempt
-          await this.entityManager.update(
-            Entities.Media,
-            { url: media.url },
-            {
-              isDownloaded: false,
-              localPath: null,
-              updatedAt: new Date(),
-            },
-          );
-
-          // If we hit a rate limit, wait longer before continuing
-          if (error.response && error.response.status === 429) {
-            const retryAfter = error.response.headers['retry-after']
-              ? parseInt(error.response.headers['retry-after'], 10) * 1000
-              : 60000; // Default to 60 seconds if no retry-after header
-
-            console.log(
-              `Rate limited (429). Pausing for ${retryAfter / 1000} seconds...`,
+            // Update progress even on failure
+            const progress = Math.round(
+              (processedCount / uniqueMediaUrls.length) * 100,
             );
-            await new Promise<void>((resolve) =>
-              setTimeout(() => resolve(), retryAfter),
-            );
+            await this.jobService.updateProgress(job.id, {
+              processedItems: processedCount,
+              progress,
+              currentStep: `Failed to download item ${processedCount} of ${uniqueMediaUrls.length}`,
+            });
+            this.jobGateway.emitProgress({
+              jobId: job.id,
+              status: JobStatus.RUNNING,
+              progress,
+              totalItems: uniqueMediaUrls.length,
+              processedItems: processedCount,
+              currentStep: `Failed to download item ${processedCount} of ${uniqueMediaUrls.length}`,
+              metadata: {
+                downloaded: stats.downloaded,
+                failed: stats.failed,
+                skipped: stats.skipped,
+              },
+            });
           }
-
-          stats.failed++;
-          processedCount++;
-
-          // Update progress even on failure
-          const progress = Math.round((processedCount / uniqueMediaUrls.length) * 100);
-          await this.jobService.updateProgress(job.id, {
-            processedItems: processedCount,
-            progress,
-            currentStep: `Failed to download item ${processedCount} of ${uniqueMediaUrls.length}`,
-          });
-          this.jobGateway.emitProgress({
-            jobId: job.id,
-            status: JobStatus.RUNNING,
-            progress,
-            totalItems: uniqueMediaUrls.length,
-            processedItems: processedCount,
-            currentStep: `Failed to download item ${processedCount} of ${uniqueMediaUrls.length}`,
-            metadata: {
-              downloaded: stats.downloaded,
-              failed: stats.failed,
-              skipped: stats.skipped,
-            },
-          });
         }
-      }
 
-      console.log(`Download complete for thread ${thread.id}. Stats:`, stats);
-      
-      // Log media download completion
-      await this.eventLogService.logMediaDownload(
-        threadId,
-        thread.name || 'Unknown Thread',
-        stats,
-      );
+        console.log(`Download complete for thread ${thread.id}. Stats:`, stats);
 
-      await this.jobService.complete(job.id, stats);
-      this.jobGateway.emitProgress({
-        jobId: job.id,
-        status: JobStatus.COMPLETED,
-        progress: 100,
-        totalItems: uniqueMediaUrls.length,
-        processedItems: processedCount,
-        currentStep: `Download completed: ${stats.downloaded} downloaded, ${stats.failed} failed, ${stats.skipped} skipped`,
-        metadata: stats,
-      });
-      
-      return stats;
+        // Log media download completion
+        await this.eventLogService.logMediaDownload(
+          threadId,
+          thread.name || 'Unknown Thread',
+          stats,
+        );
+
+        await this.jobService.complete(job.id, stats);
+        this.jobGateway.emitProgress({
+          jobId: job.id,
+          status: JobStatus.COMPLETED,
+          progress: 100,
+          totalItems: uniqueMediaUrls.length,
+          processedItems: processedCount,
+          currentStep: `Download completed: ${stats.downloaded} downloaded, ${stats.failed} failed, ${stats.skipped} skipped`,
+          metadata: stats,
+        });
+
+        return stats;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         console.error(`Error downloading media for thread ${threadId}:`, error);
         await this.jobService.fail(job.id, errorMessage);
         this.jobGateway.emitProgress({
@@ -1451,7 +1471,8 @@ export class XenforoCrawlerService {
         throw error;
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       console.error(`Error downloading media for thread ${threadId}:`, error);
       if (job) {
         await this.jobService.fail(job.id, errorMessage);

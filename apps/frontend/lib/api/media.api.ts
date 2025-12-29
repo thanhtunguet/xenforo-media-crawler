@@ -1,19 +1,26 @@
 import { apiRequest } from './utils';
-import type { Media, MediaWithThread, MediaStatsDto, MediaFilters, PaginatedResponse } from '@xenforo-media-crawler/contracts';
+import type {
+  Media,
+  MediaFilters,
+  MediaStatsDto,
+  MediaWithThread,
+  PaginatedResponse,
+} from '@xenforo-media-crawler/contracts';
 
 // Media APIs
 export const mediaApi = {
   getThreadMedia: async (
     threadId: number,
-    mediaTypeId?: number
+    mediaTypeId?: number,
   ): Promise<Media[]> => {
-    const query = mediaTypeId !== undefined ? `?mediaTypeId=${mediaTypeId}` : '';
+    const query =
+      mediaTypeId !== undefined ? `?mediaTypeId=${mediaTypeId}` : '';
     return apiRequest<Media[]>(`/api/media/thread/${threadId}${query}`);
   },
   getAll: async (
-    page: number = 1,
-    limit: number = 24,
-    filters?: MediaFilters
+    page = 1,
+    limit = 24,
+    filters?: MediaFilters,
   ): Promise<PaginatedResponse<MediaWithThread>> => {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -39,15 +46,15 @@ export const mediaApi = {
     }
 
     return apiRequest<PaginatedResponse<MediaWithThread>>(
-      `/api/media?${params.toString()}`
+      `/api/media?${params.toString()}`,
     );
   },
   getStats: async (): Promise<MediaStatsDto> => {
     return apiRequest<MediaStatsDto>('/api/media/stats');
   },
   getCount: async (mediaTypeId?: number): Promise<{ count: number }> => {
-    const query = mediaTypeId !== undefined ? `?mediaTypeId=${mediaTypeId}` : '';
+    const query =
+      mediaTypeId !== undefined ? `?mediaTypeId=${mediaTypeId}` : '';
     return apiRequest<{ count: number }>(`/api/media/count${query}`);
   },
 };
-

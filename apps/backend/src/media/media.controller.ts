@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, Query, Res, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Query,
+  Res,
+} from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
@@ -11,11 +19,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { resolve } from 'path';
 import sharp from 'sharp';
-import { Readable } from 'stream';
-import { MediaService, MediaWithThreadDto, MediaFilters } from './media.service';
+import {
+  MediaFilters,
+  MediaService,
+  MediaWithThreadDto,
+} from './media.service';
 import { MediaResponseDto } from './dto/media-response.dto';
 import { MediaStatsDto } from './dto/media-stats.dto';
-import { PaginatedResponseDto, PaginationDto } from '../common/dto/pagination.dto';
+import {
+  PaginatedResponseDto,
+  PaginationDto,
+} from '../common/dto/pagination.dto';
 import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
 
 @ApiTags('Media')
@@ -26,7 +40,8 @@ export class MediaController {
   @Get()
   @ApiOperation({
     summary: 'Get all media with pagination and filters',
-    description: 'Retrieves all media items across all threads with optional filtering and sorting',
+    description:
+      'Retrieves all media items across all threads with optional filtering and sorting',
     operationId: 'getAllMedia',
   })
   @ApiQuery({
@@ -126,7 +141,8 @@ export class MediaController {
   @Get('count')
   @ApiOperation({
     summary: 'Get media count',
-    description: 'Returns the total number of media items with optional filtering',
+    description:
+      'Returns the total number of media items with optional filtering',
     operationId: 'getMediaCount',
   })
   @ApiQuery({
@@ -150,7 +166,8 @@ export class MediaController {
   @Get('thread/:threadId')
   @ApiOperation({
     summary: 'Get media for a thread',
-    description: 'Retrieves all media items (images, videos, links) for a specific thread',
+    description:
+      'Retrieves all media items (images, videos, links) for a specific thread',
     operationId: 'getThreadMedia',
   })
   @ApiParam({
@@ -180,7 +197,8 @@ export class MediaController {
   @Get(':id/file')
   @ApiOperation({
     summary: 'Serve downloaded media file',
-    description: 'Serves the downloaded media file from local storage if available, otherwise returns 404',
+    description:
+      'Serves the downloaded media file from local storage if available, otherwise returns 404',
     operationId: 'serveMediaFile',
   })
   @ApiParam({
@@ -201,7 +219,7 @@ export class MediaController {
     @Res() res: Response,
   ): Promise<void> {
     const media = await this.mediaService.findById(id);
-    
+
     if (!media) {
       throw new NotFoundException(`Media with ID ${id} not found`);
     }
@@ -220,7 +238,10 @@ export class MediaController {
     if (media.mimeType) {
       res.setHeader('Content-Type', media.mimeType);
     }
-    res.setHeader('Content-Disposition', `inline; filename="${media.filename || 'media'}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${media.filename || 'media'}"`,
+    );
 
     // Stream the file
     const fileStream = fs.createReadStream(filePath);
@@ -230,7 +251,8 @@ export class MediaController {
   @Get(':id/thumbnail')
   @ApiOperation({
     summary: 'Serve media thumbnail',
-    description: 'Serves a thumbnail of the media file. If downloaded, generates/serves from local storage. Otherwise returns 404',
+    description:
+      'Serves a thumbnail of the media file. If downloaded, generates/serves from local storage. Otherwise returns 404',
     operationId: 'serveMediaThumbnail',
   })
   @ApiParam({
@@ -258,7 +280,7 @@ export class MediaController {
     @Res() res: Response,
   ): Promise<void> {
     const media = await this.mediaService.findById(id);
-    
+
     if (!media) {
       throw new NotFoundException(`Media with ID ${id} not found`);
     }
@@ -269,7 +291,7 @@ export class MediaController {
 
     const thumbnailSize = size ? Number(size) : 200;
     const imagePath = resolve(process.cwd(), media.localPath);
-    
+
     if (!fs.existsSync(imagePath)) {
       throw new NotFoundException(`Media file not found at ${media.localPath}`);
     }
@@ -279,7 +301,7 @@ export class MediaController {
     const pathParts = media.localPath.split('/');
     const filename = pathParts[pathParts.length - 1] || media.filename;
     const threadOriginalId = media.post?.thread?.originalId;
-    
+
     if (!threadOriginalId) {
       throw new NotFoundException('Thread originalId not found');
     }
@@ -330,4 +352,3 @@ export class MediaController {
     }
   }
 }
-

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
 import type { LucideIcon } from 'lucide-react';
-import { BadgeVariant } from '@/lib/enums';
+import { BadgeVariant } from '../../lib/enums';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: BadgeVariant;
@@ -9,7 +9,16 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({ className, variant = BadgeVariant.DEFAULT, icon: Icon, children, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = BadgeVariant.DEFAULT,
+      icon: Icon,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     const getVariantStyles = () => {
       switch (variant) {
         case BadgeVariant.SUCCESS:
@@ -31,7 +40,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
         className={cn(
           'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-md border transition-all',
           getVariantStyles(),
-          className
+          className,
         )}
         {...props}
       >
@@ -39,7 +48,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
         {children}
       </div>
     );
-  }
+  },
 );
 Badge.displayName = 'Badge';
 

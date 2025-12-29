@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
-  Home,
-  Server,
-  Folder,
-  MessageSquare,
-  Image,
-  Settings,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
   Clock,
-  Briefcase,
+  Folder,
+  Home,
+  Image,
+  MessageSquare,
+  Server,
+  Settings,
 } from 'lucide-react';
 
 interface NavItem {
@@ -36,14 +36,18 @@ interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
 }
 
-export function Sidebar({ isCollapsed: controlledCollapsed, onToggle }: SidebarProps) {
+export function Sidebar({
+  isCollapsed: controlledCollapsed,
+  onToggle,
+}: SidebarProps) {
   const router = useRouter();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
+
   // Use controlled state if provided, otherwise use internal state
-  const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
-  
+  const isCollapsed =
+    controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
+
   const setIsCollapsed = (value: boolean) => {
     if (onToggle) {
       onToggle(value);
@@ -70,9 +74,9 @@ export function Sidebar({ isCollapsed: controlledCollapsed, onToggle }: SidebarP
       className={`fixed left-4 top-4 bottom-4 border-r border-white/10 transition-all duration-300 z-50 ${
         isCollapsed ? 'w-20' : 'w-64'
       } glass-card`}
-      style={{ 
+      style={{
         borderRadius: '0.75rem 0 0 0.75rem',
-        height: 'calc(100vh - 2rem)'
+        height: 'calc(100vh - 2rem)',
       }}
     >
       <div className="flex flex-col h-full">
@@ -85,9 +89,7 @@ export function Sidebar({ isCollapsed: controlledCollapsed, onToggle }: SidebarP
                   <Server className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-white font-semibold text-sm">
-                    XenForo
-                  </h1>
+                  <h1 className="text-white font-semibold text-sm">XenForo</h1>
                   <p className="text-white/60 text-xs">Media Crawler</p>
                 </div>
               </div>
@@ -124,7 +126,9 @@ export function Sidebar({ isCollapsed: controlledCollapsed, onToggle }: SidebarP
               >
                 <Icon
                   className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} ${
-                    active ? 'text-white' : 'text-white/70 group-hover:text-white'
+                    active
+                      ? 'text-white'
+                      : 'text-white/70 group-hover:text-white'
                   } transition-colors`}
                 />
                 {!isCollapsed && (

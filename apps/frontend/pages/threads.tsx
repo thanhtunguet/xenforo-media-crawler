@@ -1,16 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
-import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
+import {
+  GlassCard,
+  GlassCardContent,
+  GlassCardHeader,
+  GlassCardTitle,
+} from '@/components/ui/glass-card';
+import {
+  GlassTable,
+  GlassTableBody,
+  GlassTableCell,
+  GlassTableHead,
+  GlassTableHeader,
+  GlassTableRow,
+} from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { threadsApi, crawlerApi, Thread } from '@/lib/api';
-import { usePagination, buildPaginatedPath } from '@/lib/pagination';
+import { crawlerApi, Thread, threadsApi } from '@/lib/api';
+import { usePagination } from '@/lib/pagination';
 import Link from 'next/link';
-import { RefreshCw, Eye, Image as ImageIcon, Search, MessageSquare, Clock, RotateCw } from 'lucide-react';
+import {
+  Clock,
+  Eye,
+  Image as ImageIcon,
+  MessageSquare,
+  RefreshCw,
+  RotateCw,
+  Search,
+} from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, GlassCardVariant, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
+import {
+  BadgeVariant,
+  ButtonSize,
+  ButtonVariant,
+  GlassCardVariant,
+  ToastType,
+} from '@/lib/enums';
 
 export default function ThreadsPage() {
   const { addToast } = useToast();
@@ -54,7 +80,7 @@ export default function ThreadsPage() {
   };
 
   const filteredThreads = threads.filter((thread) =>
-    thread.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    thread.title?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -69,9 +95,12 @@ export default function ThreadsPage() {
                   <MessageSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <GlassCardTitle className="gradient-text text-2xl">All Threads</GlassCardTitle>
+                  <GlassCardTitle className="gradient-text text-2xl">
+                    All Threads
+                  </GlassCardTitle>
                   <p className="text-white/60 text-sm mt-1">
-                    {totalItems} total thread{totalItems !== 1 ? 's' : ''} • Ordered by newest first
+                    {totalItems} total thread{totalItems !== 1 ? 's' : ''} •
+                    Ordered by newest first
                   </p>
                 </div>
               </div>
@@ -92,8 +121,14 @@ export default function ThreadsPage() {
                   className="glass-input pl-10"
                 />
               </div>
-              <Button variant={ButtonVariant.GLASS} onClick={loadThreads} disabled={loading}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <Button
+                variant={ButtonVariant.GLASS}
+                onClick={loadThreads}
+                disabled={loading}
+              >
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+                />
                 Refresh
               </Button>
             </div>
@@ -124,7 +159,9 @@ export default function ThreadsPage() {
               <div className="text-center py-12">
                 <MessageSquare className="w-12 h-12 mx-auto text-white/20 mb-4" />
                 <p className="text-white/60 text-lg">
-                  {searchQuery ? 'No threads match your search' : 'No threads found'}
+                  {searchQuery
+                    ? 'No threads match your search'
+                    : 'No threads found'}
                 </p>
                 <p className="text-white/40 text-sm mt-2">
                   {searchQuery
@@ -152,18 +189,25 @@ export default function ThreadsPage() {
                           Last sync
                         </div>
                       </GlassTableHead>
-                      <GlassTableHead className="text-right">Actions</GlassTableHead>
+                      <GlassTableHead className="text-right">
+                        Actions
+                      </GlassTableHead>
                     </GlassTableRow>
                   </GlassTableHeader>
                   <GlassTableBody>
                     {filteredThreads.map((thread) => (
-                      <GlassTableRow key={thread.id} className="hover:bg-white/5 transition-colors">
+                      <GlassTableRow
+                        key={thread.id}
+                        className="hover:bg-white/5 transition-colors"
+                      >
                         <GlassTableCell className="font-medium text-white/90">
                           #{thread.id}
                         </GlassTableCell>
                         <GlassTableCell>
                           <div className="max-w-md">
-                            <p className="text-white/90 line-clamp-2 font-medium">{thread.title || 'Untitled Thread'}</p>
+                            <p className="text-white/90 line-clamp-2 font-medium">
+                              {thread.title || 'Untitled Thread'}
+                            </p>
                             {thread.content && (
                               <p className="text-white/50 text-xs mt-1 line-clamp-1">
                                 {thread.content}
@@ -173,7 +217,9 @@ export default function ThreadsPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           {thread.originalId ? (
-                            <Badge variant={BadgeVariant.INFO}>#{thread.originalId}</Badge>
+                            <Badge variant={BadgeVariant.INFO}>
+                              #{thread.originalId}
+                            </Badge>
                           ) : (
                             <span className="text-white/40">-</span>
                           )}
@@ -190,10 +236,14 @@ export default function ThreadsPage() {
                           {thread.lastSyncAt ? (
                             <>
                               <div className="text-white/70">
-                                {new Date(thread.lastSyncAt).toLocaleDateString()}
+                                {new Date(
+                                  thread.lastSyncAt,
+                                ).toLocaleDateString()}
                               </div>
                               <div className="text-white/40 text-xs">
-                                {new Date(thread.lastSyncAt).toLocaleTimeString()}
+                                {new Date(
+                                  thread.lastSyncAt,
+                                ).toLocaleTimeString()}
                               </div>
                             </>
                           ) : (
@@ -209,17 +259,27 @@ export default function ThreadsPage() {
                               disabled={syncingThreadId === thread.id}
                               className="hover:shadow-glow"
                             >
-                              <RotateCw className={`w-4 h-4 mr-1 ${syncingThreadId === thread.id ? 'animate-spin' : ''}`} />
+                              <RotateCw
+                                className={`w-4 h-4 mr-1 ${syncingThreadId === thread.id ? 'animate-spin' : ''}`}
+                              />
                               Sync Posts
                             </Button>
                             <Link href={`/threads/${thread.id}`}>
-                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS} className="hover:shadow-glow">
+                              <Button
+                                size={ButtonSize.SM}
+                                variant={ButtonVariant.GLASS}
+                                className="hover:shadow-glow"
+                              >
                                 <Eye className="w-4 h-4 mr-1" />
                                 View
                               </Button>
                             </Link>
                             <Link href={`/threads/${thread.id}/album`}>
-                              <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS} className="hover:shadow-glow">
+                              <Button
+                                size={ButtonSize.SM}
+                                variant={ButtonVariant.GLASS}
+                                className="hover:shadow-glow"
+                              >
                                 <ImageIcon className="w-4 h-4" />
                               </Button>
                             </Link>
@@ -260,4 +320,3 @@ export default function ThreadsPage() {
     </Layout>
   );
 }
-

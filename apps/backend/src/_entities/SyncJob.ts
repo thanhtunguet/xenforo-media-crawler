@@ -1,10 +1,5 @@
-import {
-  Column,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { JobType, JobStatus } from '@xenforo-media-crawler/contracts';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { JobStatus, JobType } from '@xenforo-media-crawler/contracts';
 
 // Re-export for backward compatibility
 export { JobType, JobStatus };
@@ -124,4 +119,3 @@ export class SyncJob {
   })
   completedAt: Date | null;
 }
-

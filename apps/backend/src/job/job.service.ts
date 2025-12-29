@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SyncJob } from '../_entities/SyncJob';
-import { JobType, JobStatus } from '@xenforo-media-crawler/contracts';
+import { JobStatus, JobType } from '@xenforo-media-crawler/contracts';
 
 export interface CreateJobDto {
   jobType: JobType;
@@ -138,10 +138,7 @@ export class JobService {
     return this.jobRepository.save(job);
   }
 
-  async findAll(
-    limit = 50,
-    status?: JobStatus,
-  ): Promise<SyncJob[]> {
+  async findAll(limit = 50, status?: JobStatus): Promise<SyncJob[]> {
     const query = this.jobRepository.createQueryBuilder('job');
     if (status) {
       query.where('job.status = :status', { status });
@@ -150,4 +147,3 @@ export class JobService {
     return query.getMany();
   }
 }
-

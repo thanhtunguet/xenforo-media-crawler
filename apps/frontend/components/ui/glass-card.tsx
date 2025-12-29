@@ -1,13 +1,16 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
-import { GlassCardVariant } from '@/lib/enums';
+import { GlassCardVariant } from '../../lib/enums';
 
 export interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: GlassCardVariant;
 }
 
 const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ className, variant = GlassCardVariant.DEFAULT, children, ...props }, ref) => {
+  (
+    { className, variant = GlassCardVariant.DEFAULT, children, ...props },
+    ref,
+  ) => {
     return (
       <div
         ref={ref}
@@ -15,14 +18,14 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
           'glass-card p-6',
           variant === GlassCardVariant.HOVER_GLOW && 'hover:shadow-glow-lg',
           variant === GlassCardVariant.BORDERED && 'glass-border',
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     );
-  }
+  },
 );
 GlassCard.displayName = 'GlassCard';
 
@@ -44,7 +47,10 @@ const GlassCardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn('text-2xl font-semibold text-white leading-none tracking-tight', className)}
+    className={cn(
+      'text-2xl font-semibold text-white leading-none tracking-tight',
+      className,
+    )}
     {...props}
   />
 ));
@@ -54,11 +60,7 @@ const GlassCardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn('text-sm text-white/60', className)}
-    {...props}
-  />
+  <p ref={ref} className={cn('text-sm text-white/60', className)} {...props} />
 ));
 GlassCardDescription.displayName = 'GlassCardDescription';
 
@@ -76,7 +78,10 @@ const GlassCardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex items-center mt-4 pt-4 border-t border-white/10', className)}
+    className={cn(
+      'flex items-center mt-4 pt-4 border-t border-white/10',
+      className,
+    )}
     {...props}
   />
 ));

@@ -28,7 +28,7 @@ export class ThreadService {
     if (forumId !== undefined) {
       whereCondition.forumId = String(forumId);
     }
-    
+
     const [threads, totalItems] = await this.threadRepository.findAndCount({
       where: whereCondition,
       skip: pagination.skip,
@@ -73,7 +73,9 @@ export class ThreadService {
       where: { originalId, deletedAt: null },
     });
     if (!thread) {
-      throw new NotFoundException(`Thread with original ID ${originalId} not found`);
+      throw new NotFoundException(
+        `Thread with original ID ${originalId} not found`,
+      );
     }
     return this.mapToThreadDto(thread);
   }

@@ -1,5 +1,5 @@
 import { Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { ApiParam, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { XenforoCrawlerService } from 'src/xenforo_crawler/xenforo_crawler.service';
 import { ForumResponseDto } from './dto/forum-response.dto';
 import { SiteService } from './site.service';
@@ -33,13 +33,10 @@ export class SiteSyncController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ForumResponseDto[]> {
     const site = await this.siteService.findOne(id);
-    
+
     // Log sites sync
-    await this.eventLogService.logSitesSync(
-      id,
-      site.name || site.url,
-    );
-    
+    await this.eventLogService.logSitesSync(id, site.name || site.url);
+
     return this.xenforoCrawlerService.listForums(id);
   }
 
@@ -67,17 +64,19 @@ export class SiteSyncController {
       },
     },
   })
-  async syncAllForumsAndThreads(@Param('id', ParseIntPipe) id: number): Promise<{ jobId: number; message: string }> {
+  async syncAllForumsAndThreads(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ jobId: number; message: string }> {
     const site = await this.siteService.findOne(id);
     const job = await this.jobService.create({
       jobType: JobType.SYNC_ALL_FORUMS_AND_THREADS,
       siteId: id,
       entityName: site.name || site.url,
     });
-    
+
     // Run sync asynchronously
     void this.xenforoCrawlerService.syncAllForumsAndThreads(id, job.id);
-    
+
     return {
       jobId: job.id,
       message: 'All forums and threads are being synced',
@@ -119,18 +118,18 @@ export class SiteSyncController {
   ): Promise<{ jobId: number; message: string }> {
     // Get forum name for job entity name
     const forums = await this.xenforoCrawlerService.listForums(id);
-    const forum = forums.find(f => f.id === forumId);
-    
+    const forum = forums.find((f) => f.id === forumId);
+
     const job = await this.jobService.create({
       jobType: JobType.SYNC_FORUM_THREADS,
       siteId: id,
       forumId,
       entityName: forum?.name || `Forum ${forumId}`,
     });
-    
+
     // Run sync asynchronously
     void this.xenforoCrawlerService.syncAllThreads(id, forumId, job.id);
-    
+
     return {
       jobId: job.id,
       message: 'All threads are being synced',

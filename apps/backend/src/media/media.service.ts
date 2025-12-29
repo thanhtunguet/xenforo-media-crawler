@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Media } from '../_entities/Media';
 import { MediaResponseDto } from './dto/media-response.dto';
 import { MediaStatsDto } from './dto/media-stats.dto';
-import { PaginatedResponseDto, PaginationDto } from '../common/dto/pagination.dto';
+import {
+  PaginatedResponseDto,
+  PaginationDto,
+} from '../common/dto/pagination.dto';
 import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
 
 export interface MediaWithThreadDto extends MediaResponseDto {
@@ -220,4 +223,3 @@ export class MediaService {
     };
   }
 }
-

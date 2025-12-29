@@ -1,38 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import {
   GlassCard,
+  GlassCardContent,
+  GlassCardDescription,
   GlassCardHeader,
   GlassCardTitle,
-  GlassCardDescription,
-  GlassCardContent,
-  GlassCardFooter,
 } from '@/components/ui/glass-card';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout';
-import { threadsApi, crawlerApi, Post, Thread, mediaApi, Media } from '@/lib/api';
-import { usePagination, buildPaginatedPath } from '@/lib/pagination';
+import { crawlerApi, mediaApi, Post, Thread, threadsApi } from '@/lib/api';
+import { usePagination } from '@/lib/pagination';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, GlassCardVariant, ButtonVariant, ButtonSize } from '@/lib/enums';
+import {
+  ButtonSize,
+  ButtonVariant,
+  GlassCardVariant,
+  ToastType,
+} from '@/lib/enums';
 import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
 import {
-  RefreshCw,
-  Download,
-  Image as ImageIcon,
-  FileText,
-  ArrowLeft,
   Album,
+  ArrowLeft,
+  Download,
+  FileText,
+  FlipHorizontal,
+  FlipVertical,
+  Image as ImageIcon,
   MessageSquare,
+  RefreshCw,
+  RotateCcw,
+  RotateCw,
   X,
   ZoomIn,
   ZoomOut,
-  RotateCw,
-  FlipHorizontal,
-  FlipVertical,
-  RotateCcw,
 } from 'lucide-react';
 
 export default function ThreadPage() {
@@ -98,7 +102,11 @@ export default function ThreadPage() {
     const postImages = document.querySelectorAll('.post-content img');
     postImages.forEach((img) => {
       img.addEventListener('click', handleImageClick);
-      img.classList.add('cursor-pointer', 'hover:opacity-80', 'transition-opacity');
+      img.classList.add(
+        'cursor-pointer',
+        'hover:opacity-80',
+        'transition-opacity',
+      );
     });
 
     // Cleanup
@@ -175,11 +183,14 @@ export default function ThreadPage() {
       setDownloading(true);
       const response = await crawlerApi.downloadThreadMedia(
         threadId,
-        Number(mediaType)
+        Number(mediaType),
       );
       setDownloadJobId(response.jobId);
       setShowDownloadProgress(true);
-      addToast('Media download started. This may take a while.', ToastType.SUCCESS);
+      addToast(
+        'Media download started. This may take a while.',
+        ToastType.SUCCESS,
+      );
     } catch (err: any) {
       console.error('Failed to download media:', err);
       addToast(err.message || 'Failed to download media', ToastType.ERROR);
@@ -230,8 +241,8 @@ export default function ThreadPage() {
                   {thread.title}
                 </GlassCardTitle>
                 <GlassCardDescription>
-                  Created: {new Date(thread.createdAt).toLocaleString()} • Updated:{' '}
-                  {new Date(thread.updatedAt).toLocaleString()}
+                  Created: {new Date(thread.createdAt).toLocaleString()} •
+                  Updated: {new Date(thread.updatedAt).toLocaleString()}
                 </GlassCardDescription>
               </GlassCardHeader>
               <GlassCardContent>
@@ -250,7 +261,9 @@ export default function ThreadPage() {
                     <MessageSquare className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-white">{totalPosts}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {totalPosts}
+                    </div>
                     <div className="text-sm text-white/60">Total Posts</div>
                   </div>
                 </div>
@@ -262,7 +275,9 @@ export default function ThreadPage() {
                     <ImageIcon className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-white">{mediaCount}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {mediaCount}
+                    </div>
                     <div className="text-sm text-white/60">Media Items</div>
                   </div>
                 </div>
@@ -271,7 +286,9 @@ export default function ThreadPage() {
           </>
         ) : (
           <GlassCard>
-            <div className="text-center py-12 text-white/60">Thread not found</div>
+            <div className="text-center py-12 text-white/60">
+              Thread not found
+            </div>
           </GlassCard>
         )}
 
@@ -291,7 +308,9 @@ export default function ThreadPage() {
                 disabled={syncing}
                 className="gap-2"
               >
-                <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`}
+                />
                 {syncing ? 'Syncing Posts...' : 'Sync Posts'}
               </Button>
 
@@ -325,7 +344,9 @@ export default function ThreadPage() {
                   disabled={downloading}
                   className="gap-2"
                 >
-                  <Download className={`h-4 w-4 ${downloading ? 'animate-spin' : ''}`} />
+                  <Download
+                    className={`h-4 w-4 ${downloading ? 'animate-spin' : ''}`}
+                  />
                   {downloading ? 'Downloading...' : 'Download Media'}
                 </Button>
               </div>
@@ -462,7 +483,11 @@ export default function ThreadPage() {
                 onClick={(e) => e.stopPropagation()}
                 className="absolute top-4 left-4 z-10"
               >
-                <Button variant={ButtonVariant.GLASS_PRIMARY} size={ButtonSize.SM} className="gap-2">
+                <Button
+                  variant={ButtonVariant.GLASS_PRIMARY}
+                  size={ButtonSize.SM}
+                  className="gap-2"
+                >
                   <Download className="w-4 h-4" />
                   Download
                 </Button>
@@ -578,8 +603,10 @@ export default function ThreadPage() {
                     setIsDragging(true);
                     const container = e.currentTarget;
                     const containerRect = container.getBoundingClientRect();
-                    const containerCenterX = containerRect.left + containerRect.width / 2;
-                    const containerCenterY = containerRect.top + containerRect.height / 2;
+                    const containerCenterX =
+                      containerRect.left + containerRect.width / 2;
+                    const containerCenterY =
+                      containerRect.top + containerRect.height / 2;
                     const clickX = e.clientX - containerCenterX;
                     const clickY = e.clientY - containerCenterY;
                     const imagePixelX = (clickX - imagePan.x) / imageZoom;
@@ -590,7 +617,7 @@ export default function ThreadPage() {
                       screenX: e.clientX,
                       screenY: e.clientY,
                       containerCenterX,
-                      containerCenterY
+                      containerCenterY,
                     });
                   }
                 }}
@@ -599,8 +626,10 @@ export default function ThreadPage() {
                     e.stopPropagation();
                     const newScreenX = e.clientX;
                     const newScreenY = e.clientY;
-                    const newScreenPosX = newScreenX - (dragStart.containerCenterX || 0);
-                    const newScreenPosY = newScreenY - (dragStart.containerCenterY || 0);
+                    const newScreenPosX =
+                      newScreenX - (dragStart.containerCenterX || 0);
+                    const newScreenPosY =
+                      newScreenY - (dragStart.containerCenterY || 0);
                     const newPanX = newScreenPosX - dragStart.x * imageZoom;
                     const newPanY = newScreenPosY - dragStart.y * imageZoom;
                     setImagePan({ x: newPanX, y: newPanY });
@@ -618,7 +647,11 @@ export default function ThreadPage() {
                   src={selectedImageUrl}
                   alt="Post image"
                   className={`max-w-full max-h-full mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${
-                    isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''
+                    isDragging
+                      ? 'cursor-grabbing'
+                      : imageZoom > 1
+                        ? 'cursor-grab'
+                        : ''
                   }`}
                   style={{
                     transform: `translate(${imagePan.x}px, ${imagePan.y}px) scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,

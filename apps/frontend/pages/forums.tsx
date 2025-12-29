@@ -1,16 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
-import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
+import {
+  GlassCard,
+  GlassCardContent,
+  GlassCardHeader,
+  GlassCardTitle,
+} from '@/components/ui/glass-card';
+import {
+  GlassTable,
+  GlassTableBody,
+  GlassTableCell,
+  GlassTableHead,
+  GlassTableHeader,
+  GlassTableRow,
+} from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { sitesApi, siteSyncApi, Forum, Site } from '@/lib/api';
-import { usePagination, buildPaginatedPath } from '@/lib/pagination';
+import { Forum, Site, sitesApi, siteSyncApi } from '@/lib/api';
+import { usePagination } from '@/lib/pagination';
 import Link from 'next/link';
-import { RefreshCw, Eye, Search, Folder, Clock, Server, RotateCw } from 'lucide-react';
+import {
+  Clock,
+  Eye,
+  Folder,
+  RefreshCw,
+  RotateCw,
+  Search,
+  Server,
+} from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, GlassCardVariant, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
+import {
+  BadgeVariant,
+  ButtonSize,
+  ButtonVariant,
+  GlassCardVariant,
+  ToastType,
+} from '@/lib/enums';
 
 interface ForumWithSite extends Forum {
   site?: Site;
@@ -92,14 +118,20 @@ export default function ForumsPage() {
 
   const handleSyncThreads = async (forum: ForumWithSite) => {
     if (!forum.siteId || !forum.id || !forum.site) {
-      addToast('Cannot sync threads: missing forum or site information', ToastType.ERROR);
+      addToast(
+        'Cannot sync threads: missing forum or site information',
+        ToastType.ERROR,
+      );
       return;
     }
 
     try {
       setSyncingForumId(forum.id);
       await siteSyncApi.syncForumThreads(forum.siteId, forum.id);
-      addToast(`Thread sync started for "${forum.name || 'forum'}". This may take a while.`, ToastType.SUCCESS);
+      addToast(
+        `Thread sync started for "${forum.name || 'forum'}". This may take a while.`,
+        ToastType.SUCCESS,
+      );
     } catch (err: any) {
       console.error('Failed to sync threads:', err);
       addToast(err.message || 'Failed to sync threads', ToastType.ERROR);
@@ -109,7 +141,8 @@ export default function ForumsPage() {
   };
 
   const filteredForums = forums.filter((forum) => {
-    const matchesSearch = forum.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      forum.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       forum.site?.name?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
@@ -126,9 +159,12 @@ export default function ForumsPage() {
                   <Folder className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <GlassCardTitle className="gradient-text text-2xl">All Forums</GlassCardTitle>
+                  <GlassCardTitle className="gradient-text text-2xl">
+                    All Forums
+                  </GlassCardTitle>
                   <p className="text-white/60 text-sm mt-1">
-                    {totalItems} total forum{totalItems !== 1 ? 's' : ''} • Ordered by newest first
+                    {totalItems} total forum{totalItems !== 1 ? 's' : ''} •
+                    Ordered by newest first
                   </p>
                 </div>
               </div>
@@ -149,8 +185,14 @@ export default function ForumsPage() {
                   className="glass-input pl-10"
                 />
               </div>
-              <Button variant={ButtonVariant.GLASS} onClick={loadForums} disabled={loading}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <Button
+                variant={ButtonVariant.GLASS}
+                onClick={loadForums}
+                disabled={loading}
+              >
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+                />
                 Refresh
               </Button>
             </div>
@@ -181,7 +223,9 @@ export default function ForumsPage() {
               <div className="text-center py-12">
                 <Folder className="w-12 h-12 mx-auto text-white/20 mb-4" />
                 <p className="text-white/60 text-lg">
-                  {searchQuery ? 'No forums match your search' : 'No forums found'}
+                  {searchQuery
+                    ? 'No forums match your search'
+                    : 'No forums found'}
                 </p>
                 <p className="text-white/40 text-sm mt-2">
                   {searchQuery
@@ -210,25 +254,34 @@ export default function ForumsPage() {
                           Updated
                         </div>
                       </GlassTableHead>
-                      <GlassTableHead className="text-right">Actions</GlassTableHead>
+                      <GlassTableHead className="text-right">
+                        Actions
+                      </GlassTableHead>
                     </GlassTableRow>
                   </GlassTableHeader>
                   <GlassTableBody>
                     {filteredForums.map((forum) => (
-                      <GlassTableRow key={`${forum.siteId}-${forum.id}`} className="hover:bg-white/5 transition-colors">
+                      <GlassTableRow
+                        key={`${forum.siteId}-${forum.id}`}
+                        className="hover:bg-white/5 transition-colors"
+                      >
                         <GlassTableCell className="font-medium text-white/90">
                           {forum.id ? `#${forum.id}` : '-'}
                         </GlassTableCell>
                         <GlassTableCell>
                           <div className="max-w-md">
-                            <p className="text-white/90 line-clamp-2 font-medium">{forum.name || 'Unnamed Forum'}</p>
+                            <p className="text-white/90 line-clamp-2 font-medium">
+                              {forum.name || 'Unnamed Forum'}
+                            </p>
                           </div>
                         </GlassTableCell>
                         <GlassTableCell>
                           {forum.site ? (
                             <div className="flex items-center gap-2">
                               <Server className="w-4 h-4 text-white/40" />
-                              <span className="text-white/70">{forum.site.name || forum.site.url}</span>
+                              <span className="text-white/70">
+                                {forum.site.name || forum.site.url}
+                              </span>
                             </div>
                           ) : (
                             <span className="text-white/40">-</span>
@@ -236,7 +289,9 @@ export default function ForumsPage() {
                         </GlassTableCell>
                         <GlassTableCell>
                           {forum.originalId ? (
-                            <Badge variant={BadgeVariant.INFO}>#{forum.originalId}</Badge>
+                            <Badge variant={BadgeVariant.INFO}>
+                              #{forum.originalId}
+                            </Badge>
                           ) : (
                             <span className="text-white/40">-</span>
                           )}
@@ -280,11 +335,17 @@ export default function ForumsPage() {
                                   disabled={syncingForumId === forum.id}
                                   className="hover:shadow-glow"
                                 >
-                                  <RotateCw className={`w-4 h-4 mr-1 ${syncingForumId === forum.id ? 'animate-spin' : ''}`} />
+                                  <RotateCw
+                                    className={`w-4 h-4 mr-1 ${syncingForumId === forum.id ? 'animate-spin' : ''}`}
+                                  />
                                   Sync Threads
                                 </Button>
                                 <Link href={`/forums/${forum.id}`}>
-                                  <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS} className="hover:shadow-glow">
+                                  <Button
+                                    size={ButtonSize.SM}
+                                    variant={ButtonVariant.GLASS}
+                                    className="hover:shadow-glow"
+                                  >
                                     <Eye className="w-4 h-4 mr-1" />
                                     View Threads
                                   </Button>
@@ -328,4 +389,3 @@ export default function ForumsPage() {
     </Layout>
   );
 }
-

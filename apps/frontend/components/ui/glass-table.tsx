@@ -23,7 +23,7 @@ const GlassTableHeader = React.forwardRef<
     ref={ref}
     className={cn(
       'bg-gradient-to-r from-indigo-600/20 to-cyan-600/20 backdrop-blur-sm border-b border-white/10',
-      className
+      className,
     )}
     {...props}
   />
@@ -48,10 +48,7 @@ const GlassTableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn(
-      'border-t border-white/10 bg-white/5 font-medium',
-      className
-    )}
+    className={cn('border-t border-white/10 bg-white/5 font-medium', className)}
     {...props}
   />
 ));
@@ -65,7 +62,7 @@ const GlassTableRow = React.forwardRef<
     ref={ref}
     className={cn(
       'border-b border-white/5 transition-all hover:bg-white/5 data-[state=selected]:bg-indigo-500/10',
-      className
+      className,
     )}
     {...props}
   />
@@ -80,7 +77,7 @@ const GlassTableHead = React.forwardRef<
     ref={ref}
     className={cn(
       'h-12 px-4 text-left align-middle font-semibold text-white/90 [&:has([role=checkbox])]:pr-0',
-      className
+      className,
     )}
     {...props}
   />
@@ -95,7 +92,7 @@ const GlassTableCell = React.forwardRef<
     ref={ref}
     className={cn(
       'p-4 align-middle text-white/70 [&:has([role=checkbox])]:pr-0',
-      className
+      className,
     )}
     {...props}
   />

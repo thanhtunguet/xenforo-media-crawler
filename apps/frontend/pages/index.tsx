@@ -1,12 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout';
 import { StatCard } from '@/components/StatCard';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
+import {
+  GlassCard,
+  GlassCardContent,
+  GlassCardHeader,
+  GlassCardTitle,
+} from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Server, Folder, MessageSquare, Image, Plus, RefreshCw, Clock, Edit, Trash2, RotateCw, Download, ArrowRight } from 'lucide-react';
-import { sitesApi, threadsApi, mediaApi, eventLogsApi, EventLog } from '@/lib/api';
-import { ButtonVariant, ButtonSize } from '@/lib/enums';
+import {
+  ArrowRight,
+  Clock,
+  Download,
+  Edit,
+  Folder,
+  Image,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+  RotateCw,
+  Server,
+  Trash2,
+} from 'lucide-react';
+import {
+  EventLog,
+  eventLogsApi,
+  mediaApi,
+  sitesApi,
+  threadsApi,
+} from '@/lib/api';
+import { ButtonSize, ButtonVariant } from '@/lib/enums';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
@@ -17,11 +41,14 @@ const formatTimeAgo = (dateString: string | null): string => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)} days ago`;
     return `${Math.floor(diffInSeconds / 604800)} weeks ago`;
   } catch {
     return dateString;
@@ -69,7 +96,9 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 
 function ActivityItem({ eventLog }: { eventLog: EventLog }) {
   const Icon = EVENT_TYPE_ICONS[eventLog.eventType] || Clock;
-  const colorClass = EVENT_TYPE_COLORS[eventLog.eventType] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  const colorClass =
+    EVENT_TYPE_COLORS[eventLog.eventType] ||
+    'bg-gray-500/20 text-gray-400 border-gray-500/30';
   const label = EVENT_TYPE_LABELS[eventLog.eventType] || eventLog.eventType;
 
   return (
@@ -80,9 +109,13 @@ function ActivityItem({ eventLog }: { eventLog: EventLog }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <Badge className={colorClass}>{label}</Badge>
-          <span className="text-xs text-white/40">{formatTimeAgo(eventLog.createdAt)}</span>
+          <span className="text-xs text-white/40">
+            {formatTimeAgo(eventLog.createdAt)}
+          </span>
         </div>
-        <p className="text-sm text-white/90 truncate">{eventLog.description || eventLog.eventType}</p>
+        <p className="text-sm text-white/90 truncate">
+          {eventLog.description || eventLog.eventType}
+        </p>
         {eventLog.entityName && (
           <p className="text-xs text-white/60 mt-1 truncate">
             {eventLog.entityType}: {eventLog.entityName}
@@ -114,12 +147,13 @@ export default function Dashboard() {
     try {
       setLoading(true);
       // Fetch stats from API
-      const [sitesCount, forumsCount, threadsCount, mediaCount] = await Promise.all([
-        sitesApi.getAll(1, 1).then((res) => res.meta.totalItems),
-        sitesApi.getForumCount().then((res) => res.count),
-        threadsApi.getAll(1, 1).then((res) => res.meta.totalItems),
-        mediaApi.getCount().then((res) => res.count),
-      ]);
+      const [sitesCount, forumsCount, threadsCount, mediaCount] =
+        await Promise.all([
+          sitesApi.getAll(1, 1).then((res) => res.meta.totalItems),
+          sitesApi.getForumCount().then((res) => res.count),
+          threadsApi.getAll(1, 1).then((res) => res.meta.totalItems),
+          mediaApi.getCount().then((res) => res.count),
+        ]);
 
       setStats({
         sites: sitesCount,
@@ -230,7 +264,9 @@ export default function Dashboard() {
         <GlassCard>
           <GlassCardHeader>
             <div className="flex items-center justify-between">
-              <GlassCardTitle className="text-xl">Recent Activities</GlassCardTitle>
+              <GlassCardTitle className="text-xl">
+                Recent Activities
+              </GlassCardTitle>
               <Link href="/activity">
                 <Button
                   variant={ButtonVariant.GLASS}
@@ -251,7 +287,9 @@ export default function Dashboard() {
             ) : activities.length === 0 ? (
               <div className="text-center py-8 text-white/50">
                 <p>No recent activities to display</p>
-                <p className="text-sm mt-2">Start by adding a site or syncing forums</p>
+                <p className="text-sm mt-2">
+                  Start by adding a site or syncing forums
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -299,7 +337,8 @@ export default function Dashboard() {
                 <div>
                   <h4 className="text-white font-medium">Download Media</h4>
                   <p className="text-white/60 text-sm">
-                    Browse threads and download media files to your local storage
+                    Browse threads and download media files to your local
+                    storage
                   </p>
                 </div>
               </div>

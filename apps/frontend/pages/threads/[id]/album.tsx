@@ -1,31 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import {
   GlassCard,
+  GlassCardContent,
+  GlassCardDescription,
   GlassCardHeader,
   GlassCardTitle,
-  GlassCardDescription,
-  GlassCardContent,
 } from '@/components/ui/glass-card';
 import { Layout } from '@/components/layout';
-import { threadsApi, mediaApi, Thread, Media } from '@/lib/api';
-import { ButtonVariant, ButtonSize, GlassCardVariant } from '@/lib/enums';
+import { Media, mediaApi, Thread, threadsApi } from '@/lib/api';
+import { ButtonSize, ButtonVariant, GlassCardVariant } from '@/lib/enums';
 import {
   ArrowLeft,
-  Image as ImageIcon,
-  Video,
-  Link as LinkIcon,
-  X,
   Download,
-  Grid3x3,
-  RefreshCw,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
   FlipHorizontal,
   FlipVertical,
+  Grid3x3,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  RefreshCw,
   RotateCcw,
+  RotateCw,
+  Video,
+  X,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 
 const mediaTypeFilters = [
@@ -51,12 +51,12 @@ export default function ThreadAlbumPage() {
   const [imageFlipV, setImageFlipV] = useState(1);
   const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ 
-    x: number; 
-    y: number; 
-    screenX?: number; 
-    screenY?: number; 
-    containerCenterX?: number; 
+  const [dragStart, setDragStart] = useState<{
+    x: number;
+    y: number;
+    screenX?: number;
+    screenY?: number;
+    containerCenterX?: number;
     containerCenterY?: number;
   }>({ x: 0, y: 0 });
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null);
@@ -84,7 +84,7 @@ export default function ThreadAlbumPage() {
       setLoading(true);
       const mediaData = await mediaApi.getThreadMedia(
         threadId,
-        mediaType !== '' ? Number(mediaType) : undefined
+        mediaType !== '' ? Number(mediaType) : undefined,
       );
       console.log('Loaded media:', mediaData);
       setMedia(mediaData);
@@ -120,7 +120,15 @@ export default function ThreadAlbumPage() {
     // Fallback: check URL extension or mimeType
     const url = mediaItem.url || '';
     const mimeType = mediaItem.mimeType || '';
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+    const imageExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.bmp',
+      '.svg',
+    ];
     const imageMimeTypes = [
       'image/jpeg',
       'image/png',
@@ -143,7 +151,15 @@ export default function ThreadAlbumPage() {
     // Fallback: check URL extension or mimeType
     const url = mediaItem.url || '';
     const mimeType = mediaItem.mimeType || '';
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv', '.flv'];
+    const videoExtensions = [
+      '.mp4',
+      '.webm',
+      '.ogg',
+      '.mov',
+      '.avi',
+      '.mkv',
+      '.flv',
+    ];
     const videoMimeTypes = [
       'video/mp4',
       'video/webm',
@@ -190,7 +206,9 @@ export default function ThreadAlbumPage() {
             <GlassCardTitle className="gradient-text text-3xl">
               {thread?.title || 'Loading...'}
             </GlassCardTitle>
-            <GlassCardDescription>Media gallery for this thread</GlassCardDescription>
+            <GlassCardDescription>
+              Media gallery for this thread
+            </GlassCardDescription>
           </GlassCardHeader>
         </GlassCard>
 
@@ -205,7 +223,11 @@ export default function ThreadAlbumPage() {
                 return (
                   <Button
                     key={filter.id}
-                    variant={isActive ? ButtonVariant.GLASS_PRIMARY : ButtonVariant.GLASS}
+                    variant={
+                      isActive
+                        ? ButtonVariant.GLASS_PRIMARY
+                        : ButtonVariant.GLASS
+                    }
                     size={ButtonSize.SM}
                     onClick={() => setMediaType(filter.id)}
                     className="gap-2"
@@ -364,7 +386,11 @@ export default function ThreadAlbumPage() {
                     onClick={(e) => e.stopPropagation()}
                     className="absolute top-4 left-4 z-10"
                   >
-                    <Button variant={ButtonVariant.GLASS_PRIMARY} size={ButtonSize.SM} className="gap-2">
+                    <Button
+                      variant={ButtonVariant.GLASS_PRIMARY}
+                      size={ButtonSize.SM}
+                      className="gap-2"
+                    >
                       <Download className="w-4 h-4" />
                       Download
                     </Button>
@@ -476,55 +502,59 @@ export default function ThreadAlbumPage() {
                   </div>
                 )}
 
-                <div 
+                <div
                   className="h-full w-full overflow-hidden flex items-center justify-center"
                   onMouseDown={(e) => {
                     if (isImage(selectedMedia) && imageZoom > 1 && imageRef) {
                       e.stopPropagation();
                       setIsDragging(true);
-                      
+
                       // Lấy vị trí container (center của viewport)
                       const container = e.currentTarget;
                       const containerRect = container.getBoundingClientRect();
-                      const containerCenterX = containerRect.left + containerRect.width / 2;
-                      const containerCenterY = containerRect.top + containerRect.height / 2;
-                      
+                      const containerCenterX =
+                        containerRect.left + containerRect.width / 2;
+                      const containerCenterY =
+                        containerRect.top + containerRect.height / 2;
+
                       // Vị trí click relative to container center
                       const clickX = e.clientX - containerCenterX;
                       const clickY = e.clientY - containerCenterY;
-                      
+
                       // Tính vị trí pixel trên ảnh (accounting for current pan, zoom, rotation, flip)
                       // Đảo ngược transform để lấy tọa độ trên ảnh gốc
                       const imagePixelX = (clickX - imagePan.x) / imageZoom;
                       const imagePixelY = (clickY - imagePan.y) / imageZoom;
-                      
+
                       // Lưu vị trí pixel trên ảnh và vị trí click trên màn hình
-                      setDragStart({ 
-                        x: imagePixelX, 
+                      setDragStart({
+                        x: imagePixelX,
                         y: imagePixelY,
                         screenX: e.clientX,
                         screenY: e.clientY,
                         containerCenterX,
-                        containerCenterY
+                        containerCenterY,
                       });
                     }
                   }}
                   onMouseMove={(e) => {
                     if (isDragging && imageZoom > 1) {
                       e.stopPropagation();
-                      
+
                       // Tính vị trí mới của pixel ảnh trên màn hình
                       const newScreenX = e.clientX;
                       const newScreenY = e.clientY;
-                      
+
                       // Vị trí relative to container center
-                      const relativeX = newScreenX - dragStart.containerCenterX!;
-                      const relativeY = newScreenY - dragStart.containerCenterY!;
-                      
+                      const relativeX =
+                        newScreenX - dragStart.containerCenterX!;
+                      const relativeY =
+                        newScreenY - dragStart.containerCenterY!;
+
                       // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
                       const newPanX = relativeX - dragStart.x * imageZoom;
                       const newPanY = relativeY - dragStart.y * imageZoom;
-                      
+
                       setImagePan({
                         x: newPanX,
                         y: newPanY,
@@ -538,33 +568,40 @@ export default function ThreadAlbumPage() {
                     setIsDragging(false);
                   }}
                   onTouchStart={(e) => {
-                    if (isImage(selectedMedia) && imageZoom > 1 && e.touches.length === 1 && imageRef) {
+                    if (
+                      isImage(selectedMedia) &&
+                      imageZoom > 1 &&
+                      e.touches.length === 1 &&
+                      imageRef
+                    ) {
                       e.stopPropagation();
                       const touch = e.touches[0];
                       setIsDragging(true);
-                      
+
                       // Lấy vị trí container (center của viewport)
                       const container = e.currentTarget;
                       const containerRect = container.getBoundingClientRect();
-                      const containerCenterX = containerRect.left + containerRect.width / 2;
-                      const containerCenterY = containerRect.top + containerRect.height / 2;
-                      
+                      const containerCenterX =
+                        containerRect.left + containerRect.width / 2;
+                      const containerCenterY =
+                        containerRect.top + containerRect.height / 2;
+
                       // Vị trí touch relative to container center
                       const touchX = touch.clientX - containerCenterX;
                       const touchY = touch.clientY - containerCenterY;
-                      
+
                       // Tính vị trí pixel trên ảnh
                       const imagePixelX = (touchX - imagePan.x) / imageZoom;
                       const imagePixelY = (touchY - imagePan.y) / imageZoom;
-                      
+
                       // Lưu vị trí pixel trên ảnh và vị trí touch trên màn hình
-                      setDragStart({ 
-                        x: imagePixelX, 
+                      setDragStart({
+                        x: imagePixelX,
                         y: imagePixelY,
                         screenX: touch.clientX,
                         screenY: touch.clientY,
                         containerCenterX,
-                        containerCenterY
+                        containerCenterY,
                       });
                     }
                   }}
@@ -572,19 +609,21 @@ export default function ThreadAlbumPage() {
                     if (isDragging && imageZoom > 1 && e.touches.length === 1) {
                       e.stopPropagation();
                       const touch = e.touches[0];
-                      
+
                       // Tính vị trí mới của pixel ảnh trên màn hình
                       const newScreenX = touch.clientX;
                       const newScreenY = touch.clientY;
-                      
+
                       // Vị trí relative to container center
-                      const relativeX = newScreenX - dragStart.containerCenterX!;
-                      const relativeY = newScreenY - dragStart.containerCenterY!;
-                      
+                      const relativeX =
+                        newScreenX - dragStart.containerCenterX!;
+                      const relativeY =
+                        newScreenY - dragStart.containerCenterY!;
+
                       // Tính pan mới sao cho pixel ảnh ở đúng vị trí mới
                       const newPanX = relativeX - dragStart.x * imageZoom;
                       const newPanY = relativeY - dragStart.y * imageZoom;
-                      
+
                       setImagePan({
                         x: newPanX,
                         y: newPanY,
@@ -599,7 +638,11 @@ export default function ThreadAlbumPage() {
                     <img
                       ref={setImageRef}
                       src={getMediaUrl(selectedMedia)}
-                      alt={selectedMedia.caption || selectedMedia.filename || 'Image'}
+                      alt={
+                        selectedMedia.caption ||
+                        selectedMedia.filename ||
+                        'Image'
+                      }
                       className={`max-w-full max-h-full mx-auto object-contain rounded-lg shadow-glow-lg transition-transform duration-200 ${isDragging ? 'cursor-grabbing' : imageZoom > 1 ? 'cursor-grab' : ''}`}
                       style={{
                         transform: `translate(${imagePan.x}px, ${imagePan.y}px) scale(${imageZoom}) rotate(${imageRotation}deg) scaleX(${imageFlipH}) scaleY(${imageFlipV})`,

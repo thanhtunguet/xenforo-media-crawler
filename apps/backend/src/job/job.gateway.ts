@@ -1,9 +1,9 @@
 import {
-  WebSocketGateway,
-  WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -60,7 +60,9 @@ export class JobGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   emitProgress(event: JobProgressEvent) {
     this.server.to(`job:${event.jobId}`).emit('progress', event);
-    this.logger.debug(`Progress emitted for job ${event.jobId}: ${event.progress}%`);
+    this.logger.debug(
+      `Progress emitted for job ${event.jobId}: ${event.progress}%`,
+    );
   }
 
   emitJobUpdate(event: JobProgressEvent) {
@@ -68,4 +70,3 @@ export class JobGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.debug(`Job update emitted for job ${event.jobId}`);
   }
 }
-

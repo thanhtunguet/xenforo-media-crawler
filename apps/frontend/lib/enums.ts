@@ -1,5 +1,9 @@
 // Re-export shared enums from contracts library
-export { JobStatus, MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
+export {
+  JobStatus,
+  MediaSortBy,
+  SortOrder,
+} from '@xenforo-media-crawler/contracts';
 
 // Frontend-specific UI enums (not shared with backend)
 // Badge Variant Enum
@@ -53,4 +57,3 @@ export enum GlassCardVariant {
   HOVER_GLOW = 'hover-glow',
   BORDERED = 'bordered',
 }
-

@@ -1,9 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 import { EventType } from '@xenforo-media-crawler/contracts';
 
 // Re-export for backward compatibility
@@ -66,4 +61,3 @@ export class EventLog {
   })
   createdAt: Date | null;
 }
-

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
-import { ProgressStatus } from '@/lib/enums';
+import { ProgressStatus } from '../../lib/enums';
 
 export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: number;
@@ -21,7 +21,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       statusText,
       ...props
     },
-    ref
+    ref,
   ) => {
     const percentage = Math.round((value / max) * 100);
 
@@ -52,14 +52,14 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
           <div
             className={cn(
               'h-full bg-gradient-to-r transition-all duration-300 ease-out',
-              getStatusColor()
+              getStatusColor(),
             )}
             style={{ width: `${percentage}%` }}
           />
         </div>
       </div>
     );
-  }
+  },
 );
 Progress.displayName = 'Progress';
 

@@ -1,17 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent } from '@/components/ui/glass-card';
-import { GlassTable, GlassTableHeader, GlassTableBody, GlassTableRow, GlassTableHead, GlassTableCell } from '@/components/ui/glass-table';
+import {
+  GlassCard,
+  GlassCardContent,
+  GlassCardHeader,
+  GlassCardTitle,
+} from '@/components/ui/glass-card';
+import {
+  GlassTable,
+  GlassTableBody,
+  GlassTableCell,
+  GlassTableHead,
+  GlassTableHeader,
+  GlassTableRow,
+} from '@/components/ui/glass-table';
 import { Badge } from '@/components/ui/badge';
-import { sitesApi, siteSyncApi, Forum } from '@/lib/api';
-import { usePagination, buildPaginatedPath } from '@/lib/pagination';
+import { Forum, sitesApi, siteSyncApi } from '@/lib/api';
+import { usePagination } from '@/lib/pagination';
 import { JobProgressDialog } from '@/components/JobProgressDialog';
 import Link from 'next/link';
-import { ArrowLeft, RefreshCw, MessageSquare, ExternalLink } from 'lucide-react';
+import {
+  ArrowLeft,
+  ExternalLink,
+  MessageSquare,
+  RefreshCw,
+} from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { ToastType, ButtonVariant, ButtonSize, BadgeVariant } from '@/lib/enums';
+import {
+  BadgeVariant,
+  ButtonSize,
+  ButtonVariant,
+  ToastType,
+} from '@/lib/enums';
 
 export default function SiteForumsPage() {
   const router = useRouter();
@@ -56,7 +78,10 @@ export default function SiteForumsPage() {
       const response = await siteSyncApi.syncForumThreads(siteId, forumId);
       setSyncJobId(response.jobId);
       setShowSyncProgress(true);
-      addToast('Thread sync started. This may take a while.', ToastType.SUCCESS);
+      addToast(
+        'Thread sync started. This may take a while.',
+        ToastType.SUCCESS,
+      );
     } catch (err) {
       console.error('Failed to sync threads:', err);
       addToast('Failed to sync threads', ToastType.ERROR);
@@ -109,7 +134,9 @@ export default function SiteForumsPage() {
             onClick={handleSyncAllForums}
             disabled={loading}
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+            />
             Sync All Forums
           </Button>
         </div>
@@ -130,7 +157,9 @@ export default function SiteForumsPage() {
                 onClick={loadForums}
                 disabled={loading}
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+                />
                 Refresh
               </Button>
             </div>
@@ -158,20 +187,28 @@ export default function SiteForumsPage() {
                       <GlassTableHead>Original ID</GlassTableHead>
                       <GlassTableHead>URL</GlassTableHead>
                       <GlassTableHead>Created</GlassTableHead>
-                      <GlassTableHead className="text-right">Actions</GlassTableHead>
+                      <GlassTableHead className="text-right">
+                        Actions
+                      </GlassTableHead>
                     </GlassTableRow>
                   </GlassTableHeader>
                   <GlassTableBody>
                     {forums.map((forum) => (
-                      <GlassTableRow key={forum.id || `temp-${forum.originalId}`}>
+                      <GlassTableRow
+                        key={forum.id || `temp-${forum.originalId}`}
+                      >
                         <GlassTableCell className="font-medium text-white/90">
                           #{forum.id || '-'}
                         </GlassTableCell>
                         <GlassTableCell>
-                          {forum.name || <span className="text-white/40">-</span>}
+                          {forum.name || (
+                            <span className="text-white/40">-</span>
+                          )}
                         </GlassTableCell>
                         <GlassTableCell>
-                          <Badge variant={BadgeVariant.INFO}>#{forum.originalId || '-'}</Badge>
+                          <Badge variant={BadgeVariant.INFO}>
+                            #{forum.originalId || '-'}
+                          </Badge>
                         </GlassTableCell>
                         <GlassTableCell>
                           {forum.originalUrl ? (
@@ -216,14 +253,19 @@ export default function SiteForumsPage() {
                                   )}
                                 </Button>
                                 <Link href={`/forums/${forum.id}`}>
-                                  <Button size={ButtonSize.SM} variant={ButtonVariant.GLASS_PRIMARY}>
+                                  <Button
+                                    size={ButtonSize.SM}
+                                    variant={ButtonVariant.GLASS_PRIMARY}
+                                  >
                                     <MessageSquare className="w-4 h-4 mr-1" />
                                     Threads
                                   </Button>
                                 </Link>
                               </>
                             ) : (
-                              <span className="text-white/40 text-sm">Not saved</span>
+                              <span className="text-white/40 text-sm">
+                                Not saved
+                              </span>
                             )}
                           </div>
                         </GlassTableCell>
@@ -282,4 +324,3 @@ export default function SiteForumsPage() {
     </Layout>
   );
 }
-

@@ -2,22 +2,22 @@
 
 // In development, use relative URLs (proxied through Next.js)
 // In production, use the configured API URL or relative URLs
-const API_BASE_URL = 
-  process.env.NODE_ENV === 'development' 
+const API_BASE_URL =
+  process.env.NODE_ENV === 'development'
     ? '' // Use relative URLs - Next.js will proxy /api to backend
-    : (process.env.NEXT_PUBLIC_API_URL || '');
+    : process.env.NEXT_PUBLIC_API_URL || '';
 
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   // Merge headers properly
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  
+
   if (options.headers) {
     if (options.headers instanceof Headers) {
       options.headers.forEach((value, key) => {
@@ -33,15 +33,15 @@ export async function apiRequest<T>(
       });
     }
   }
-  
+
   const { headers: _, ...restOptions } = options;
-  
+
   const fetchOptions: RequestInit = {
     ...restOptions,
     credentials: 'include',
     headers: headers as HeadersInit,
   };
-  
+
   // Use global fetch (available in Next.js)
   const response: Response = await fetch(url, fetchOptions);
 
@@ -62,9 +62,7 @@ export async function apiRequest<T>(
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     const text = await response.text();
-    return text ? JSON.parse(text) : null as T;
+    return text ? JSON.parse(text) : (null as T);
   }
   return null as T;
 }
-
-

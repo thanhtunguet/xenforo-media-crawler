@@ -7,50 +7,50 @@ import { BaseLoginAdapter } from './base-login-adapter';
  * This is the default adapter that works with standard XenForo installations
  */
 export class XamvnCloneLoginAdapter extends BaseLoginAdapter {
-    getName(): string {
-        return 'XamvnCloneLoginAdapter';
-    }
+  getName(): string {
+    return 'XamvnCloneLoginAdapter';
+  }
 
-    async login(
-        username: string,
-        password: string,
-        axiosInstance: AxiosInstance,
-        siteUrl: string,
-        expressResponse?: Response,
-    ): Promise<AxiosResponse> {
-        // Step 1: Get the login page to retrieve CSRF token
-        const loginPageResponse = await axiosInstance.get('/login/', {
-            baseURL: siteUrl,
-        });
+  async login(
+    username: string,
+    password: string,
+    axiosInstance: AxiosInstance,
+    siteUrl: string,
+    expressResponse?: Response,
+  ): Promise<AxiosResponse> {
+    // Step 1: Get the login page to retrieve CSRF token
+    const loginPageResponse = await axiosInstance.get('/login/', {
+      baseURL: siteUrl,
+    });
 
-        this.setCookiesFromResponse(expressResponse, loginPageResponse);
-        const csrfToken = this.extractCsrfToken(loginPageResponse);
+    this.setCookiesFromResponse(expressResponse, loginPageResponse);
+    const csrfToken = this.extractCsrfToken(loginPageResponse);
 
-        // Step 2: Prepare login payload
-        const payload = new URLSearchParams({
-            _xfToken: csrfToken || '',
-            login: username,
-            password,
-            remember: '1',
-            _xfRedirect: siteUrl,
-        }).toString();
+    // Step 2: Prepare login payload
+    const payload = new URLSearchParams({
+      _xfToken: csrfToken || '',
+      login: username,
+      password,
+      remember: '1',
+      _xfRedirect: siteUrl,
+    }).toString();
 
-        // Step 3: Submit login form
-        const response = await axiosInstance.post('/login/login', payload, {
-            baseURL: siteUrl,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest',
-                Origin: siteUrl,
-                Referer: `${siteUrl}/login/`,
-            },
-            maxRedirects: 0,
-            validateStatus: (status) => status === 303,
-        });
+    // Step 3: Submit login form
+    const response = await axiosInstance.post('/login/login', payload, {
+      baseURL: siteUrl,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest',
+        Origin: siteUrl,
+        Referer: `${siteUrl}/login/`,
+      },
+      maxRedirects: 0,
+      validateStatus: (status) => status === 303,
+    });
 
-        // Step 4: Save cookies from login response
-        this.setCookiesFromResponse(expressResponse, response);
+    // Step 4: Save cookies from login response
+    this.setCookiesFromResponse(expressResponse, response);
 
-        return response;
-    }
+    return response;
+  }
 }

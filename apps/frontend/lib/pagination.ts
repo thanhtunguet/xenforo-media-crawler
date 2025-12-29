@@ -9,7 +9,10 @@ import { useEffect, useState } from 'react';
 export function parsePageFromQuery(query: any): number {
   const pageParam = query.page;
   if (pageParam) {
-    const page = typeof pageParam === 'string' ? parseInt(pageParam, 10) : parseInt(pageParam[0], 10);
+    const page =
+      typeof pageParam === 'string'
+        ? parseInt(pageParam, 10)
+        : parseInt(pageParam[0], 10);
     if (!isNaN(page) && page > 0) {
       return page;
     }
@@ -27,7 +30,7 @@ export function buildPaginatedPath(basePath: string, page: number): string {
   // Remove existing page query param and other query params from basePath
   const [path, queryString] = basePath.split('?');
   const cleanPath = path.replace(/\/page-\d+$/, ''); // Remove old path-based pagination if any
-  
+
   if (page === 1) {
     // For page 1, remove the page query param
     const params = new URLSearchParams(queryString);
@@ -35,7 +38,7 @@ export function buildPaginatedPath(basePath: string, page: number): string {
     const newQuery = params.toString();
     return newQuery ? `${cleanPath}?${newQuery}` : cleanPath;
   }
-  
+
   // Add or update page query param
   const params = new URLSearchParams(queryString);
   params.set('page', page.toString());
@@ -52,14 +55,14 @@ export function usePagination() {
   useEffect(() => {
     // Parse page from query parameters
     let currentPage = 1;
-    
+
     if (router.isReady) {
       currentPage = parsePageFromQuery(router.query);
     } else if (router.query.page) {
       // Try to parse even if router is not fully ready
       currentPage = parsePageFromQuery(router.query);
     }
-    
+
     // Only update if the page actually changed to prevent unnecessary re-renders
     setPage((prevPage) => {
       if (prevPage !== currentPage) {
@@ -71,7 +74,7 @@ export function usePagination() {
 
   const goToPage = (newPage: number) => {
     if (newPage === page) return; // Don't navigate if already on that page
-    
+
     // Get current path without query params for the base
     const basePath = router.asPath.split('?')[0].replace(/\/page-\d+$/, '');
     const newPath = buildPaginatedPath(basePath, newPage);
@@ -80,5 +83,3 @@ export function usePagination() {
 
   return { page, goToPage, setPage };
 }
-
-

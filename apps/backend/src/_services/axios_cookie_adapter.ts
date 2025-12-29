@@ -1,7 +1,7 @@
 import axios, {
   AxiosInstance,
-  AxiosResponse,
   type AxiosRequestHeaders,
+  AxiosResponse,
   type CreateAxiosDefaults,
 } from 'axios';
 import { URL } from 'url';
@@ -68,6 +68,13 @@ class CookieStore {
   }
 
   /**
+   * Clear all cookies
+   */
+  clear(): void {
+    this.cookies = [];
+  }
+
+  /**
    * Remove expired cookies
    */
   private cleanExpiredCookies(): void {
@@ -75,13 +82,6 @@ class CookieStore {
     this.cookies = this.cookies.filter(
       (cookie) => !cookie.expires || cookie.expires > now,
     );
-  }
-
-  /**
-   * Clear all cookies
-   */
-  clear(): void {
-    this.cookies = [];
   }
 }
 

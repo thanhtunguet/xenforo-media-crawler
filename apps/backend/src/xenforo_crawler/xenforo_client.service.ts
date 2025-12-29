@@ -6,8 +6,8 @@ import type { Response } from 'express';
 import { HttpClientService } from 'src/_services/http_client_service';
 import {
   getLoginAdapter,
-  LoginAdapterType,
   type ILoginAdapter,
+  LoginAdapterType,
 } from './adapters';
 
 @Injectable()
@@ -21,26 +21,52 @@ export class XenforoClientService extends HttpClientService {
     });
   }
 
-  /**
-   * Get login adapter by type string
-   */
-  private getLoginAdapterByType(adapterType: string): ILoginAdapter {
-    // Map string to enum
-    const typeMap: Record<string, LoginAdapterType> = {
-      'xamvn-clone': LoginAdapterType.XAMVN_CLONE,
-      'xamvn-com': LoginAdapterType.XAMVN_COM,
-    };
+  public async login(
+    username: string,
+    password: string,
+    res?: Response,
+    siteUrl?: string,
+    loginAdapterType: string = 'xamvn-clone',
+  ): Promise<AxiosResponse> {
+    const adapter = this.getLoginAdapterByType(loginAdapterType);
+    console.log(`Using login adapter: ${adapter.getName()}`);
+    return adapter.login(
+      username,
+      password,
+      this.axiosInstance,
+      siteUrl || '',
+      res,
+    );
+  }
 
-    const type = typeMap[adapterType];
-    if (!type) {
-      // Default to xamvn-clone for backwards compatibility
-      console.warn(
-        `Unknown login adapter type: ${adapterType}, using default: xamvn-clone`,
-      );
-      return getLoginAdapter(LoginAdapterType.XAMVN_CLONE);
+  public async loginWithCookie(
+    res?: Response,
+    siteUrl?: string,
+  ): Promise<AxiosResponse> {
+    const cookiePath = path.resolve('./cookies.json');
+    if (!fs.existsSync(cookiePath)) {
+      throw new Error('cookies.json not found');
     }
 
-    return getLoginAdapter(type);
+    const cookies = JSON.parse(fs.readFileSync(cookiePath, 'utf-8'));
+    this.axiosInstance.defaults.headers.cookie = cookies
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join('; ');
+
+    const response = await this.axiosInstance.get('/', {
+      baseURL: siteUrl,
+    });
+    this.setCookiesFromResponse(res, response);
+    return response;
+  }
+
+  setCookiesFromResponse(expressResponse: Response, response: AxiosResponse) {
+    const cookies = response.headers['set-cookie'];
+    if (cookies) {
+      cookies.forEach((cookie) => {
+        expressResponse.cookie(cookie.split('=')[0], cookie.split('=')[1]);
+      });
+    }
   }
 
   protected extractCsrfToken(response: AxiosResponse<string>): string | null {
@@ -79,45 +105,25 @@ export class XenforoClientService extends HttpClientService {
     return null;
   }
 
-  public async login(
-    username: string,
-    password: string,
-    res?: Response,
-    siteUrl?: string,
-    loginAdapterType: string = 'xamvn-clone',
-  ): Promise<AxiosResponse> {
-    const adapter = this.getLoginAdapterByType(loginAdapterType);
-    console.log(`Using login adapter: ${adapter.getName()}`);
-    return adapter.login(username, password, this.axiosInstance, siteUrl || '', res);
-  }
+  /**
+   * Get login adapter by type string
+   */
+  private getLoginAdapterByType(adapterType: string): ILoginAdapter {
+    // Map string to enum
+    const typeMap: Record<string, LoginAdapterType> = {
+      'xamvn-clone': LoginAdapterType.XAMVN_CLONE,
+      'xamvn-com': LoginAdapterType.XAMVN_COM,
+    };
 
-  public async loginWithCookie(
-    res?: Response,
-    siteUrl?: string,
-  ): Promise<AxiosResponse> {
-    const cookiePath = path.resolve('./cookies.json');
-    if (!fs.existsSync(cookiePath)) {
-      throw new Error('cookies.json not found');
+    const type = typeMap[adapterType];
+    if (!type) {
+      // Default to xamvn-clone for backwards compatibility
+      console.warn(
+        `Unknown login adapter type: ${adapterType}, using default: xamvn-clone`,
+      );
+      return getLoginAdapter(LoginAdapterType.XAMVN_CLONE);
     }
 
-    const cookies = JSON.parse(fs.readFileSync(cookiePath, 'utf-8'));
-    this.axiosInstance.defaults.headers.cookie = cookies
-      .map((cookie) => `${cookie.name}=${cookie.value}`)
-      .join('; ');
-
-    const response = await this.axiosInstance.get('/', {
-      baseURL: siteUrl,
-    });
-    this.setCookiesFromResponse(res, response);
-    return response;
-  }
-
-  setCookiesFromResponse(expressResponse: Response, response: AxiosResponse) {
-    const cookies = response.headers['set-cookie'];
-    if (cookies) {
-      cookies.forEach((cookie) => {
-        expressResponse.cookie(cookie.split('=')[0], cookie.split('=')[1]);
-      });
-    }
+    return getLoginAdapter(type);
   }
 }

@@ -11,6 +11,3 @@ export const systemApi = {
     return apiRequest('/api/status');
   },
 };
-
-
-

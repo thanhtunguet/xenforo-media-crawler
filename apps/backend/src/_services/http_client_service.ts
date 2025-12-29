@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker';
 import {
-  AxiosRequestConfig,
-  AxiosResponse,
   type AxiosError,
   type AxiosInstance,
+  AxiosRequestConfig,
   type AxiosRequestHeaders,
+  AxiosResponse,
   type CreateAxiosDefaults,
 } from 'axios';
 import { createAxiosWithCookieSupport } from './axios_cookie_adapter';
@@ -93,34 +93,6 @@ export abstract class HttpClientService {
   }
 
   /**
-   * Generates a random user agent string using faker
-   * With enhanced browser-like user agents
-   */
-  private generateRandomUserAgent(): string {
-    // Using more common modern browser user agents for better crawling results
-    const browserTypes = [
-      // Chrome on Windows
-      () => faker.internet.userAgent(),
-      // Chrome on Mac
-      () =>
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      // Firefox on Windows
-      () =>
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
-      // Safari on Mac
-      () =>
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15',
-      // Edge on Windows
-      () =>
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
-    ];
-
-    const randomBrowserGen =
-      browserTypes[Math.floor(Math.random() * browserTypes.length)];
-    return randomBrowserGen();
-  }
-
-  /**
    * Make GET request
    */
   async get<T = any>(
@@ -189,5 +161,33 @@ export abstract class HttpClientService {
   setRetryOptions(maxRetries: number, retryDelay: number = 1000): void {
     this.maxRetries = maxRetries;
     this.retryDelay = retryDelay;
+  }
+
+  /**
+   * Generates a random user agent string using faker
+   * With enhanced browser-like user agents
+   */
+  private generateRandomUserAgent(): string {
+    // Using more common modern browser user agents for better crawling results
+    const browserTypes = [
+      // Chrome on Windows
+      () => faker.internet.userAgent(),
+      // Chrome on Mac
+      () =>
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      // Firefox on Windows
+      () =>
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
+      // Safari on Mac
+      () =>
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15',
+      // Edge on Windows
+      () =>
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+    ];
+
+    const randomBrowserGen =
+      browserTypes[Math.floor(Math.random() * browserTypes.length)];
+    return randomBrowserGen();
   }
 }

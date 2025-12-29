@@ -15,11 +15,13 @@ export const siteSyncApi = {
   },
   syncForumThreads: async (
     siteId: number,
-    forumId: number
+    forumId: number,
   ): Promise<JobResponse> => {
-    return apiRequest<JobResponse>(`/api/sites/${siteId}/forums/${forumId}/sync`, {
-      method: 'POST',
-    });
+    return apiRequest<JobResponse>(
+      `/api/sites/${siteId}/forums/${forumId}/sync`,
+      {
+        method: 'POST',
+      },
+    );
   },
 };
-

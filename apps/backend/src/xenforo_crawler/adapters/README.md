@@ -4,28 +4,29 @@ This document describes the login adapter system for the XenForo Media Crawler a
 
 ## Overview
 
-The login adapter system provides a flexible way to handle different login flows for various XenForo sites. Each site can use a different login adapter depending on its specific authentication requirements.
+The login adapter system provides a flexible way to handle different login flows for various XenForo sites. Each site
+can use a different login adapter depending on its specific authentication requirements.
 
 ## Architecture
 
 ### Components
 
 1. **ILoginAdapter Interface** (`login-adapter.interface.ts`)
-   - Defines the contract for all login adapters
-   - Methods:
-     - `login()`: Performs site-specific login
-     - `getName()`: Returns adapter name
+    - Defines the contract for all login adapters
+    - Methods:
+        - `login()`: Performs site-specific login
+        - `getName()`: Returns adapter name
 
 2. **BaseLoginAdapter** (`base-login-adapter.ts`)
-   - Abstract base class with common utility methods
-   - Provides:
-     - CSRF token extraction
-     - Cookie management
-     - Common patterns for XenForo sites
+    - Abstract base class with common utility methods
+    - Provides:
+        - CSRF token extraction
+        - Cookie management
+        - Common patterns for XenForo sites
 
 3. **Concrete Adapters**
-   - **XamvnCloneLoginAdapter**: Default adapter for standard XenForo installations
-   - **XamVNComLoginAdapter**: Specific adapter for xamvn.com with custom flow
+    - **XamvnCloneLoginAdapter**: Default adapter for standard XenForo installations
+    - **XamVNComLoginAdapter**: Specific adapter for xamvn.com with custom flow
 
 ### Factory Pattern
 
@@ -42,6 +43,7 @@ const adapter = getLoginAdapter(LoginAdapterType.XAMVN_CLONE);
 **Use Case**: Standard XenForo installations and most clones
 
 **Login Flow**:
+
 1. GET `/login/` to retrieve login page and initial cookies
 2. Extract CSRF token from HTML
 3. POST credentials to `/login/login`
@@ -54,6 +56,7 @@ const adapter = getLoginAdapter(LoginAdapterType.XAMVN_CLONE);
 **Use Case**: xamvn.com specific implementation
 
 **Login Flow**:
+
 1. GET `/` (homepage) to establish session
 2. GET `/login/` to retrieve login page
 3. Extract CSRF token
@@ -182,6 +185,7 @@ AFTER url;
 ```
 
 Or use the migration file:
+
 ```bash
 mysql -u username -p database_name < apps/backend/src/database/migrations/001_add_login_adapter_to_site.sql
 ```
@@ -189,11 +193,13 @@ mysql -u username -p database_name < apps/backend/src/database/migrations/001_ad
 ## API Endpoints
 
 ### List Available Adapters
+
 ```
 GET /api/xenforo-crawler/login-adapters
 ```
 
 Response:
+
 ```json
 {
   "adapters": [
@@ -212,6 +218,7 @@ Response:
 ```
 
 ### Login with Adapter
+
 The login endpoint automatically uses the adapter specified in the site's configuration:
 
 ```
@@ -234,12 +241,14 @@ Body: {
 ## Troubleshooting
 
 ### Login Fails
+
 - Check if the correct adapter is selected for the site
 - Verify CSRF token extraction is working
 - Ensure cookies are being saved and sent correctly
 - Check for site-specific requirements (e.g., additional headers, captcha)
 
 ### Adapter Not Found
+
 - Verify the adapter key matches the enum value
 - Check that the adapter is registered in the factory function
 - Ensure the site's `loginAdapter` field is set correctly

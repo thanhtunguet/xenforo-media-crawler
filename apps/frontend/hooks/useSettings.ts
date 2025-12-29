@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MediaSortBy, SortOrder } from '@xenforo-media-crawler/contracts';
 
 export interface AppSettings {
@@ -76,9 +76,12 @@ export function useSettings() {
     }
   }, []);
 
-  const updateSettings = (updates: Partial<AppSettings> | ((prev: AppSettings) => AppSettings)) => {
+  const updateSettings = (
+    updates: Partial<AppSettings> | ((prev: AppSettings) => AppSettings),
+  ) => {
     setSettings((prev) => {
-      const newSettings = typeof updates === 'function' ? updates(prev) : { ...prev, ...updates };
+      const newSettings =
+        typeof updates === 'function' ? updates(prev) : { ...prev, ...updates };
 
       // Deep merge for nested objects
       if (typeof updates === 'object' && updates !== null) {

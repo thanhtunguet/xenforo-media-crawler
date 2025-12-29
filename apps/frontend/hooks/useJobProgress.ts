@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { JobStatus } from '@xenforo-media-crawler/contracts';
 
@@ -36,9 +36,12 @@ export function useJobProgress({
     }
 
     // Get backend URL from environment or use default
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 
-      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
-    
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      (typeof window !== 'undefined'
+        ? window.location.origin
+        : 'http://localhost:3000');
+
     // Connect to WebSocket
     const socket = io(`${backendUrl}/jobs`, {
       transports: ['websocket', 'polling'],
@@ -101,4 +104,3 @@ export function useJobProgress({
     disconnect,
   };
 }
-

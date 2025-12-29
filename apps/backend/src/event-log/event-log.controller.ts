@@ -1,11 +1,11 @@
 import {
   Controller,
-  Get,
-  Query,
-  ParseIntPipe,
   DefaultValuePipe,
+  Get,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EventLogService } from './event-log.service';
 import { EventLog } from '../_entities/EventLog';
 import {
@@ -21,7 +21,8 @@ export class EventLogController {
   @Get()
   @ApiOperation({
     summary: 'Get event logs',
-    description: 'Retrieves a paginated list of event logs sorted by creation date (most recent first)',
+    description:
+      'Retrieves a paginated list of event logs sorted by creation date (most recent first)',
     operationId: 'getEventLogs',
   })
   @ApiQuery({
@@ -51,5 +52,3 @@ export class EventLogController {
     return this.eventLogService.findAll(pagination);
   }
 }
-
-

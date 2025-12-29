@@ -1,5 +1,5 @@
 import { apiRequest } from './utils';
-import { JobStatus, type Job } from '@xenforo-media-crawler/contracts';
+import { type Job, JobStatus } from '@xenforo-media-crawler/contracts';
 
 // Jobs APIs
 export const jobsApi = {
@@ -34,4 +34,3 @@ export const jobsApi = {
     });
   },
 };
-
