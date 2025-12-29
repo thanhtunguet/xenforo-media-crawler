@@ -28,13 +28,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: 'yarn'
+          cache: "yarn"
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
+
+      - name: Clean up Docker resources
+        run: |
+          docker system prune -af --volumes || true
+          docker builder prune -af || true
+
+      - name: Check disk space
+        run: |
+          df -h
+          docker system df
 
       - name: Login to Docker Hub
         if: github.event_name != 'pull_request'
@@ -60,6 +74,7 @@ jobs:
           file: Dockerfile.base
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
+          load: false
           cache-from: type=gha,scope=base
           cache-to: type=gha,mode=max,scope=base
           tags: |
@@ -68,6 +83,12 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base:${{ env.tag }}
           outputs: type=image,name=${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base,push-by-digest=false
 
+      - name: Clean up after base build
+        if: always()
+        run: |
+          docker builder prune -af --filter type=exec.cachemount --filter type=regular || true
+          df -h
+
       - name: Build and push Backend Docker image
         uses: docker/build-push-action@v5
         with:
@@ -75,6 +96,7 @@ jobs:
           file: Dockerfile.backend
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
+          load: false
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
           build-args: |
@@ -84,6 +106,12 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-backend:${{ env.COMMIT_SHA }}
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-backend:${{ env.tag }}
 
+      - name: Clean up after backend build
+        if: always()
+        run: |
+          docker builder prune -af --filter type=exec.cachemount --filter type=regular || true
+          df -h
+
       - name: Build and push Frontend Docker image
         uses: docker/build-push-action@v5
         with:
@@ -91,6 +119,7 @@ jobs:
           file: Dockerfile.frontend
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
+          load: false
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
           build-args: |
@@ -99,3 +128,10 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:latest
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:${{ env.COMMIT_SHA }}
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:${{ env.tag }}
+
+      - name: Final cleanup
+        if: always()
+        run: |
+          docker system prune -af --volumes || true
+          docker builder prune -af || true
+          df -h
