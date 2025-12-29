@@ -64,6 +64,12 @@ export class ThreadController {
     description: 'Filter by forum ID (system id)',
     type: Number,
   })
+  @ApiQuery({
+    name: 'originalId',
+    required: false,
+    description: 'Filter by original ID from XenForo site',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'List of threads retrieved successfully',
@@ -93,12 +99,13 @@ export class ThreadController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('forumId') forumId?: number,
+    @Query('originalId') originalId?: string,
   ): Promise<PaginatedResponseDto<ThreadDto>> {
     const pagination = new PaginationDto();
     if (page) pagination.page = +page;
     if (limit) pagination.limit = +limit;
     const forumIdNum = forumId ? Number(forumId) : undefined;
-    return this.threadService.findAll(pagination, forumIdNum);
+    return this.threadService.findAll(pagination, forumIdNum, originalId);
   }
 
   @Get('count')

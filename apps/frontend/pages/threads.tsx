@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { crawlerApi, Thread, threadsApi } from '@/lib/api';
 import { usePagination } from '@/lib/pagination';
+import { parseQuery, isStructuredQuery } from '@/lib/query-parser';
 import Link from 'next/link';
 import {
   Clock,
@@ -52,13 +53,37 @@ export default function ThreadsPage() {
     loadThreads();
   }, [page]);
 
+  // Reload when search query changes, but only if it's a structured query
+  useEffect(() => {
+    const parsedQuery = parseQuery(searchQuery);
+    if (parsedQuery.isStructured || !searchQuery) {
+      loadThreads();
+    }
+  }, [searchQuery]);
+
   const loadThreads = async () => {
     try {
       setLoading(true);
-      const response = await threadsApi.getAll(page, 20);
-      setThreads(response.items);
-      setTotalPages(response.meta.totalPages);
-      setTotalItems(response.meta.totalItems);
+      const parsedQuery = parseQuery(searchQuery);
+      
+      // If it's a structured query, use server-side filtering
+      if (parsedQuery.isStructured) {
+        const response = await threadsApi.getAll(
+          page,
+          20,
+          parsedQuery.forumId,
+          parsedQuery.originalId,
+        );
+        setThreads(response.items);
+        setTotalPages(response.meta.totalPages);
+        setTotalItems(response.meta.totalItems);
+      } else {
+        // For simple queries, load all and filter client-side
+        const response = await threadsApi.getAll(page, 20);
+        setThreads(response.items);
+        setTotalPages(response.meta.totalPages);
+        setTotalItems(response.meta.totalItems);
+      }
     } catch (err) {
       console.error('Failed to load threads:', err);
     } finally {
@@ -79,9 +104,18 @@ export default function ThreadsPage() {
     }
   };
 
-  const filteredThreads = threads.filter((thread) =>
-    thread.title?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // Client-side filtering for simple text searches
+  const parsedQuery = parseQuery(searchQuery);
+  const filteredThreads = parsedQuery.isStructured
+    ? threads // Server-side filtering already applied
+    : threads.filter((thread) => {
+        if (!searchQuery) return true;
+        const queryLower = searchQuery.toLowerCase();
+        return (
+          thread.title?.toLowerCase().includes(queryLower) ||
+          thread.originalId?.toLowerCase().includes(queryLower)
+        );
+      });
 
   return (
     <Layout title="Threads">
@@ -115,9 +149,14 @@ export default function ThreadsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
                 <Input
-                  placeholder="Search threads by title..."
+                  placeholder="Search by title, or use: originalId = xyz and forumId = 3"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      loadThreads();
+                    }
+                  }}
                   className="glass-input pl-10"
                 />
               </div>
@@ -291,7 +330,7 @@ export default function ThreadsPage() {
                 </GlassTable>
 
                 {/* Pagination */}
-                {!searchQuery && (
+                {!searchQuery || !parsedQuery.isStructured ? (
                   <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
                     <Button
                       variant={ButtonVariant.GLASS}
@@ -311,7 +350,7 @@ export default function ThreadsPage() {
                       Next
                     </Button>
                   </div>
-                )}
+                ) : null}
               </>
             )}
           </GlassCardContent>

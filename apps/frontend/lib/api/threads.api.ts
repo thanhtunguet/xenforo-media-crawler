@@ -11,6 +11,7 @@ export const threadsApi = {
     page = 1,
     limit = 10,
     forumId?: number,
+    originalId?: string,
   ): Promise<PaginatedResponse<Thread>> => {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -18,6 +19,9 @@ export const threadsApi = {
     });
     if (forumId !== undefined) {
       params.append('forumId', forumId.toString());
+    }
+    if (originalId !== undefined) {
+      params.append('originalId', originalId);
     }
     return apiRequest<PaginatedResponse<Thread>>(
       `/api/threads?${params.toString()}`,

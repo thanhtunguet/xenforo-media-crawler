@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Thread, threadsApi } from '@/lib/api';
 import { BadgeVariant, ButtonSize, ButtonVariant } from '@/lib/enums';
+import { parseQuery } from '@/lib/query-parser';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -46,13 +47,41 @@ export default function ForumThreadsPage() {
     }
   }, [forumId, page]);
 
+  // Reload when search query changes, but only if it's a structured query
+  useEffect(() => {
+    if (forumId) {
+      const parsedQuery = parseQuery(searchQuery);
+      if (parsedQuery.isStructured || !searchQuery) {
+        loadThreads();
+      }
+    }
+  }, [searchQuery]);
+
   const loadThreads = async () => {
     if (!forumId) return;
     try {
       setLoading(true);
-      const response = await threadsApi.getAll(page, 10, forumId);
-      setThreads(response.items);
-      setTotalPages(response.meta.totalPages);
+      const parsedQuery = parseQuery(searchQuery);
+      
+      // Use forumId from route, but allow override from query
+      const effectiveForumId = parsedQuery.forumId ?? forumId;
+      
+      // If it's a structured query with originalId, use server-side filtering
+      if (parsedQuery.isStructured && parsedQuery.originalId) {
+        const response = await threadsApi.getAll(
+          page,
+          10,
+          effectiveForumId,
+          parsedQuery.originalId,
+        );
+        setThreads(response.items);
+        setTotalPages(response.meta.totalPages);
+      } else {
+        // For simple queries, load with forumId filter
+        const response = await threadsApi.getAll(page, 10, effectiveForumId);
+        setThreads(response.items);
+        setTotalPages(response.meta.totalPages);
+      }
     } catch (err) {
       console.error('Failed to load threads:', err);
     } finally {
@@ -60,9 +89,18 @@ export default function ForumThreadsPage() {
     }
   };
 
-  const filteredThreads = threads.filter((thread) =>
-    thread.title?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // Client-side filtering for simple text searches
+  const parsedQuery = parseQuery(searchQuery);
+  const filteredThreads = parsedQuery.isStructured && parsedQuery.originalId
+    ? threads // Server-side filtering already applied
+    : threads.filter((thread) => {
+        if (!searchQuery) return true;
+        const queryLower = searchQuery.toLowerCase();
+        return (
+          thread.title?.toLowerCase().includes(queryLower) ||
+          thread.originalId?.toLowerCase().includes(queryLower)
+        );
+      });
 
   if (!forumId) {
     return (
@@ -91,9 +129,14 @@ export default function ForumThreadsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
                 <Input
-                  placeholder="Search threads by title..."
+                  placeholder="Search by title, or use: originalId = xyz"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      loadThreads();
+                    }
+                  }}
                   className="glass-input pl-10"
                 />
               </div>
@@ -217,6 +260,7 @@ export default function ForumThreadsPage() {
                 </GlassTable>
 
                 {/* Pagination */}
+                {(!searchQuery || !parsedQuery.isStructured || !parsedQuery.originalId) && (
                 <div className="flex items-center justify-between mt-6">
                   <Button
                     variant={ButtonVariant.GLASS}
@@ -236,6 +280,7 @@ export default function ForumThreadsPage() {
                     Next
                   </Button>
                 </div>
+                )}
               </>
             )}
           </GlassCardContent>
