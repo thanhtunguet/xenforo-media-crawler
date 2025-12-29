@@ -1,0 +1,76 @@
+# Base Dockerfile for building the entire xenforo-media-crawler project
+# This image contains all source code, dependencies, and built artifacts
+# It serves as the foundation for both backend and frontend images
+
+FROM node:22.14-alpine3.21 AS dependencies
+
+WORKDIR /app
+
+# Install necessary build tools
+RUN apk add --no-cache python3 make g++
+
+# Copy package files first for better caching
+COPY package.json yarn.lock ./
+COPY apps/backend/package.json ./apps/backend/
+COPY libs/contracts/package.json ./libs/contracts/
+
+# Install all dependencies (including dev dependencies for building)
+RUN yarn install --frozen-lockfile
+
+# ============================================
+# Builder stage - build all projects
+# ============================================
+FROM dependencies AS builder
+
+WORKDIR /app
+
+# Copy configuration files
+COPY nx.json tsconfig.base.json ./
+COPY eslint.config.mjs .prettierrc ./
+
+# Copy source code
+COPY libs/ ./libs/
+COPY apps/ ./apps/
+
+# Build contracts library first (dependency for backend and frontend)
+RUN npx nx build contracts
+
+# Build backend
+RUN npx nx build backend
+
+# Build frontend
+RUN npx nx build frontend
+
+# ============================================
+# Production base - contains everything needed
+# ============================================
+FROM node:22.14-alpine3.21 AS production-base
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+COPY apps/backend/package.json ./apps/backend/
+COPY libs/contracts/package.json ./libs/contracts/
+
+# Install only production dependencies
+RUN yarn install --frozen-lockfile --production=true && \
+    yarn cache clean
+
+# Copy built artifacts from builder
+COPY --from=builder /app/dist ./dist
+
+# Copy runtime configuration and assets for backend
+COPY --from=builder /app/apps/backend/src/_config ./apps/backend/src/_config
+COPY --from=builder /app/apps/backend/views ./apps/backend/views
+
+# Copy frontend public assets
+COPY --from=builder /app/apps/frontend/public ./apps/frontend/public
+
+# Copy contracts library to node_modules
+# This is needed because yarn workspaces doesn't create the link in production mode
+RUN mkdir -p node_modules/@xenforo-media-crawler && \
+    cp -r dist/libs/contracts node_modules/@xenforo-media-crawler/contracts
+
+# This base image will be extended by backend and frontend images
+# with specific CMD/ENTRYPOINT for each service

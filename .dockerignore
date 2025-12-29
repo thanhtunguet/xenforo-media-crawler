@@ -9,8 +9,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build outputs (will be copied from CI if available)
-# Note: dist/ is NOT ignored for CI builds
+# Build outputs
+dist/
+apps/backend/dist/
 
 # Development files
 .env
@@ -81,7 +82,8 @@ jspm_packages/
 .parcel-cache
 
 # Next.js build output
-.next
+.next/
+apps/frontend/.next/
 
 # Nuxt.js build / generate output
 .nuxt

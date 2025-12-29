@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "esnext",
+    "module": "commonjs",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "importHelpers": true,
@@ -9,7 +9,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noPropertyAccessFromIndexSignature": true,
-    "rootDir": "../..",
     "baseUrl": ".",
     "paths": {
       "@xenforo-media-crawler/contracts/*": [

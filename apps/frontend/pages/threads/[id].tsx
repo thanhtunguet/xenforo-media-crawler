@@ -224,7 +224,7 @@ export default function ThreadPage() {
           </GlassCard>
         ) : thread ? (
           <>
-            <GlassCard variant="hover-glow">
+            <GlassCard variant={GlassCardVariant.HOVER_GLOW}>
               <GlassCardHeader>
                 <GlassCardTitle className="gradient-text text-3xl">
                   {thread.title}

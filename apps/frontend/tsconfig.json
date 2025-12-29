@@ -15,6 +15,7 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -22,6 +23,7 @@
     ],
     "types": ["jest", "node"],
     "paths": {
+      "@/*": ["./*"],
       "@xenforo-media-crawler/contracts": ["../../libs/contracts/src/index.ts"]
     }
   },

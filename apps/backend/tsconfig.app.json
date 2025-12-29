@@ -19,7 +19,7 @@
         "apps/backend/src/*"
       ],
       "@xenforo-media-crawler/contracts": [
-        "libs/contracts/src/index.ts"
+        "dist/libs/contracts/src/index.d.ts"
       ]
     }
   },

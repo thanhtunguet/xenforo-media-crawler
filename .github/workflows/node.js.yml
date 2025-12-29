@@ -33,27 +33,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build contracts
-        run: npx nx build contracts
-
-      - name: Build backend
-        run: npx nx build backend
-
-      - name: Build frontend
-        run: npx nx build frontend
-
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            dist/
-            node_modules/
-            package.json
-            yarn.lock
-          key: build-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
-          restore-keys: |
-            build-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -74,15 +53,32 @@ jobs:
             echo "tag=latest" >> $GITHUB_ENV
           fi
 
+      - name: Build and push Base Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.base
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha,scope=base
+          cache-to: type=gha,mode=max,scope=base
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base:latest
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base:${{ env.COMMIT_SHA }}
+            ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base:${{ env.tag }}
+          outputs: type=image,name=${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base,push-by-digest=false
+
       - name: Build and push Backend Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: apps/backend/Dockerfile.ci
+          file: Dockerfile.backend
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
+          build-args: |
+            BASE_IMAGE=${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base:latest
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-backend:latest
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-backend:${{ env.COMMIT_SHA }}
@@ -92,11 +88,13 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: apps/frontend/Dockerfile.ci
+          file: Dockerfile.frontend
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
+          build-args: |
+            BASE_IMAGE=${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-base:latest
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:latest
             ${{ secrets.DOCKER_USERNAME }}/xenforo-media-crawler-frontend:${{ env.COMMIT_SHA }}

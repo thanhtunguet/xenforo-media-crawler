@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/glass-card';
 import { Layout } from '@/components/layout';
 import { threadsApi, mediaApi, Thread, Media } from '@/lib/api';
-import { ButtonVariant } from '@/lib/enums';
+import { ButtonVariant, ButtonSize, GlassCardVariant } from '@/lib/enums';
 import {
   ArrowLeft,
   Image as ImageIcon,
@@ -175,7 +175,7 @@ export default function ThreadAlbumPage() {
         <div className="flex items-center justify-between">
           <Button
             variant={ButtonVariant.GLASS}
-            size="sm"
+            size={ButtonSize.SM}
             onClick={() => router.back()}
             className="gap-2"
           >
@@ -185,7 +185,7 @@ export default function ThreadAlbumPage() {
         </div>
 
         {/* Album Header */}
-        <GlassCard variant="hover-glow">
+        <GlassCard variant={GlassCardVariant.HOVER_GLOW}>
           <GlassCardHeader>
             <GlassCardTitle className="gradient-text text-3xl">
               {thread?.title || 'Loading...'}
@@ -205,8 +205,8 @@ export default function ThreadAlbumPage() {
                 return (
                   <Button
                     key={filter.id}
-                    variant={isActive ? 'glass-primary' : 'glass'}
-                    size="sm"
+                    variant={isActive ? ButtonVariant.GLASS_PRIMARY : ButtonVariant.GLASS}
+                    size={ButtonSize.SM}
                     onClick={() => setMediaType(filter.id)}
                     className="gap-2"
                   >
@@ -340,7 +340,7 @@ export default function ThreadAlbumPage() {
               <div className="relative h-full w-full">
                 <Button
                   variant={ButtonVariant.GLASS}
-                  size="icon"
+                  size={ButtonSize.ICON}
                   className="absolute top-4 right-4 z-10"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -364,7 +364,7 @@ export default function ThreadAlbumPage() {
                     onClick={(e) => e.stopPropagation()}
                     className="absolute top-4 left-4 z-10"
                   >
-                    <Button variant="glass-primary" size="sm" className="gap-2">
+                    <Button variant={ButtonVariant.GLASS_PRIMARY} size={ButtonSize.SM} className="gap-2">
                       <Download className="w-4 h-4" />
                       Download
                     </Button>
@@ -376,7 +376,7 @@ export default function ThreadAlbumPage() {
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         const newZoom = Math.min(imageZoom + 0.25, 5);
@@ -392,7 +392,7 @@ export default function ThreadAlbumPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         const newZoom = Math.max(imageZoom - 0.25, 0.25);
@@ -408,7 +408,7 @@ export default function ThreadAlbumPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -421,7 +421,7 @@ export default function ThreadAlbumPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -434,7 +434,7 @@ export default function ThreadAlbumPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -447,7 +447,7 @@ export default function ThreadAlbumPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);
@@ -460,7 +460,7 @@ export default function ThreadAlbumPage() {
                     </Button>
                     <Button
                       variant={ButtonVariant.GLASS}
-                      size="sm"
+                      size={ButtonSize.SM}
                       onClick={(e) => {
                         e.stopPropagation();
                         setImageZoom(1);

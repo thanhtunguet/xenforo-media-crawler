@@ -26,8 +26,11 @@
       "src/types"
     ],
     "paths": {
+      "@xenforo-media-crawler/contracts": [
+        "../../dist/libs/contracts/src/index.d.ts"
+      ],
       "@xenforo-media-crawler/contracts/*": [
-        "../../libs/contracts/src/*"
+        "../../dist/libs/contracts/src/*"
       ]
     }
   },

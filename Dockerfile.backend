@@ -1,0 +1,24 @@
+# Backend Docker image extending the production base
+# This image adds backend-specific configuration and entrypoint
+
+ARG BASE_IMAGE=xenforo-media-crawler-base:latest
+FROM ${BASE_IMAGE}
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
+
+# Change ownership to non-root user
+RUN chown -R nestjs:nodejs /app
+
+USER nestjs
+
+# Expose backend port
+EXPOSE 3000
+
+# Health check for backend
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+
+# Start the NestJS backend application
+CMD ["node", "dist/apps/backend/main.js"]

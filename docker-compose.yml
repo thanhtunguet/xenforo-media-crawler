@@ -24,13 +24,25 @@ services:
     networks:
       - xenforo-network
 
+  # Base Image (contains all builds)
+  base:
+    image: ${DOCKER_USERNAME:-thanhtunguet}/xenforo-media-crawler-base:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    # This service is only used for building, not running
+    profiles:
+      - build-only
+
   # Backend Service (NestJS)
   backend:
     image: ${DOCKER_USERNAME:-thanhtunguet}/xenforo-media-crawler-backend:${IMAGE_TAG:-latest}
     container_name: xenforo-crawler-backend
     build:
       context: .
-      dockerfile: apps/backend/Dockerfile.ci
+      dockerfile: Dockerfile.backend
+      args:
+        BASE_IMAGE: ${DOCKER_USERNAME:-thanhtunguet}/xenforo-media-crawler-base:${IMAGE_TAG:-latest}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     environment:
@@ -72,7 +84,9 @@ services:
     container_name: xenforo-crawler-frontend
     build:
       context: .
-      dockerfile: apps/frontend/Dockerfile.ci
+      dockerfile: Dockerfile.frontend
+      args:
+        BASE_IMAGE: ${DOCKER_USERNAME:-thanhtunguet}/xenforo-media-crawler-base:${IMAGE_TAG:-latest}
     ports:
       - "${FRONTEND_PORT:-3001}:3000"
     environment:
