@@ -7,9 +7,9 @@
 #   ./build-local.sh
 #
 # Environment Variables:
-#   DOCKER_USERNAME    - Docker Hub username (optional, required for pushing)
-#   DOCKER_PASSWORD    - Docker Hub password (optional, required for pushing)
-#   PUSH_IMAGES        - Set to "true" to push images to Docker Hub (default: false)
+#   DOCKER_USERNAME    - Docker Hub username (default: thanhtunguet)
+#   DOCKER_PASSWORD    - Docker Hub password (optional, will prompt if needed)
+#   PUSH_IMAGES        - Set to "true" to push images during build (default: false, will prompt after build)
 #   PLATFORMS          - Comma-separated platforms to build (default: linux/amd64,linux/arm64)
 #   CLEANUP            - Set to "false" to skip cleanup steps (default: true)
 #
@@ -36,7 +36,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-DOCKER_USERNAME="${DOCKER_USERNAME:-}"
+DOCKER_USERNAME="${DOCKER_USERNAME:-thanhtunguet}"
 DOCKER_PASSWORD="${DOCKER_PASSWORD:-}"
 PUSH_IMAGES="${PUSH_IMAGES:-false}"
 PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
@@ -169,6 +169,7 @@ check_disk_space() {
 }
 
 docker_login() {
+    # Only login if explicitly pushing during build
     if [ "$PUSH" = "true" ]; then
         if [ -z "$DOCKER_PASSWORD" ]; then
             log_warning "DOCKER_PASSWORD not set, attempting to login with existing credentials..."
@@ -207,50 +208,33 @@ build_image() {
         tag_args="$tag_args -t $tag"
     done
     
-    # Determine platform and load strategy
-    local build_platforms="$PLATFORMS"
-    local load_flag=""
-    
+    # Determine build strategy
     if [ "$PUSH" = "true" ]; then
-        # When pushing, we can build for multiple platforms
-        load_flag="--push"
-    else
-        # When not pushing, --load only works with single platform
-        # Check if multiple platforms are specified
-        local platform_count=$(echo "$PLATFORMS" | tr ',' '\n' | wc -l | tr -d ' ')
-        if [ "$platform_count" -gt 1 ]; then
-            log_warning "Multiple platforms specified but not pushing. Building for current platform only."
-            # Detect current platform using uname
-            local arch=$(uname -m)
-            case "$arch" in
-                x86_64)
-                    build_platforms="linux/amd64"
-                    ;;
-                aarch64|arm64)
-                    build_platforms="linux/arm64"
-                    ;;
-                *)
-                    log_warning "Unknown architecture: $arch, defaulting to linux/amd64"
-                    build_platforms="linux/amd64"
-                    ;;
-            esac
-            log_info "Building for platform: $build_platforms (detected from: $arch)"
+        # When pushing, use buildx for multi-platform support
+        local build_cmd="docker buildx build"
+        build_cmd="$build_cmd --platform $PLATFORMS"
+        build_cmd="$build_cmd --file $dockerfile"
+        build_cmd="$build_cmd $tag_args"
+        
+        if [ -n "$build_args" ]; then
+            build_cmd="$build_cmd $build_args"
         fi
-        load_flag="--load"
+        
+        build_cmd="$build_cmd --push"
+        build_cmd="$build_cmd ."
+    else
+        # When not pushing, use regular docker build for simplicity
+        # This ensures the base image from --load is available
+        local build_cmd="docker build"
+        build_cmd="$build_cmd --file $dockerfile"
+        build_cmd="$build_cmd $tag_args"
+        
+        if [ -n "$build_args" ]; then
+            build_cmd="$build_cmd $build_args"
+        fi
+        
+        build_cmd="$build_cmd ."
     fi
-    
-    # Build command
-    local build_cmd="docker buildx build"
-    build_cmd="$build_cmd --platform $build_platforms"
-    build_cmd="$build_cmd --file $dockerfile"
-    build_cmd="$build_cmd $tag_args"
-    
-    if [ -n "$build_args" ]; then
-        build_cmd="$build_cmd $build_args"
-    fi
-    
-    build_cmd="$build_cmd $load_flag"
-    build_cmd="$build_cmd ."
     
     log_info "Running: $build_cmd"
     eval $build_cmd
@@ -280,8 +264,8 @@ Options:
     --no-cleanup        Skip cleanup steps (faster but uses more disk space)
 
 Environment Variables:
-    DOCKER_USERNAME     Docker Hub username (required for pushing)
-    DOCKER_PASSWORD     Docker Hub password (required for pushing)
+    DOCKER_USERNAME     Docker Hub username (default: thanhtunguet)
+    DOCKER_PASSWORD     Docker Hub password (optional, will prompt if needed)
 
 Examples:
     # Build locally only (no push)
@@ -395,27 +379,98 @@ main() {
     log_success "Build workflow completed successfully!"
     echo ""
     log_info "Built images:"
-    if [ "$PUSH" = "true" ]; then
-        echo "  - $DOCKER_USERNAME/$BASE_IMAGE_NAME:latest"
-        echo "  - $DOCKER_USERNAME/$BASE_IMAGE_NAME:$COMMIT_SHA"
-        echo "  - $DOCKER_USERNAME/$BASE_IMAGE_NAME:$TAG"
-        echo "  - $DOCKER_USERNAME/$BACKEND_IMAGE_NAME:latest"
-        echo "  - $DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$COMMIT_SHA"
-        echo "  - $DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$TAG"
-        echo "  - $DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:latest"
-        echo "  - $DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$COMMIT_SHA"
-        echo "  - $DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$TAG"
-    else
-        echo "  - $BASE_IMAGE_NAME:latest"
-        echo "  - $BASE_IMAGE_NAME:$COMMIT_SHA"
-        echo "  - $BASE_IMAGE_NAME:$TAG"
-        echo "  - $BACKEND_IMAGE_NAME:latest"
-        echo "  - $BACKEND_IMAGE_NAME:$COMMIT_SHA"
-        echo "  - $BACKEND_IMAGE_NAME:$TAG"
-        echo "  - $FRONTEND_IMAGE_NAME:latest"
-        echo "  - $FRONTEND_IMAGE_NAME:$COMMIT_SHA"
-        echo "  - $FRONTEND_IMAGE_NAME:$TAG"
+    echo "  - $BASE_IMAGE_NAME:latest"
+    echo "  - $BASE_IMAGE_NAME:$COMMIT_SHA"
+    echo "  - $BASE_IMAGE_NAME:$TAG"
+    echo "  - $BACKEND_IMAGE_NAME:latest"
+    echo "  - $BACKEND_IMAGE_NAME:$COMMIT_SHA"
+    echo "  - $BACKEND_IMAGE_NAME:$TAG"
+    echo "  - $FRONTEND_IMAGE_NAME:latest"
+    echo "  - $FRONTEND_IMAGE_NAME:$COMMIT_SHA"
+    echo "  - $FRONTEND_IMAGE_NAME:$TAG"
+    echo ""
+    
+    # Ask user if they want to push to Docker Hub
+    if [ "$PUSH" != "true" ]; then
+        echo ""
+        log_info "Would you like to push these images to Docker Hub?"
+        log_info "Username: $DOCKER_USERNAME"
+        read -p "Push to Docker Hub? (y/N): " -n 1 -r
+        echo ""
+        
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # Ask for password if not set
+            if [ -z "$DOCKER_PASSWORD" ]; then
+                read -sp "Enter Docker Hub password for $DOCKER_USERNAME: " DOCKER_PASSWORD
+                echo ""
+            fi
+            
+            log_info "Pushing images to Docker Hub..."
+            push_images_to_dockerhub
+        else
+            log_info "Skipping push to Docker Hub"
+        fi
     fi
+}
+
+push_images_to_dockerhub() {
+    # Login to Docker Hub
+    log_info "Logging into Docker Hub..."
+    if ! echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin; then
+        log_error "Failed to login to Docker Hub"
+        return 1
+    fi
+    log_success "Logged into Docker Hub"
+    echo ""
+    
+    # Tag and push base image
+    log_info "Tagging and pushing base image..."
+    docker tag "$BASE_IMAGE_NAME:latest" "$DOCKER_USERNAME/$BASE_IMAGE_NAME:latest"
+    docker tag "$BASE_IMAGE_NAME:latest" "$DOCKER_USERNAME/$BASE_IMAGE_NAME:$COMMIT_SHA"
+    docker tag "$BASE_IMAGE_NAME:latest" "$DOCKER_USERNAME/$BASE_IMAGE_NAME:$TAG"
+    
+    docker push "$DOCKER_USERNAME/$BASE_IMAGE_NAME:latest"
+    docker push "$DOCKER_USERNAME/$BASE_IMAGE_NAME:$COMMIT_SHA"
+    docker push "$DOCKER_USERNAME/$BASE_IMAGE_NAME:$TAG"
+    log_success "Base image pushed"
+    echo ""
+    
+    # Tag and push backend image
+    log_info "Tagging and pushing backend image..."
+    docker tag "$BACKEND_IMAGE_NAME:latest" "$DOCKER_USERNAME/$BACKEND_IMAGE_NAME:latest"
+    docker tag "$BACKEND_IMAGE_NAME:latest" "$DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$COMMIT_SHA"
+    docker tag "$BACKEND_IMAGE_NAME:latest" "$DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$TAG"
+    
+    docker push "$DOCKER_USERNAME/$BACKEND_IMAGE_NAME:latest"
+    docker push "$DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$COMMIT_SHA"
+    docker push "$DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$TAG"
+    log_success "Backend image pushed"
+    echo ""
+    
+    # Tag and push frontend image
+    log_info "Tagging and pushing frontend image..."
+    docker tag "$FRONTEND_IMAGE_NAME:latest" "$DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:latest"
+    docker tag "$FRONTEND_IMAGE_NAME:latest" "$DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$COMMIT_SHA"
+    docker tag "$FRONTEND_IMAGE_NAME:latest" "$DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$TAG"
+    
+    docker push "$DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:latest"
+    docker push "$DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$COMMIT_SHA"
+    docker push "$DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$TAG"
+    log_success "Frontend image pushed"
+    echo ""
+    
+    log_success "All images pushed to Docker Hub successfully!"
+    echo ""
+    log_info "Pushed images:"
+    echo "  - $DOCKER_USERNAME/$BASE_IMAGE_NAME:latest"
+    echo "  - $DOCKER_USERNAME/$BASE_IMAGE_NAME:$COMMIT_SHA"
+    echo "  - $DOCKER_USERNAME/$BASE_IMAGE_NAME:$TAG"
+    echo "  - $DOCKER_USERNAME/$BACKEND_IMAGE_NAME:latest"
+    echo "  - $DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$COMMIT_SHA"
+    echo "  - $DOCKER_USERNAME/$BACKEND_IMAGE_NAME:$TAG"
+    echo "  - $DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:latest"
+    echo "  - $DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$COMMIT_SHA"
+    echo "  - $DOCKER_USERNAME/$FRONTEND_IMAGE_NAME:$TAG"
 }
 
 # Run main function

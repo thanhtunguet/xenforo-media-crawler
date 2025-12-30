@@ -87,3 +87,4 @@ export function isStructuredQuery(query: string): boolean {
   return /[=:]/.test(query.trim());
 }
 
+
